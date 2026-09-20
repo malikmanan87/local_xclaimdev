@@ -488,19 +488,154 @@
             </div>
         </div><!-- /#tab2 -->
 
-        <!-- ─── TAB 3: Claim Details (placeholder) ─── -->
+        <!-- ─── TAB 3: Claim Details (Perincian & Jumlah Bersih Tuntutan) ─── -->
         <div class="tab-pane-custom d-none" id="tab3">
-            <div class="tab-pane-title">
-                <i class="bi bi-receipt text-primary me-2"></i>
-                <strong>Tab 3 — Claim Details</strong>
+            <div class="tab-pane-title d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <i class="bi bi-receipt text-primary me-2"></i>
+                    <strong>Tab 3 — Claim Details (Perincian & Jumlah Bersih Tuntutan)</strong>
+                </div>
+                <button type="button" class="btn btn-outline-info btn-sm shadow-sm" onclick="runAISuggestions()">
+                    <i class="bi bi-robot me-1"></i> AI Auto-Suggest (80/20)
+                </button>
             </div>
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-hourglass-split fs-1 d-block mb-3 text-primary opacity-50"></i>
-                <p class="mb-0">Claim details form coming soon.</p>
+
+            <!-- Context Info Cards: Specialist & Patient Summary -->
+            <div class="row g-3 mb-3">
+                <!-- Specialist Info Card -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0 rounded-3 h-100 bg-light">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="badge bg-primary p-2 me-2 rounded-circle">
+                                    <i class="bi bi-person-badge text-white"></i>
+                                </div>
+                                <span class="fw-bold small text-uppercase text-secondary">Maklumat Pakar</span>
+                            </div>
+                            <div class="small">
+                                <div><strong>Nama Pakar:</strong> <span id="tab3_spec_name"><?= esc($userData['specialist_name'] ?? '-') ?></span></div>
+                                <div><strong>No. Staf:</strong> <span id="tab3_spec_staffno"><?= esc($userData['staff_number'] ?? '-') ?></span></div>
+                                <div><strong>Jabatan:</strong> <span id="tab3_spec_dept"><?= esc($userData['department'] ?? '-') ?></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient & Visit Info Card -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0 rounded-3 h-100 bg-light">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="badge bg-success p-2 me-2 rounded-circle">
+                                    <i class="bi bi-person-wheelchair text-white"></i>
+                                </div>
+                                <span class="fw-bold small text-uppercase text-secondary">Maklumat Pesakit & Lawatan</span>
+                            </div>
+                            <div class="small">
+                                <div><strong>Nama Pesakit:</strong> <span id="tab3_patient_name" class="fw-semibold text-uppercase">-</span></div>
+                                <div><strong>RN:</strong> <span id="tab3_patient_rn" class="font-monospace fw-bold text-primary">-</span> | <strong>No. KP:</strong> <span id="tab3_patient_ic">-</span></div>
+                                <div><strong>Jenis Lawatan:</strong> <span id="tab3_visit_type">-</span> | <strong>No. Invois:</strong> <span id="tab3_invc_no">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="d-flex justify-content-between mt-4 pt-3 border-top">
-                <button class="btn btn-outline-secondary px-4" onclick="goToTab(2)">
-                    <i class="bi bi-arrow-left me-2"></i> Back
+
+            <!-- Financial Summary KPI Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-3 bg-secondary bg-opacity-10 text-center p-3">
+                        <div class="text-muted small fw-semibold text-uppercase">Jumlah Harga Kasar (Gross)</div>
+                        <div class="fs-4 fw-bold font-monospace text-dark mt-1" id="tab3_kpi_gross">RM 0.00</div>
+                        <div class="small text-muted">Nilai Asal Semua Prosedur</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-3 bg-success bg-opacity-10 text-center p-3 border-start border-success border-4">
+                        <div class="text-success small fw-semibold text-uppercase">Jumlah Bersih Tuntutan (Pakar)</div>
+                        <div class="fs-4 fw-bold font-monospace text-success mt-1" id="tab3_kpi_claim">RM 0.00</div>
+                        <div class="small text-success">Mengikut Peratusan Tuntutan</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-3 bg-warning bg-opacity-10 text-center p-3 border-start border-warning border-4">
+                        <div class="text-warning-emphasis small fw-semibold text-uppercase">Tabung Kebajikan (Welfare Fund)</div>
+                        <div class="fs-4 fw-bold font-monospace text-warning-emphasis mt-1" id="tab3_kpi_welfare">RM 0.00</div>
+                        <div class="small text-muted">Baki Sumbangan Tabung</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Detail Claim Selepas Jumlah Bersih (Ikut Percentage) -->
+            <div class="card shadow-sm border-0 rounded-3 overflow-hidden mb-4">
+                <div class="card-header bg-dark text-white py-2 px-3 d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold small">
+                        <i class="bi bi-table me-2 text-warning"></i> Perincian Tuntutan Prosedur Selepas Jumlah Bersih
+                    </span>
+                    <span class="badge bg-primary">
+                        Bil. Prosedur: <span id="tab3_proc_count">0</span>
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered mb-0 align-middle small">
+                            <thead class="table-light">
+                                <tr class="text-center">
+                                    <th width="5%">#</th>
+                                    <th width="12%">Kod Prosedur</th>
+                                    <th class="text-start">Nama Prosedur</th>
+                                    <th width="16%" class="text-end">Harga Asal (RM)</th>
+                                    <th width="14%">Tuntutan (%)</th>
+                                    <th width="18%" class="text-end text-success fw-bold">Jumlah Bersih Tuntutan (RM)</th>
+                                    <th width="18%" class="text-end text-warning-emphasis">Tabung Kebajikan (RM)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tab3ClaimTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="bi bi-info-circle me-1"></i> Tiada maklumat prosedur. Sila kembali ke Tab 2 untuk memilih prosedur.
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="table-dark text-center fw-bold" id="tab3ClaimTableFooter">
+                                <tr>
+                                    <td colspan="3" class="text-end text-uppercase">JUMLAH KESELURUHAN:</td>
+                                    <td class="text-end font-monospace" id="tab3_footer_gross">RM 0.00</td>
+                                    <td id="tab3_footer_avg_pct">-</td>
+                                    <td class="text-end text-success font-monospace fs-6" id="tab3_footer_claim">RM 0.00</td>
+                                    <td class="text-end text-warning font-monospace" id="tab3_footer_welfare">RM 0.00</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specialist Declaration & Remarks -->
+            <div class="card shadow-sm border-0 rounded-3 mb-4 bg-light">
+                <div class="card-body p-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">
+                            <i class="bi bi-chat-left-text me-1"></i> Catatan Tambahan (Pilihan):
+                        </label>
+                        <textarea class="form-control form-control-sm" id="claim_remarks" rows="2" placeholder="Masukkan sebarang nota atau rujukan tambahan jika perlu..."></textarea>
+                    </div>
+                    <div class="form-check p-3 bg-white border rounded-2 shadow-sm">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" id="declarationCheck">
+                        <label class="form-check-label fw-semibold text-dark small" for="declarationCheck">
+                            Saya mengesahkan bahawa segala butiran tuntutan prosedur perkhidmatan ini adalah tepat, benar, dan menepati peraturan yang ditetapkan oleh pihak Hospital Pengajar UniSZA.
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation & Submission Buttons -->
+            <div class="d-flex justify-content-between pt-3 border-top">
+                <button type="button" class="btn btn-outline-secondary px-4" onclick="goToTab(2)">
+                    <i class="bi bi-arrow-left me-2"></i> Kembali: Carian Pesakit & Prosedur
+                </button>
+                <button type="button" class="btn btn-success px-5 shadow-sm fw-semibold" id="btnSubmitClaimApp" disabled>
+                    <i class="bi bi-send-check me-2"></i> Hantar Permohonan Tuntutan
                 </button>
             </div>
         </div><!-- /#tab3 -->
@@ -541,6 +676,10 @@ function goToTab(num) {
     // Show target pane
     document.getElementById('tab' + num).classList.remove('d-none');
     currentTab = num;
+
+    if (num === 3) {
+        renderTab3ClaimDetails();
+    }
 
     // Scroll to top of card
     document.querySelector('.card-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1143,6 +1282,205 @@ $('#btnNextTab2').on('click', function () {
         }
     });
 });
+
+// ──────────────────────────────────────────────────────────────────
+// Tab 3 — Claim Details Calculations & Submission
+// ──────────────────────────────────────────────────────────────────
+let tab3Totals = { gross: 0, claim: 0, welfare: 0 };
+
+function renderTab3ClaimDetails() {
+    // 1. Context Information
+    const pName  = selectedVisit?.patient_name || currentPatient.name || $('#selected_patient_name').val() || '-';
+    const pRn    = selectedVisit?.rn || currentPatient.rn || $('#selected_patient_rn').val() || '-';
+    const pIc    = selectedVisit?.nric || currentPatient.nric || $('#selected_patient_ic').val() || '-';
+    const vType  = selectedVisit?.visit?.visit_type || (patientContext?.summary ? 'OUTPATIENT' : '-');
+    const invcNo = patientContext?.summary?.invc_no || '-';
+
+    $('#tab3_patient_name').text(pName);
+    $('#tab3_patient_rn').text(pRn);
+    $('#tab3_patient_ic').text(pIc);
+    $('#tab3_visit_type').text(vType);
+    $('#tab3_invc_no').text(invcNo);
+
+    // 2. Procedures Detail Table
+    const tbody   = document.getElementById('tab3ClaimTableBody');
+    const countEl = document.getElementById('tab3_proc_count');
+
+    if (!tbody) return;
+
+    if (!selectedProcedures || selectedProcedures.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-info-circle me-1"></i> Tiada maklumat prosedur dipilih. Sila kembali ke Tab 2 untuk memilih prosedur.</td></tr>`;
+        if (countEl) countEl.textContent = '0';
+        updateTab3KPIs(0, 0, 0);
+        return;
+    }
+
+    if (countEl) countEl.textContent = selectedProcedures.length;
+
+    let grossTotal   = 0;
+    let claimTotal   = 0;
+    let welfareTotal = 0;
+    let rows         = '';
+
+    selectedProcedures.forEach((p, idx) => {
+        const fee        = parseFloat(p.price) || 0;
+        const pct        = (typeof p.claimPct !== 'undefined' && p.claimPct !== null) ? parseFloat(p.claimPct) : 100;
+        const claimAmt   = fee * (pct / 100);
+        const welfareAmt = fee - claimAmt;
+
+        grossTotal   += fee;
+        claimTotal   += claimAmt;
+        welfareTotal += welfareAmt;
+
+        rows += `
+            <tr>
+                <td class="text-center text-muted">${idx + 1}</td>
+                <td class="text-center font-monospace fw-semibold text-primary">${escapeHtml(p.code)}</td>
+                <td>
+                    <div class="fw-semibold text-dark">${escapeHtml(p.name)}</div>
+                </td>
+                <td class="text-end font-monospace">${fee.toFixed(2)}</td>
+                <td class="text-center">
+                    <span class="badge ${pct === 100 ? 'bg-success' : 'bg-primary'} px-2 py-1 font-monospace">${pct}%</span>
+                </td>
+                <td class="text-end font-monospace fw-bold text-success">
+                    RM ${claimAmt.toFixed(2)}
+                </td>
+                <td class="text-end font-monospace text-warning-emphasis fw-semibold">
+                    RM ${welfareAmt.toFixed(2)}
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = rows;
+
+    tab3Totals = { gross: grossTotal, claim: claimTotal, welfare: welfareTotal };
+    updateTab3KPIs(grossTotal, claimTotal, welfareTotal);
+
+    // Update Footer
+    $('#tab3_footer_gross').text('RM ' + grossTotal.toFixed(2));
+    $('#tab3_footer_claim').text('RM ' + claimTotal.toFixed(2));
+    $('#tab3_footer_welfare').text('RM ' + welfareTotal.toFixed(2));
+    const avgPct = grossTotal > 0 ? ((claimTotal / grossTotal) * 100).toFixed(0) + '%' : '-';
+    $('#tab3_footer_avg_pct').text(avgPct);
+}
+
+function updateTab3KPIs(gross, claim, welfare) {
+    $('#tab3_kpi_gross').text('RM ' + gross.toFixed(2));
+    $('#tab3_kpi_claim').text('RM ' + claim.toFixed(2));
+    $('#tab3_kpi_welfare').text('RM ' + welfare.toFixed(2));
+}
+
+// AI Auto Suggest (80/20 rule)
+function runAISuggestions() {
+    if (!selectedProcedures || selectedProcedures.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Sila pilih sekurang-kurangnya satu prosedur terlebih dahulu.' });
+        return;
+    }
+
+    selectedProcedures.forEach(p => {
+        const fee = parseFloat(p.price) || 0;
+        // High-value fees (> RM 500) suggest 80% claim (20% to welfare fund)
+        p.claimPct = fee > 500 ? 80 : 100;
+    });
+
+    renderSelectedProcedures();
+    renderTab3ClaimDetails();
+
+    Swal.fire({
+        icon: 'info',
+        title: 'AI Auto-Suggest Selesai',
+        text: 'Prosedur bernilai tinggi (>RM 500) diselaraskan kepada 80% tuntutan dan 20% Tabung Kebajikan.'
+    });
+}
+
+// Declaration Checkbox Handler
+$('#declarationCheck').on('change', function () {
+    $('#btnSubmitClaimApp').prop('disabled', !this.checked);
+});
+
+// Final Claim Submission Handler
+$('#btnSubmitClaimApp').on('click', function () {
+    if (!selectedProcedures || selectedProcedures.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Sila pilih sekurang-kurangnya satu prosedur untuk permohonan.' });
+        return;
+    }
+
+    if (!$('#declarationCheck').is(':checked')) {
+        Swal.fire({ icon: 'warning', title: 'Pengesahan Diperlukan', text: 'Sila tandakan pengesahan deklarasi pakar terlebih dahulu.' });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Hantar Permohonan Tuntutan?',
+        html: `<p class="mb-2">Adakah anda pasti untuk menghantar tuntutan ini?</p>
+               <div class="text-start p-3 bg-light rounded small border">
+                   <div><strong>Jumlah Kasar:</strong> RM ${tab3Totals.gross.toFixed(2)}</div>
+                   <div><strong>Jumlah Bersih Tuntutan:</strong> <span class="text-success fw-bold">RM ${tab3Totals.claim.toFixed(2)}</span></div>
+                   <div><strong>Tabung Kebajikan:</strong> RM ${tab3Totals.welfare.toFixed(2)}</div>
+               </div>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Ya, Hantar Sekarang',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#198754'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            submitFinalClaim();
+        }
+    });
+});
+
+function submitFinalClaim() {
+    const btn = $('#btnSubmitClaimApp');
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Menghantar Permohonan...');
+
+    const payload = {
+        '<?= csrf_token() ?>': $('[name="<?= csrf_token() ?>"]').val() || '<?= csrf_hash() ?>',
+        patient_rn: selectedVisit?.rn || currentPatient.rn || $('#selected_patient_rn').val(),
+        patient_name: selectedVisit?.patient_name || currentPatient.name || $('#selected_patient_name').val(),
+        patient_ic: selectedVisit?.nric || currentPatient.nric || $('#selected_patient_ic').val(),
+        visit_id: selectedVisit?.visit?.visit_id || $('#selected_visit_id').val(),
+        procedures: JSON.stringify(selectedProcedures),
+        remarks: $('#claim_remarks').val().trim()
+    };
+
+    $.ajax({
+        url: BASE_URL + 'new-application/submit-claim',
+        method: 'POST',
+        data: payload,
+        dataType: 'json',
+        success: function (res) {
+            if (res.status === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berjaya Dihantar!',
+                    html: `Permohonan tuntutan anda telah berjaya disimpan dan dihantar.<br><strong>No. Rujukan:</strong> <span class="badge bg-primary fs-6 font-monospace mt-2">${res.application_no}</span>`,
+                    confirmButtonText: 'Lihat Senarai Permohonan',
+                    allowOutsideClick: false
+                }).then(() => {
+                    window.location.href = BASE_URL + 'new-application';
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ralat',
+                    text: res.message || 'Gagal menghantar permohonan.'
+                });
+                btn.prop('disabled', false).html('<i class="bi bi-send-check me-2"></i> Hantar Permohonan Tuntutan');
+            }
+        },
+        error: function () {
+            Swal.fire({
+                icon: 'error',
+                title: 'Ralat Pelayan',
+                text: 'Sila cuba lagi sebentar lagi.'
+            });
+            btn.prop('disabled', false).html('<i class="bi bi-send-check me-2"></i> Hantar Permohonan Tuntutan');
+        }
+    });
+}
 
 function clearErrors() {
     document.querySelectorAll('.invalid-feedback-custom').forEach(el => {

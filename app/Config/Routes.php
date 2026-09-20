@@ -62,6 +62,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('get-patient-context',  'NewApplicationController::getPatientContext');
         $routes->get('getPatientContext',    'NewApplicationController::getPatientContext');
         $routes->post('store-patient',       'NewApplicationController::storePatient');
+        $routes->post('submit-claim',        'NewApplicationController::submitClaim');
+        $routes->post('submit',              'NewApplicationController::submitClaim');
         $routes->get('show/(:num)',          'NewApplicationController::show/$1');
     });
 

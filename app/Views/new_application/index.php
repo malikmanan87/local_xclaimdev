@@ -15,13 +15,14 @@
             <table id="applicationsTable" class="table table-hover table-align-middle w-100">
                 <thead class="table-light text-secondary">
                     <tr>
-                        <th width="50" class="text-center">#</th>
+                        <th width="40" class="text-center">#</th>
                         <th>App No.</th>
-                        <th>Specialist Name</th>
-                        <th>Department</th>
+                        <th>Specialist</th>
+                        <th>Patient</th>
+                        <th class="text-end">Total Claim (RM)</th>
                         <th>Status</th>
                         <th>Submitted At</th>
-                        <th width="100" class="text-center">Action</th>
+                        <th width="80" class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -30,13 +31,19 @@
                         <tr>
                             <td class="text-center text-muted fw-medium"><?= $i + 1 ?></td>
                             <td>
-                                <span class="fw-medium text-primary"><?= esc($app['application_no']) ?></span>
+                                <span class="fw-medium text-primary font-monospace"><?= esc($app['application_no']) ?></span>
                             </td>
                             <td>
                                 <div class="fw-medium text-dark"><?= esc($app['specialist_name']) ?></div>
                                 <div class="text-muted small"><?= esc($app['position']) ?> &bull; <?= esc($app['department']) ?></div>
                             </td>
-                            <td class="text-secondary small"><?= esc($app['department']) ?></td>
+                            <td>
+                                <div class="fw-medium text-dark"><?= esc($app['patient_name'] ?? '-') ?></div>
+                                <div class="text-muted small font-monospace"><?= esc($app['patient_rn'] ?? '-') ?></div>
+                            </td>
+                            <td class="text-end font-monospace fw-bold text-success">
+                                RM <?= number_format($app['total_claim'] ?? 0, 2) ?>
+                            </td>
                             <td>
                                 <?php
                                 $statusMap = [
@@ -76,7 +83,7 @@ $(document).ready(function () {
     $('#applicationsTable').DataTable({
         order: [[0, 'asc']],
         pageLength: 10,
-        columnDefs: [{ orderable: false, targets: [0, 6] }]
+        columnDefs: [{ orderable: false, targets: [0, 7] }]
     });
 });
 </script>

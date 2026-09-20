@@ -1,0 +1,219 @@
+<?= $this->extend('layouts/main') ?>
+<?= $this->section('content') ?>
+
+<?php
+$statusMap = [
+    'draft'        => ['badge-status-secondary', 'Draft'],
+    'submitted'    => ['badge-status-warning',   'Submitted'],
+    'under_review' => ['badge-status-info',      'Under Review'],
+    'approved'     => ['badge-status-success',   'Approved'],
+    'rejected'     => ['badge-status-danger',    'Rejected'],
+];
+$s = $statusMap[$application['status']] ?? ['badge-status-secondary', ucfirst($application['status'])];
+$procedures = !empty($application['procedures_data']) ? json_decode($application['procedures_data'], true) : [];
+?>
+
+<div class="card-panel">
+    <div class="card-panel-header py-3 d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="card-panel-title mb-1">
+                <i class="bi bi-file-earmark-medical me-2 text-primary"></i>
+                Butiran Permohonan: <span class="font-monospace text-primary"><?= esc($application['application_no']) ?></span>
+            </h5>
+            <div class="text-muted small">
+                Dihantar pada: <?= $application['submitted_at'] ? date('d/m/Y h:i A', strtotime($application['submitted_at'])) : '-' ?>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge-status <?= $s[0] ?> fs-6 py-1 px-3"><?= $s[1] ?></span>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                <i class="bi bi-printer me-1"></i> Cetak
+            </button>
+            <a href="<?= base_url('new-application') ?>" class="btn btn-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Kembali
+            </a>
+        </div>
+    </div>
+
+    <div class="card-panel-body">
+        <!-- Info Cards: Specialist & Patient -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-3 bg-light h-100">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="badge bg-primary p-2 me-2 rounded-circle">
+                                <i class="bi bi-person-badge text-white"></i>
+                            </div>
+                            <span class="fw-bold small text-uppercase text-secondary">Maklumat Pakar</span>
+                        </div>
+                        <table class="table table-sm table-borderless mb-0 small">
+                            <tr>
+                                <th width="35%" class="text-muted">Nama Pakar:</th>
+                                <td class="fw-semibold"><?= esc($application['specialist_name']) ?></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">No. Staf:</th>
+                                <td class="font-monospace"><?= esc($application['staff_number']) ?></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Emel:</th>
+                                <td><?= esc($application['email']) ?></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Jabatan / Jawatan:</th>
+                                <td><?= esc($application['department']) ?> &bull; <?= esc($application['position']) ?></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-3 bg-light h-100">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="badge bg-success p-2 me-2 rounded-circle">
+                                <i class="bi bi-person-wheelchair text-white"></i>
+                            </div>
+                            <span class="fw-bold small text-uppercase text-secondary">Maklumat Pesakit</span>
+                        </div>
+                        <table class="table table-sm table-borderless mb-0 small">
+                            <tr>
+                                <th width="35%" class="text-muted">Nama Pesakit:</th>
+                                <td class="fw-bold text-uppercase"><?= esc($application['patient_name'] ?? '-') ?></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Nombor RN:</th>
+                                <td class="font-monospace fw-bold text-primary"><?= esc($application['patient_rn'] ?? '-') ?></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">No. Kad Pengenalan:</th>
+                                <td class="font-monospace"><?= esc($application['patient_ic'] ?? '-') ?></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">ID Lawatan:</th>
+                                <td class="font-monospace"><?= esc($application['visit_id'] ?? '-') ?></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 Financial KPI Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-3 bg-secondary bg-opacity-10 text-center p-3">
+                    <div class="text-muted small fw-semibold text-uppercase">Jumlah Kasar (Gross)</div>
+                    <div class="fs-4 fw-bold font-monospace text-dark mt-1">
+                        RM <?= number_format($application['total_gross'] ?? 0, 2) ?>
+                    </div>
+                    <div class="small text-muted">Nilai Asal Semua Prosedur</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-3 bg-success bg-opacity-10 text-center p-3 border-start border-success border-4">
+                    <div class="text-success small fw-semibold text-uppercase">Jumlah Bersih Tuntutan (Pakar)</div>
+                    <div class="fs-4 fw-bold font-monospace text-success mt-1">
+                        RM <?= number_format($application['total_claim'] ?? 0, 2) ?>
+                    </div>
+                    <div class="small text-success">Mengikut Peratusan Tuntutan</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-3 bg-warning bg-opacity-10 text-center p-3 border-start border-warning border-4">
+                    <div class="text-warning-emphasis small fw-semibold text-uppercase">Tabung Kebajikan</div>
+                    <div class="fs-4 fw-bold font-monospace text-warning-emphasis mt-1">
+                        RM <?= number_format($application['total_welfare'] ?? 0, 2) ?>
+                    </div>
+                    <div class="small text-muted">Sumbangan Hospital</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Procedures Claim Table -->
+        <div class="card shadow-sm border-0 rounded-3 overflow-hidden mb-4">
+            <div class="card-header bg-dark text-white py-2 px-3 d-flex justify-content-between align-items-center">
+                <span class="fw-semibold small">
+                    <i class="bi bi-table me-2 text-warning"></i> Perincian Tuntutan Prosedur Selepas Jumlah Bersih
+                </span>
+                <span class="badge bg-primary">
+                    Bil. Prosedur: <?= count($procedures) ?>
+                </span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered mb-0 align-middle small">
+                        <thead class="table-light">
+                            <tr class="text-center">
+                                <th width="5%">#</th>
+                                <th width="12%">Kod Prosedur</th>
+                                <th class="text-start">Nama Prosedur</th>
+                                <th width="16%" class="text-end">Harga Asal (RM)</th>
+                                <th width="14%">Tuntutan (%)</th>
+                                <th width="18%" class="text-end text-success fw-bold">Jumlah Bersih Tuntutan (RM)</th>
+                                <th width="18%" class="text-end text-warning-emphasis">Tabung Kebajikan (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($procedures)): ?>
+                                <?php foreach ($procedures as $idx => $p): ?>
+                                    <?php
+                                    $fee = (float) ($p['price'] ?? 0);
+                                    $pct = isset($p['claimPct']) ? (float) $p['claimPct'] : 100;
+                                    $claimAmt = $fee * ($pct / 100);
+                                    $welfareAmt = $fee - $claimAmt;
+                                    ?>
+                                    <tr>
+                                        <td class="text-center text-muted"><?= $idx + 1 ?></td>
+                                        <td class="text-center font-monospace fw-semibold text-primary"><?= esc($p['code'] ?? '-') ?></td>
+                                        <td>
+                                            <div class="fw-semibold text-dark"><?= esc($p['name'] ?? '-') ?></div>
+                                        </td>
+                                        <td class="text-end font-monospace"><?= number_format($fee, 2) ?></td>
+                                        <td class="text-center">
+                                            <span class="badge <?= $pct == 100 ? 'bg-success' : 'bg-primary' ?> px-2 py-1 font-monospace">
+                                                <?= $pct ?>%
+                                            </span>
+                                        </td>
+                                        <td class="text-end font-monospace fw-bold text-success">
+                                            RM <?= number_format($claimAmt, 2) ?>
+                                        </td>
+                                        <td class="text-end font-monospace text-warning-emphasis fw-semibold">
+                                            RM <?= number_format($welfareAmt, 2) ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">Tiada rekod prosedur disimpan.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                        <tfoot class="table-dark text-center fw-bold">
+                            <tr>
+                                <td colspan="3" class="text-end text-uppercase">JUMLAH KESELURUHAN:</td>
+                                <td class="text-end font-monospace">RM <?= number_format($application['total_gross'] ?? 0, 2) ?></td>
+                                <td>-</td>
+                                <td class="text-end text-success font-monospace fs-6">RM <?= number_format($application['total_claim'] ?? 0, 2) ?></td>
+                                <td class="text-end text-warning font-monospace">RM <?= number_format($application['total_welfare'] ?? 0, 2) ?></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <?php if (!empty($application['remarks'])): ?>
+            <div class="card shadow-sm border-0 rounded-3 bg-light mb-4">
+                <div class="card-body p-3 small">
+                    <span class="fw-semibold text-secondary"><i class="bi bi-chat-left-text me-1"></i> Catatan:</span>
+                    <p class="mb-0 text-dark mt-1"><?= nl2br(esc($application['remarks'])) ?></p>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<?= $this->endSection() ?>

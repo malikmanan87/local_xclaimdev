@@ -325,4 +325,115 @@ class NewApplicationController extends BaseController
 
         return view('new_application/show', $data);
     }
+
+    // ---------------------------------------------------------------
+    // Submit complete claim application (Tab 3)
+    // ---------------------------------------------------------------
+    public function submitClaim(): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $specialist = session('new_app_specialist') ?? [];
+        $patient    = session('new_app_patient') ?? [];
+        $procedures = session('new_app_procedures') ?? [];
+
+        // Check if procedures or patient passed in POST directly
+        $postProcedures = $this->request->getPost('procedures');
+        if (!empty($postProcedures)) {
+            $procedures = is_string($postProcedures) ? (json_decode($postProcedures, true) ?: []) : $postProcedures;
+        }
+
+        $patientRn   = $this->request->getPost('patient_rn') ?: ($patient['patient_rn'] ?? null);
+        $patientName = $this->request->getPost('patient_name') ?: ($patient['patient_name'] ?? null);
+        $patientIc   = $this->request->getPost('patient_ic') ?: ($patient['patient_ic'] ?? null);
+        $visitId     = $this->request->getPost('visit_id') ?: ($patient['visit_id'] ?? null);
+        $remarks     = $this->request->getPost('remarks') ?: '';
+
+        if (empty($patientRn) || empty($patientName)) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Maklumat pesakit tidak lengkap. Sila kembali ke Tab 2.',
+            ]);
+        }
+
+        if (empty($procedures)) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Tiada prosedur dipilih. Sila pilih sekurang-kurangnya satu prosedur.',
+            ]);
+        }
+
+        // Calculate totals
+        $totalGross   = 0;
+        $totalClaim   = 0;
+        $totalWelfare = 0;
+
+        foreach ($procedures as $p) {
+            $price      = (float) ($p['price'] ?? 0);
+            $pct        = isset($p['claimPct']) ? (float) $p['claimPct'] : 100;
+            $claimAmt   = $price * ($pct / 100);
+            $welfareAmt = $price - $claimAmt;
+
+            $totalGross   += $price;
+            $totalClaim   += $claimAmt;
+            $totalWelfare += $welfareAmt;
+        }
+
+        $userId = session('user_id');
+        $userModel = new \App\Models\UserModel();
+        $currentUser = $userId ? $userModel->getUserWithRole($userId) : null;
+
+        $specialistName = $specialist['specialist_name'] ?? session('name') ?? ($currentUser['fullname'] ?? 'Specialist');
+        $staffNumber    = $specialist['staff_number'] ?? session('staffno') ?? ($currentUser['username'] ?? '');
+        $email          = $specialist['email'] ?? session('email') ?? ($currentUser['email'] ?? '');
+        $department     = $specialist['department'] ?? session('department') ?? '';
+        $position       = $specialist['position'] ?? session('position') ?? '';
+
+        $applicationNo = $this->model->generateAppNo();
+
+        $saveData = [
+            'application_no'  => $applicationNo,
+            'specialist_name' => $specialistName,
+            'staff_number'    => $staffNumber,
+            'email'           => $email,
+            'department'      => $department,
+            'position'        => $position,
+            'patient_rn'      => $patientRn,
+            'patient_name'    => $patientName,
+            'patient_ic'      => $patientIc,
+            'visit_id'        => $visitId,
+            'status'          => 'submitted',
+            'total_gross'     => $totalGross,
+            'total_claim'     => $totalClaim,
+            'total_welfare'   => $totalWelfare,
+            'procedures_data' => json_encode($procedures),
+            'remarks'         => $remarks,
+            'submitted_by'    => $userId,
+            'submitted_at'    => date('Y-m-d H:i:s'),
+        ];
+
+        try {
+            $insertedId = $this->model->insert($saveData);
+            if (!$insertedId) {
+                return $this->response->setJSON([
+                    'status'  => 'error',
+                    'message' => 'Gagal menyimpan permohonan ke dalam pangkalan data.',
+                ]);
+            }
+
+            // Clear temporary draft session
+            session()->remove(['new_app_specialist', 'new_app_patient', 'new_app_procedures']);
+
+            return $this->response->setJSON([
+                'status'         => 'success',
+                'message'        => 'Permohonan tuntutan berjaya dihantar!',
+                'application_no' => $applicationNo,
+                'id'             => $insertedId,
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Ralat sistem semasa memproses permohonan: ' . $e->getMessage(),
+            ]);
+        }
+    }
 }
