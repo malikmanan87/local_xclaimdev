@@ -381,7 +381,7 @@
                                 </div>
                                 <div class="card-body p-3">
                                     <!-- Procedure Selection & Add to List -->
-                                    <div class="row g-2 mb-3">
+                                    <div class="row g-2 mb-2">
                                         <div class="col-sm-8 col-12">
                                             <select class="form-select form-select-sm" id="procSelect">
                                                 <option value="" selected disabled>Choose Procedure...</option>
@@ -405,28 +405,55 @@
                                         </div>
                                     </div>
 
-                                    <!-- Table: Code | Procedure Name | Price (RM) | Remove -->
+                                    <!-- Bulk Claim % Setting Bar (Apply to All Procedures) -->
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between p-2 bg-light border rounded-2 mb-3">
+                                        <div class="d-flex align-items-center mb-1 mb-sm-0">
+                                            <span class="small fw-semibold text-secondary me-2">
+                                                <i class="bi bi-sliders text-primary me-1"></i> Set All Claim %:
+                                            </span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <div class="input-group input-group-sm" style="width: 95px;">
+                                                <input type="number" id="bulkClaimPct" class="form-control form-control-sm text-center font-monospace" min="0" max="100" value="100" placeholder="100">
+                                                <span class="input-group-text px-1 small text-muted">%</span>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-primary px-2" id="btnApplyAllPct" title="Set claim % for all procedures">
+                                                Apply
+                                            </button>
+                                            <div class="btn-group btn-group-sm ms-1">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary px-2" onclick="setAllClaimPct(100)">100%</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary px-2" onclick="setAllClaimPct(80)">80%</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary px-2" onclick="setAllClaimPct(50)">50%</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Table: Code | Procedure Name | Price (RM) | Claim (%) | Claim (RM) | Remove -->
                                     <div class="table-responsive" style="max-height: 255px; overflow-y: auto;">
                                         <table class="table table-hover table-sm table-bordered mb-0 align-middle small">
                                             <thead class="table-light sticky-top">
                                                 <tr>
-                                                    <th width="18%">Code</th>
+                                                    <th width="14%">Code</th>
                                                     <th>Procedure Name</th>
-                                                    <th width="24%" class="text-end">Price (RM)</th>
-                                                    <th width="15%" class="text-center">Remove</th>
+                                                    <th width="18%" class="text-end">Price (RM)</th>
+                                                    <th width="20%" class="text-center">Claim (%)</th>
+                                                    <th width="18%" class="text-end">Claim (RM)</th>
+                                                    <th width="8%" class="text-center">Remove</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="selectedProcTable">
                                                 <tr id="emptyProcRow">
-                                                    <td colspan="4" class="text-center text-muted py-3">
+                                                    <td colspan="6" class="text-center text-muted py-3">
                                                         <i class="bi bi-info-circle me-1"></i> No procedures added.
                                                     </td>
                                                 </tr>
                                             </tbody>
                                             <tfoot id="selectedProcFooter" class="table-light d-none">
                                                 <tr>
-                                                    <th colspan="2" class="text-end">Total Price:</th>
-                                                    <th class="text-end text-success fw-bold font-monospace" id="procTotalFee">RM 0.00</th>
+                                                    <th colspan="2" class="text-end">Total:</th>
+                                                    <th class="text-end font-monospace" id="procTotalPrice">0.00</th>
+                                                    <th class="text-center text-muted small">Total Claim:</th>
+                                                    <th class="text-end text-success fw-bold font-monospace" id="procTotalClaim">0.00</th>
                                                     <th></th>
                                                 </tr>
                                             </tfoot>
@@ -873,7 +900,7 @@ function renderBillingSummary() {
 }
 
 // ──────────────────────────────────────────────────────────────────
-// Tab 2 — Select Procedures Performed Logic
+// Tab 2 — Select Procedures Performed Logic & Claim Percentage
 // ──────────────────────────────────────────────────────────────────
 $('#addProcBtn').on('click', function () {
     const sel = document.getElementById('procSelect');
@@ -914,6 +941,11 @@ $('#addProcBtn').on('click', function () {
         return;
     }
 
+    // Get current bulk % or default 100
+    let defaultPct = parseFloat($('#bulkClaimPct').val());
+    if (isNaN(defaultPct)) defaultPct = 100;
+    defaultPct = Math.min(100, Math.max(0, defaultPct));
+
     selectedProcedures.push({
         id: procId + '_' + Date.now(),
         proc_id: procId,
@@ -921,7 +953,8 @@ $('#addProcBtn').on('click', function () {
         name: name,
         price: price,
         surgeon_fee: surgeonFee,
-        anaesthetist_fee: anaesthetistFee
+        anaesthetist_fee: anaesthetistFee,
+        claimPct: defaultPct
     });
 
     renderSelectedProcedures();
@@ -933,16 +966,75 @@ function removeProcedure(id) {
     renderSelectedProcedures();
 }
 
+// Set claim percentage for all procedures at once
+function setAllClaimPct(pct) {
+    let num = parseFloat(pct);
+    if (isNaN(num)) num = 100;
+    num = Math.min(100, Math.max(0, num));
+    $('#bulkClaimPct').val(num);
+
+    if (selectedProcedures.length === 0) return;
+
+    selectedProcedures.forEach(p => {
+        p.claimPct = num;
+    });
+
+    renderSelectedProcedures();
+}
+
+$('#btnApplyAllPct').on('click', function () {
+    const val = $('#bulkClaimPct').val();
+    setAllClaimPct(val);
+});
+
+// Update claim percentage for a single procedure
+function updateProcedurePct(id, val) {
+    const p = selectedProcedures.find(x => x.id === id);
+    if (!p) return;
+
+    let num = parseFloat(val);
+    if (isNaN(num)) num = 0;
+    num = Math.min(100, Math.max(0, num));
+    p.claimPct = num;
+
+    const fee = parseFloat(p.price) || 0;
+    const claimAmt = fee * (num / 100);
+
+    const amtEl = document.getElementById('proc_claim_amt_' + id);
+    if (amtEl) {
+        amtEl.textContent = claimAmt.toFixed(2);
+    }
+
+    recalculateProcedureTotals();
+    updateProceduresHiddenInput();
+}
+
+function recalculateProcedureTotals() {
+    let totalPrice = 0;
+    let totalClaim = 0;
+
+    selectedProcedures.forEach(p => {
+        const fee = parseFloat(p.price) || 0;
+        const pct = (typeof p.claimPct !== 'undefined' && p.claimPct !== null) ? parseFloat(p.claimPct) : 100;
+        totalPrice += fee;
+        totalClaim += fee * (pct / 100);
+    });
+
+    const priceEl = document.getElementById('procTotalPrice');
+    const claimEl = document.getElementById('procTotalClaim');
+    if (priceEl) priceEl.textContent = totalPrice.toFixed(2);
+    if (claimEl) claimEl.textContent = totalClaim.toFixed(2);
+}
+
 function renderSelectedProcedures() {
     const tbody = document.getElementById('selectedProcTable');
     const totalCountEl = document.getElementById('procTotalCount');
     const tfoot = document.getElementById('selectedProcFooter');
-    const totalFeeEl = document.getElementById('procTotalFee');
 
     if (!tbody) return;
 
     if (!selectedProcedures || selectedProcedures.length === 0) {
-        tbody.innerHTML = `<tr id="emptyProcRow"><td colspan="4" class="text-center text-muted py-3"><i class="bi bi-info-circle me-1"></i> No procedures added.</td></tr>`;
+        tbody.innerHTML = `<tr id="emptyProcRow"><td colspan="6" class="text-center text-muted py-3"><i class="bi bi-info-circle me-1"></i> No procedures added.</td></tr>`;
         if (totalCountEl) totalCountEl.textContent = '0';
         if (tfoot) tfoot.classList.add('d-none');
         updateProceduresHiddenInput();
@@ -950,17 +1042,32 @@ function renderSelectedProcedures() {
     }
 
     if (totalCountEl) totalCountEl.textContent = selectedProcedures.length;
-    let totalFee = 0;
     let rows = '';
 
     selectedProcedures.forEach((p) => {
         const fee = parseFloat(p.price) || 0;
-        totalFee += fee;
+        const pct = (typeof p.claimPct !== 'undefined' && p.claimPct !== null) ? parseFloat(p.claimPct) : 100;
+        p.claimPct = pct;
+        const claimAmt = fee * (pct / 100);
+
         rows += `
-            <tr>
+            <tr id="proc_row_${p.id}">
                 <td class="font-monospace fw-semibold text-primary">${escapeHtml(p.code)}</td>
-                <td>${escapeHtml(p.name)}</td>
+                <td><span class="fw-semibold">${escapeHtml(p.name)}</span></td>
                 <td class="text-end font-monospace">${fee.toFixed(2)}</td>
+                <td class="text-center">
+                    <div class="input-group input-group-sm justify-content-center mx-auto" style="max-width: 88px;">
+                        <input type="number" class="form-control form-control-sm text-center px-1 font-monospace"
+                               min="0" max="100" step="1"
+                               value="${pct}"
+                               oninput="updateProcedurePct('${p.id}', this.value)"
+                               onchange="updateProcedurePct('${p.id}', this.value)">
+                        <span class="input-group-text px-1 small text-muted">%</span>
+                    </div>
+                </td>
+                <td class="text-end font-monospace fw-bold text-success" id="proc_claim_amt_${p.id}">
+                    ${claimAmt.toFixed(2)}
+                </td>
                 <td class="text-center">
                     <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" onclick="removeProcedure('${p.id}')" title="Remove">
                         <i class="bi bi-trash"></i>
@@ -971,7 +1078,7 @@ function renderSelectedProcedures() {
     });
 
     tbody.innerHTML = rows;
-    if (totalFeeEl) totalFeeEl.textContent = 'RM ' + totalFee.toFixed(2);
+    recalculateProcedureTotals();
     if (tfoot) tfoot.classList.remove('d-none');
 
     updateProceduresHiddenInput();
