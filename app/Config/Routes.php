@@ -61,6 +61,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('getVisitsAll',         'NewApplicationController::getVisitsAll');
         $routes->get('get-patient-context',  'NewApplicationController::getPatientContext');
         $routes->get('getPatientContext',    'NewApplicationController::getPatientContext');
+        $routes->get('check-visit-claim',    'NewApplicationController::checkVisitClaim');
+        $routes->post('check-visit-claim',   'NewApplicationController::checkVisitClaim');
         $routes->post('store-patient',       'NewApplicationController::storePatient');
         $routes->post('submit-claim',        'NewApplicationController::submitClaim');
         $routes->post('submit',              'NewApplicationController::submitClaim');

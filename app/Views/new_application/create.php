@@ -935,8 +935,102 @@ function renderVisitCards(data, type) {
     container.innerHTML = html;
 }
 
-// Select a visit and load patient context & billing
+// Select a visit and check for existing claims (Pendekatan 2)
 function selectVisit(visit) {
+    if (!visit || !visit.visit_id) return;
+
+    // Semak sama ada permohonan telah wujud bagi visit_id ini
+    $.ajax({
+        url: BASE_URL + 'new-application/check-visit-claim',
+        method: 'GET',
+        data: { visit_id: visit.visit_id },
+        dataType: 'json',
+        success: function (res) {
+            if (res && res.status === 'exists' && res.claims && res.claims.length > 0) {
+                // Bina jadual senarai permohonan sedia ada
+                let claimsRows = '';
+                res.claims.forEach(c => {
+                    let stBadge = '<span class="badge bg-warning text-dark">Dihantar</span>';
+                    if (c.status === 'approved') {
+                        stBadge = '<span class="badge bg-success">Diluluskan</span>';
+                    } else if (c.status === 'under_review') {
+                        stBadge = '<span class="badge bg-info">Dalam Semakan</span>';
+                    }
+
+                    claimsRows += `
+                        <tr>
+                            <td class="font-monospace fw-bold text-primary">
+                                <a href="${BASE_URL}new-application/show/${c.id}" target="_blank" class="text-decoration-none" title="Buka Permohonan">
+                                    ${escapeHtml(c.application_no)} <i class="bi bi-box-arrow-up-right small"></i>
+                                </a>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark">${escapeHtml(c.specialist_name)}</div>
+                                <small class="text-muted">${escapeHtml(c.department || '')}</small>
+                            </td>
+                            <td class="text-end font-monospace fw-bold text-success">
+                                RM ${Number(c.total_claim || 0).toFixed(2)}
+                            </td>
+                            <td class="text-center">${stBadge}</td>
+                        </tr>
+                    `;
+                });
+
+                const modalHtml = `
+                    <div class="text-start mb-3">
+                        <div class="alert alert-warning border-warning p-2.5 small mb-3 text-dark">
+                            <i class="bi bi-exclamation-triangle-fill text-warning me-1 fs-6 align-middle"></i>
+                            Terdapat <strong>${res.count} permohonan tuntutan</strong> sedia ada yang telah didaftarkan bagi episod lawatan ini (ID: <code>${escapeHtml(visit.visit_id)}</code>).
+                        </div>
+                        <p class="text-muted small mb-2">
+                            <strong>Makluman:</strong> Satu episod lawatan boleh mempunyai tuntutan berasingan oleh pakar berbeza bagi prosedur masing-masing (cth: Pakar Surgeri & Pakar Bius). Sila pastikan prosedur yang bakal anda tuntut tidak bertindih dengan tuntutan sedia ada di bawah:
+                        </p>
+                        <div class="table-responsive border rounded" style="max-height: 200px; overflow-y: auto;">
+                            <table class="table table-sm table-hover align-middle mb-0 small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>No. Permohonan</th>
+                                        <th>Pakar Pemohon</th>
+                                        <th class="text-end">Jumlah Bersih</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${claimsRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+                Swal.fire({
+                    title: 'Tuntutan Terdahulu Dijumpai',
+                    html: modalHtml,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Teruskan Tuntutan Baharu',
+                    cancelButtonText: '<i class="bi bi-x-circle me-1"></i> Batal & Pilih Lawatan Lain',
+                    confirmButtonColor: '#0d6efd',
+                    cancelButtonColor: '#6c757d',
+                    width: '650px',
+                    allowOutsideClick: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        proceedWithVisitSelection(visit);
+                    }
+                });
+            } else {
+                proceedWithVisitSelection(visit);
+            }
+        },
+        error: function () {
+            // Jika semakan ralat, teruskan pemilihan lawatan seperti biasa
+            proceedWithVisitSelection(visit);
+        }
+    });
+}
+
+function proceedWithVisitSelection(visit) {
     selectedVisit = {
         rn: currentPatient.rn,
         patient_name: currentPatient.name,

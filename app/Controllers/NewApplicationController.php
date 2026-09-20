@@ -264,6 +264,39 @@ class NewApplicationController extends BaseController
     }
 
     // ---------------------------------------------------------------
+    // Semak sama ada permohonan tuntutan pernah wujud bagi visit_id ini
+    // ---------------------------------------------------------------
+    public function checkVisitClaim(): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $visitId = $this->request->getGet('visit_id') ?? $this->request->getPost('visit_id');
+
+        if (empty($visitId)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Visit ID diperlukan.']);
+        }
+
+        $existingClaims = $this->model
+            ->select('id, application_no, specialist_name, staff_number, department, total_gross, total_claim, status, created_at')
+            ->where('visit_id', $visitId)
+            ->whereIn('status', ['submitted', 'under_review', 'approved'])
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        if (!empty($existingClaims)) {
+            return $this->response->setJSON([
+                'status' => 'exists',
+                'count'  => count($existingClaims),
+                'claims' => $existingClaims
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'status' => 'none',
+            'count'  => 0,
+            'claims' => []
+        ]);
+    }
+
+    // ---------------------------------------------------------------
     // Store selected patient in session (Tab 2)
     // ---------------------------------------------------------------
     public function storePatient(): \CodeIgniter\HTTP\ResponseInterface
