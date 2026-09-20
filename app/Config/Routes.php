@@ -100,6 +100,16 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('export',     'ReportsController::export');   // Fungsi eksport Excel/PDF (Jika ada)
     });
 
+    // Modul Pengurusan Prosedur MMA (Tambah / Kemaskini / Padam)
+    $routes->group('procedures', ['filter' => 'auth:admin,manager'], function ($routes) {
+        $routes->get('/',              'ProceduresController::index');
+        $routes->get('create',         'ProceduresController::create');
+        $routes->post('store',         'ProceduresController::store');
+        $routes->get('edit/(:num)',    'ProceduresController::edit/$1');
+        $routes->post('update/(:num)', 'ProceduresController::update/$1');
+        $routes->get('delete/(:num)',  'ProceduresController::delete/$1');
+    });
+
     // ----------------------------------------------------------------
     // 3. KAWALAN KHUSUS ADMIN (Admin-Only Routes)
     // ----------------------------------------------------------------
