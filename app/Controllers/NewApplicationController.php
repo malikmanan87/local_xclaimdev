@@ -423,6 +423,23 @@ class NewApplicationController extends BaseController
             // Clear temporary draft session
             session()->remove(['new_app_specialist', 'new_app_patient', 'new_app_procedures']);
 
+            // Catat log aktiviti ke pangkalan data
+            try {
+                $db = \Config\Database::connect();
+                $db->table('activity_logs')->insert([
+                    'user_id'     => $userId,
+                    'username'    => session('name') ?? $specialistName,
+                    'action'      => 'Hantar Tuntutan',
+                    'description' => "Permohonan tuntutan {$applicationNo} dihantar untuk pesakit {$patientName} (RN: {$patientRn}) berjumlah RM " . number_format($totalClaim, 2),
+                    'ip_address'  => $this->request->getIPAddress(),
+                    'user_agent'  => $this->request->getUserAgent()->getAgentString(),
+                    'created_at'  => date('Y-m-d H:i:s'),
+                ]);
+            } catch (\Throwable $logEx) {
+                // Jangan sekat permohonan jika log gagal
+                log_message('warning', 'Gagal merekod log aktiviti: ' . $logEx->getMessage());
+            }
+
             return $this->response->setJSON([
                 'status'         => 'success',
                 'message'        => 'Permohonan tuntutan berjaya dihantar!',

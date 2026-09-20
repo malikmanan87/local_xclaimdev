@@ -2,28 +2,85 @@
 
 namespace App\Controllers;
 
-use App\Models\ItemModel;
+use App\Models\NewApplicationModel;
+use App\Models\MmaProcedureModel;
 use App\Models\UserModel;
 
 class DashboardController extends BaseController
 {
     public function index()
     {
-        $itemModel = new ItemModel();
-        $userModel = new UserModel();
         $db = \Config\Database::connect();
+        $appModel = new NewApplicationModel();
+        $mmaModel = new MmaProcedureModel();
 
-        // 1. Ambil data ringkasan widget (Kekalkan logik asal anda)
-        $totalItems = $itemModel->countAll();
-        $activeItems = $itemModel->where('status', 'active')->countAllResults();
-        $totalUsers = $userModel->countAll();
+        $userId   = session('user_id');
+        $userRole = session('role_name') ?? session('role') ?? 'user';
+        $isAdmin  = in_array(strtolower($userRole), ['admin', 'manager']);
 
-        // Contoh kira log aktiviti hari ini
-        $todayLogs = $db->table('activity_logs')
-            ->where('created_at >=', date('Y-m-d') . ' 00:00:00')
-            ->countAllResults();
+        // 1. KPI Metrik Utama Sistem Tuntutan
+        $totalClaims        = (int) $db->table('new_applications')->countAllResults();
+        $pendingClaims      = (int) $db->table('new_applications')->whereIn('status', ['submitted', 'under_review'])->countAllResults();
+        $approvedClaims     = (int) $db->table('new_applications')->where('status', 'approved')->countAllResults();
+        $rejectedClaims     = (int) $db->table('new_applications')->where('status', 'rejected')->countAllResults();
+        $draftClaims        = (int) $db->table('new_applications')->where('status', 'draft')->countAllResults();
 
-        // Contoh log aktiviti terkini untuk jadual bawah
+        // Jumlah Kewangan Tuntutan
+        $financialTotals = $db->table('new_applications')
+            ->selectSum('total_gross', 'gross')
+            ->selectSum('total_claim', 'claim')
+            ->selectSum('total_welfare', 'welfare')
+            ->get()
+            ->getRowArray();
+
+        $totalGrossAmount   = (float) ($financialTotals['gross'] ?? 0);
+        $totalClaimAmount   = (float) ($financialTotals['claim'] ?? 0);
+        $totalWelfareAmount = (float) ($financialTotals['welfare'] ?? 0);
+
+        // Bilangan Prosedur MMA dalam Master
+        $totalProcedures = (int) $db->table('mma_procedures')->countAllResults();
+
+        // 2. Trend Bulanan Tahun Semasa (Statistik Tuntutan Bulanan)
+        $currentYear = date('Y');
+        $monthlyQuery = $db->table('new_applications')
+            ->select('MONTH(created_at) as bulan, COUNT(id) as total_count, SUM(total_claim) as total_amt')
+            ->where('YEAR(created_at)', $currentYear)
+            ->groupBy('MONTH(created_at)')
+            ->get()
+            ->getResultArray();
+
+        $monthsCountData  = array_fill(1, 12, 0);
+        $monthsAmountData = array_fill(1, 12, 0.0);
+
+        foreach ($monthlyQuery as $row) {
+            $m = (int) $row['bulan'];
+            $monthsCountData[$m]  = (int) $row['total_count'];
+            $monthsAmountData[$m] = round((float) $row['total_amt'], 2);
+        }
+
+        $monthlyLabels = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'];
+        $monthlyCounts = array_values($monthsCountData);
+        $monthlyAmounts = array_values($monthsAmountData);
+
+        // 3. Taburan Status Permohonan (Pie / Donut)
+        $statusCounts = [
+            'draft'        => $draftClaims,
+            'submitted'    => (int) $db->table('new_applications')->where('status', 'submitted')->countAllResults(),
+            'under_review' => (int) $db->table('new_applications')->where('status', 'under_review')->countAllResults(),
+            'approved'     => $approvedClaims,
+            'rejected'     => $rejectedClaims,
+        ];
+
+        // 4. Permohonan Tuntutan Terkini (Recent Claims)
+        $recentApplications = $db->table('new_applications na')
+            ->select('na.*, u.fullname as creator_name')
+            ->join('users u', 'u.id = na.submitted_by', 'left')
+            ->orderBy('na.created_at', 'DESC')
+            ->limit(6)
+            ->get()
+            ->getResultArray();
+
+        // 5. Log Aktiviti Terkini
         $recentLogs = $db->table('activity_logs al')
             ->select('al.*, u.username')
             ->join('users u', 'u.id = al.user_id', 'left')
@@ -32,48 +89,26 @@ class DashboardController extends BaseController
             ->get()
             ->getResultArray();
 
-        // 🚀 2. LOGIK DATA SEBENAR STATISTIK BULANAN
-        $currentYear = date('Y');
-
-        // Query untuk mengelompokkan jumlah item mengikut bulan bagi tahun semasa
-        $monthlyQuery = $db->table('items')
-            ->select('MONTH(created_at) as bulan, COUNT(id) as total')
-            ->where('YEAR(created_at)', $currentYear)
-            ->groupBy('MONTH(created_at)')
-            ->get()
-            ->getResultArray();
-
-        // Sediakan tatasusunan asas untuk 12 bulan (Jan hingga Dis) dengan nilai awal 0
-        $monthsDataStructure = array_fill(1, 12, 0);
-
-        // Masukkan data sebenar dari DB ke dalam struktur 12 bulan tadi
-        foreach ($monthlyQuery as $row) {
-            $bulanIndex = (int)$row['bulan'];
-            $monthsDataStructure[$bulanIndex] = (int)$row['total'];
-        }
-
-        $monthlyLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-        $monthlyData = array_values($monthsDataStructure);
-
-        $recentItems = $db->table('items i')
-            ->select('i.*, u.fullname as creator_name')
-            ->join('users u', 'u.id = i.created_by', 'left')
-            ->orderBy('i.updated_at', 'DESC')
-            ->limit(5)
-            ->get()
-            ->getResultArray();
-
         return view('dashboard', [
-            'pageTitle'     => 'Main Dashboard',
-            'totalItems'    => $totalItems,
-            'activeItems'   => $activeItems,
-            'totalUsers'    => $totalUsers,
-            'todayLogs'     => $todayLogs,
-            'recentLogs'    => $recentLogs,
-            'monthlyLabels' => $monthlyLabels,
-            'monthlyData'   => $monthlyData,
-            'recentItems'   => $recentItems
+            'pageTitle'          => 'Dashboard Tuntutan Pakar',
+            'userRole'           => $userRole,
+            'isAdmin'            => $isAdmin,
+            'totalClaims'        => $totalClaims,
+            'pendingClaims'      => $pendingClaims,
+            'approvedClaims'     => $approvedClaims,
+            'rejectedClaims'     => $rejectedClaims,
+            'draftClaims'        => $draftClaims,
+            'totalGrossAmount'   => $totalGrossAmount,
+            'totalClaimAmount'   => $totalClaimAmount,
+            'totalWelfareAmount' => $totalWelfareAmount,
+            'totalProcedures'    => $totalProcedures,
+            'monthlyLabels'      => $monthlyLabels,
+            'monthlyCounts'      => $monthlyCounts,
+            'monthlyAmounts'     => $monthlyAmounts,
+            'statusCounts'       => $statusCounts,
+            'recentApplications' => $recentApplications,
+            'recentLogs'         => $recentLogs,
         ]);
     }
 }
+
