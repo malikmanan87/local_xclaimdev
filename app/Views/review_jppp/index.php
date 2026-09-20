@@ -137,13 +137,6 @@
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="8" class="text-center py-4 text-muted fst-italic">
-                                        <i class="bi bi-check2-circle text-success fs-4 d-block mb-1"></i>
-                                        Tiada permohonan yang menunggu semakan JPPP pada masa ini.
-                                    </td>
-                                </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -209,12 +202,6 @@
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="8" class="text-center py-4 text-muted fst-italic">
-                                        Tiada rekod sejarah semakan JPPP.
-                                    </td>
-                                </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -233,10 +220,14 @@ $(document).ready(function() {
     $('.datatable').DataTable({
         pageLength: 10,
         language: {
+            emptyTable: '<div class="py-3 text-muted fst-italic"><i class="bi bi-info-circle me-1"></i> Tiada rekod permohonan dijumpai.</div>',
+            zeroRecords: "Tiada rekod padanan ditemui",
             search: "_INPUT_",
             searchPlaceholder: "Cari permohonan...",
             lengthMenu: "Papar _MENU_ rekod",
             info: "Memaparkan _START_ hingga _END_ daripada _TOTAL_ permohonan",
+            infoEmpty: "Memaparkan 0 hingga 0 daripada 0 permohonan",
+            infoFiltered: "(ditapis daripada _MAX_ jumlah rekod)",
             paginate: {
                 previous: '<i class="bi bi-chevron-left"></i>',
                 next: '<i class="bi bi-chevron-right"></i>'
