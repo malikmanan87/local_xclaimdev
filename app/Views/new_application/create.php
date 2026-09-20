@@ -326,40 +326,113 @@
                         </div>
                     </div>
 
-                    <!-- Billing Summary Card -->
-                    <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
-                        <div class="card-header bg-dark text-white py-2 px-3 d-flex justify-content-between align-items-center">
-                            <span class="fw-semibold small">
-                                <i class="bi bi-file-invoice-dollar me-2 text-warning"></i> Patient Billing Summary
-                            </span>
-                            <div>
-                                <span class="badge bg-primary me-2">
-                                    Total Items: <span class="billTotalItem">0</span>
-                                </span>
-                                <span class="badge bg-success">
-                                    Net Bill: RM <span class="billNetTotal">0.00</span>
-                                </span>
+                    <!-- Side-by-Side: Patient Billing Summary & Select Procedures Performed -->
+                    <div class="row g-3">
+                        <!-- Left: Patient Billing Summary Card -->
+                        <div class="col-lg-6">
+                            <div class="card shadow-sm border-0 rounded-3 overflow-hidden h-100">
+                                <div class="card-header bg-dark text-white py-2 px-3 d-flex justify-content-between align-items-center">
+                                    <span class="fw-semibold small">
+                                        <i class="bi bi-file-invoice-dollar me-2 text-warning"></i> Patient Billing Summary
+                                    </span>
+                                    <div>
+                                        <span class="badge bg-primary me-2">
+                                            Total Items: <span class="billTotalItem">0</span>
+                                        </span>
+                                        <span class="badge bg-success">
+                                            Net Bill: RM <span class="billNetTotal">0.00</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+                                        <table class="table table-hover table-sm table-bordered mb-0 align-middle small">
+                                            <thead class="table-light sticky-top">
+                                                <tr>
+                                                    <th width="6%" class="text-center">#</th>
+                                                    <th>Item Code & Description</th>
+                                                    <th width="8%" class="text-center">Qty</th>
+                                                    <th width="15%" class="text-end">Unit (RM)</th>
+                                                    <th width="15%" class="text-end text-warning">Adj (RM)</th>
+                                                    <th width="15%" class="text-end">Total (RM)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bill-table-body">
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted py-3">Tiada rekod bil.</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                                <table class="table table-hover table-sm table-bordered mb-0 align-middle small">
-                                    <thead class="table-light sticky-top">
-                                        <tr>
-                                            <th width="5%" class="text-center">#</th>
-                                            <th>Item Code & Description</th>
-                                            <th width="8%" class="text-center">Qty</th>
-                                            <th width="14%" class="text-end">Unit Price (RM)</th>
-                                            <th width="14%" class="text-end text-warning">Adjustment (RM)</th>
-                                            <th width="14%" class="text-end">Total (RM)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bill-table-body">
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted py-3">Tiada rekod bil.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+
+                        <!-- Right: Select Procedures Performed Card -->
+                        <div class="col-lg-6">
+                            <div class="card shadow-sm border-0 rounded-3 overflow-hidden h-100">
+                                <div class="card-header bg-dark text-white py-2 px-3 d-flex justify-content-between align-items-center">
+                                    <span class="fw-semibold small">
+                                        <i class="bi bi-clipboard2-pulse me-2 text-info"></i> Select Procedures Performed
+                                    </span>
+                                    <span class="badge bg-info text-dark">
+                                        Selected: <span id="procTotalCount">0</span>
+                                    </span>
+                                </div>
+                                <div class="card-body p-3">
+                                    <!-- Procedure Selection & Add to List -->
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-sm-8 col-12">
+                                            <select class="form-select form-select-sm" id="procSelect">
+                                                <option value="" selected disabled>Choose Procedure...</option>
+                                                <?php if (!empty($masterProcedures)): ?>
+                                                    <?php foreach ($masterProcedures as $p): ?>
+                                                        <option value="<?= $p['id'] ?>"
+                                                            data-code="<?= esc($p['code']) ?>"
+                                                            data-name="<?= esc($p['name']) ?>"
+                                                            data-surgeon-fee="<?= $p['surgeon_fee'] ?>"
+                                                            data-anaesthetist-fee="<?= $p['anaesthetist_fee'] ?>">
+                                                            <?= esc($p['code']) ?> - <?= esc($p['name']) ?> (RM <?= number_format($p['surgeon_fee'], 2) ?>)
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-4 col-12">
+                                            <button type="button" class="btn btn-dark btn-sm w-100 fw-semibold" id="addProcBtn">
+                                                <i class="bi bi-plus-circle me-1"></i> Add to List
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Table: Code | Procedure Name | Price (RM) | Remove -->
+                                    <div class="table-responsive" style="max-height: 255px; overflow-y: auto;">
+                                        <table class="table table-hover table-sm table-bordered mb-0 align-middle small">
+                                            <thead class="table-light sticky-top">
+                                                <tr>
+                                                    <th width="18%">Code</th>
+                                                    <th>Procedure Name</th>
+                                                    <th width="24%" class="text-end">Price (RM)</th>
+                                                    <th width="15%" class="text-center">Remove</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="selectedProcTable">
+                                                <tr id="emptyProcRow">
+                                                    <td colspan="4" class="text-center text-muted py-3">
+                                                        <i class="bi bi-info-circle me-1"></i> No procedures added.
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                            <tfoot id="selectedProcFooter" class="table-light d-none">
+                                                <tr>
+                                                    <th colspan="2" class="text-end">Total Price:</th>
+                                                    <th class="text-end text-success fw-bold font-monospace" id="procTotalFee">RM 0.00</th>
+                                                    <th></th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -374,6 +447,7 @@
                 <input type="hidden" id="selected_patient_name" name="patient_name" value="">
                 <input type="hidden" id="selected_patient_ic" name="patient_ic" value="">
                 <input type="hidden" id="selected_visit_id" name="visit_id" value="">
+                <input type="hidden" id="selected_procedures_json" name="procedures" value="[]">
             </form>
 
             <!-- Navigation Buttons -->
@@ -481,11 +555,12 @@ $('#formSpecialist').on('submit', function (e) {
 // ──────────────────────────────────────────────────────────────────
 // Tab 2 — Search Patient, Visits & Billing via API
 // ──────────────────────────────────────────────────────────────────
-let selectedPatient = null;
-let currentPatient  = { rn: null, name: null, nric: null };
-let visitData       = { outpatient: [], inpatient: [], emergency: [] };
-let selectedVisit   = null;
-let patientContext  = null;
+let selectedPatient    = null;
+let currentPatient     = { rn: null, name: null, nric: null };
+let visitData          = { outpatient: [], inpatient: [], emergency: [] };
+let selectedVisit      = null;
+let patientContext     = null;
+let selectedProcedures = <?= json_encode(session('new_app_procedures') ?? []) ?>;
 
 function performPatientSearch() {
     const rn = $('#search_rn').val().trim();
@@ -796,6 +871,140 @@ function renderBillingSummary() {
         x.textContent = Number(summary.amount || 0).toFixed(2);
     });
 }
+
+// ──────────────────────────────────────────────────────────────────
+// Tab 2 — Select Procedures Performed Logic
+// ──────────────────────────────────────────────────────────────────
+$('#addProcBtn').on('click', function () {
+    const sel = document.getElementById('procSelect');
+    if (!sel || sel.selectedIndex < 0) return;
+    const opt = sel.options[sel.selectedIndex];
+    if (!opt || !opt.value) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Perhatian',
+            text: 'Sila pilih prosedur dari senarai terlebih dahulu.'
+        });
+        return;
+    }
+
+    const procId = opt.value;
+    const code = opt.getAttribute('data-code');
+    const name = opt.getAttribute('data-name');
+    const surgeonFee = parseFloat(opt.getAttribute('data-surgeon-fee')) || 0;
+    const anaesthetistFee = parseFloat(opt.getAttribute('data-anaesthetist-fee')) || 0;
+
+    // Default fee selection: surgeon fee, or anaesthetist fee if role is anaesthetist or surgeon fee is 0
+    const userRole = "<?= strtolower(session('role_name') ?? session('role') ?? '') ?>";
+    let price = surgeonFee;
+    if (userRole === 'anaesthetist') {
+        price = anaesthetistFee;
+    } else if (price === 0 && anaesthetistFee > 0) {
+        price = anaesthetistFee;
+    }
+
+    // Check duplicate
+    const exists = selectedProcedures.some(p => String(p.proc_id) === String(procId));
+    if (exists) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Makluman',
+            text: 'Prosedur ini telah berada di dalam senarai.'
+        });
+        return;
+    }
+
+    selectedProcedures.push({
+        id: procId + '_' + Date.now(),
+        proc_id: procId,
+        code: code,
+        name: name,
+        price: price,
+        surgeon_fee: surgeonFee,
+        anaesthetist_fee: anaesthetistFee
+    });
+
+    renderSelectedProcedures();
+    sel.selectedIndex = 0;
+});
+
+function removeProcedure(id) {
+    selectedProcedures = selectedProcedures.filter(p => p.id !== id);
+    renderSelectedProcedures();
+}
+
+function renderSelectedProcedures() {
+    const tbody = document.getElementById('selectedProcTable');
+    const totalCountEl = document.getElementById('procTotalCount');
+    const tfoot = document.getElementById('selectedProcFooter');
+    const totalFeeEl = document.getElementById('procTotalFee');
+
+    if (!tbody) return;
+
+    if (!selectedProcedures || selectedProcedures.length === 0) {
+        tbody.innerHTML = `<tr id="emptyProcRow"><td colspan="4" class="text-center text-muted py-3"><i class="bi bi-info-circle me-1"></i> No procedures added.</td></tr>`;
+        if (totalCountEl) totalCountEl.textContent = '0';
+        if (tfoot) tfoot.classList.add('d-none');
+        updateProceduresHiddenInput();
+        return;
+    }
+
+    if (totalCountEl) totalCountEl.textContent = selectedProcedures.length;
+    let totalFee = 0;
+    let rows = '';
+
+    selectedProcedures.forEach((p) => {
+        const fee = parseFloat(p.price) || 0;
+        totalFee += fee;
+        rows += `
+            <tr>
+                <td class="font-monospace fw-semibold text-primary">${escapeHtml(p.code)}</td>
+                <td>${escapeHtml(p.name)}</td>
+                <td class="text-end font-monospace">${fee.toFixed(2)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" onclick="removeProcedure('${p.id}')" title="Remove">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = rows;
+    if (totalFeeEl) totalFeeEl.textContent = 'RM ' + totalFee.toFixed(2);
+    if (tfoot) tfoot.classList.remove('d-none');
+
+    updateProceduresHiddenInput();
+}
+
+function updateProceduresHiddenInput() {
+    let input = document.getElementById('selected_procedures_json');
+    if (!input) {
+        input = document.createElement('input');
+        input.type = 'hidden';
+        input.id = 'selected_procedures_json';
+        input.name = 'procedures';
+        const form = document.getElementById('formPatientSelected');
+        if (form) form.appendChild(input);
+    }
+    input.value = JSON.stringify(selectedProcedures);
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+$(document).ready(function () {
+    renderSelectedProcedures();
+});
 
 // Proceed from Tab 2 to Tab 3
 $('#btnNextTab2').on('click', function () {

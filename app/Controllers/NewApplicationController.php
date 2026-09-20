@@ -48,13 +48,17 @@ class NewApplicationController extends BaseController
             $userData = array_merge($userData, array_filter($draft));
         }
 
+        $mmaModel = new \App\Models\MmaProcedureModel();
+        $masterProcedures = $mmaModel->getAllProcedures();
+
         $data = [
-            'pageTitle'  => 'New Application',
-            'breadcrumb' => [
+            'pageTitle'        => 'New Application',
+            'breadcrumb'       => [
                 ['label' => 'New Application', 'url' => base_url('new-application')],
                 'Create',
             ],
-            'userData'   => $userData,
+            'userData'         => $userData,
+            'masterProcedures' => $masterProcedures,
         ];
 
         return view('new_application/create', $data);
@@ -285,9 +289,16 @@ class NewApplicationController extends BaseController
             'visit_id'     => $this->request->getPost('visit_id'),
         ]);
 
+        $proceduresJson = $this->request->getPost('procedures');
+        $procedures = [];
+        if (!empty($proceduresJson)) {
+            $procedures = is_string($proceduresJson) ? json_decode($proceduresJson, true) : $proceduresJson;
+        }
+        session()->set('new_app_procedures', $procedures ?: []);
+
         return $this->response->setJSON([
             'status'  => 'success',
-            'message' => 'Maklumat pesakit dan lawatan disimpan.',
+            'message' => 'Maklumat pesakit, lawatan, dan prosedur berjaya disimpan.',
         ]);
     }
 
