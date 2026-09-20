@@ -541,6 +541,22 @@
                 </div>
             </div>
 
+            <!-- Optional Welfare Fund Toggle Box -->
+            <div class="card border-warning-subtle bg-warning bg-opacity-10 shadow-sm rounded-3 mb-3 p-3">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input fs-5" type="checkbox" role="switch" id="toggleWelfareFund">
+                        <label class="form-check-label fw-semibold text-dark ms-2 pt-1" for="toggleWelfareFund">
+                            <i class="bi bi-heart-pulse-fill text-danger me-1"></i> Sumbang Baki ke Tabung Kebajikan Hospital (Welfare Fund)
+                            <span class="badge bg-secondary ms-1">Pilihan / Optional</span>
+                        </label>
+                    </div>
+                    <div class="text-muted small">
+                        <i class="bi bi-info-circle me-1"></i> Jika tidak diaktifkan, baki potongan tidak disalurkan ke Tabung Kebajikan (RM 0.00).
+                    </div>
+                </div>
+            </div>
+
             <!-- Financial Summary KPI Cards -->
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
@@ -559,9 +575,9 @@
                 </div>
                 <div class="col-md-4">
                     <div class="card border-0 shadow-sm rounded-3 bg-warning bg-opacity-10 text-center p-3 border-start border-warning border-4">
-                        <div class="text-warning-emphasis small fw-semibold text-uppercase">Tabung Kebajikan (Welfare Fund)</div>
+                        <div class="text-warning-emphasis small fw-semibold text-uppercase">Tabung Kebajikan (Pilihan)</div>
                         <div class="fs-4 fw-bold font-monospace text-warning-emphasis mt-1" id="tab3_kpi_welfare">RM 0.00</div>
-                        <div class="small text-muted">Baki Sumbangan Tabung</div>
+                        <div class="small text-muted" id="tab3_kpi_welfare_status"><i class="bi bi-dash-circle me-1"></i>Tidak Diaktifkan</div>
                     </div>
                 </div>
             </div>
@@ -587,7 +603,7 @@
                                     <th width="16%" class="text-end">Harga Asal (RM)</th>
                                     <th width="14%">Tuntutan (%)</th>
                                     <th width="18%" class="text-end text-success fw-bold">Jumlah Bersih Tuntutan (RM)</th>
-                                    <th width="18%" class="text-end text-warning-emphasis">Tabung Kebajikan (RM)</th>
+                                    <th width="18%" class="text-end text-warning-emphasis">Tabung Kebajikan (Pilihan) (RM)</th>
                                 </tr>
                             </thead>
                             <tbody id="tab3ClaimTableBody">
@@ -1321,12 +1337,13 @@ function renderTab3ClaimDetails() {
     let claimTotal   = 0;
     let welfareTotal = 0;
     let rows         = '';
+    const isWelfareEnabled = $('#toggleWelfareFund').is(':checked');
 
     selectedProcedures.forEach((p, idx) => {
         const fee        = parseFloat(p.price) || 0;
         const pct        = (typeof p.claimPct !== 'undefined' && p.claimPct !== null) ? parseFloat(p.claimPct) : 100;
         const claimAmt   = fee * (pct / 100);
-        const welfareAmt = fee - claimAmt;
+        const welfareAmt = isWelfareEnabled ? (fee - claimAmt) : 0;
 
         grossTotal   += fee;
         claimTotal   += claimAmt;
@@ -1346,8 +1363,8 @@ function renderTab3ClaimDetails() {
                 <td class="text-end font-monospace fw-bold text-success">
                     RM ${claimAmt.toFixed(2)}
                 </td>
-                <td class="text-end font-monospace text-warning-emphasis fw-semibold">
-                    RM ${welfareAmt.toFixed(2)}
+                <td class="text-end font-monospace ${isWelfareEnabled ? 'text-warning-emphasis fw-semibold' : 'text-muted'}">
+                    ${isWelfareEnabled ? 'RM ' + welfareAmt.toFixed(2) : '<span class="fst-italic text-muted">—</span>'}
                 </td>
             </tr>
         `;
@@ -1366,10 +1383,20 @@ function renderTab3ClaimDetails() {
     $('#tab3_footer_avg_pct').text(avgPct);
 }
 
+// Toggle listener for Welfare Fund switch
+$('#toggleWelfareFund').on('change', function () {
+    renderTab3ClaimDetails();
+});
+
 function updateTab3KPIs(gross, claim, welfare) {
+    const isWelfareEnabled = $('#toggleWelfareFund').is(':checked');
     $('#tab3_kpi_gross').text('RM ' + gross.toFixed(2));
     $('#tab3_kpi_claim').text('RM ' + claim.toFixed(2));
     $('#tab3_kpi_welfare').text('RM ' + welfare.toFixed(2));
+    $('#tab3_kpi_welfare_status').html(isWelfareEnabled 
+        ? '<span class="text-success fw-medium"><i class="bi bi-check-circle me-1"></i>Diaktifkan</span>' 
+        : '<span class="text-muted"><i class="bi bi-dash-circle me-1"></i>Tidak Diaktifkan</span>'
+    );
 }
 
 // AI Auto Suggest (80/20 rule)
@@ -1385,13 +1412,16 @@ function runAISuggestions() {
         p.claimPct = fee > 500 ? 80 : 100;
     });
 
+    // Auto-enable welfare toggle when AI suggestion is chosen
+    $('#toggleWelfareFund').prop('checked', true);
+
     renderSelectedProcedures();
     renderTab3ClaimDetails();
 
     Swal.fire({
         icon: 'info',
         title: 'AI Auto-Suggest Selesai',
-        text: 'Prosedur bernilai tinggi (>RM 500) diselaraskan kepada 80% tuntutan dan 20% Tabung Kebajikan.'
+        text: 'Prosedur bernilai tinggi (>RM 500) diselaraskan kepada 80% tuntutan. Sumbangan Tabung Kebajikan (20%) diaktifkan secara pilihan (boleh dinyahaktifkan bila-bila masa).'
     });
 }
 
@@ -1412,13 +1442,15 @@ $('#btnSubmitClaimApp').on('click', function () {
         return;
     }
 
+    const isWelfare = $('#toggleWelfareFund').is(':checked');
+
     Swal.fire({
         title: 'Hantar Permohonan Tuntutan?',
         html: `<p class="mb-2">Adakah anda pasti untuk menghantar tuntutan ini?</p>
                <div class="text-start p-3 bg-light rounded small border">
                    <div><strong>Jumlah Kasar:</strong> RM ${tab3Totals.gross.toFixed(2)}</div>
                    <div><strong>Jumlah Bersih Tuntutan:</strong> <span class="text-success fw-bold">RM ${tab3Totals.claim.toFixed(2)}</span></div>
-                   <div><strong>Tabung Kebajikan:</strong> RM ${tab3Totals.welfare.toFixed(2)}</div>
+                   <div><strong>Tabung Kebajikan:</strong> ${isWelfare ? 'RM ' + tab3Totals.welfare.toFixed(2) : '<span class="text-muted">Tiada (Pilihan tidak aktif)</span>'}</div>
                </div>`,
         icon: 'question',
         showCancelButton: true,
@@ -1436,6 +1468,8 @@ function submitFinalClaim() {
     const btn = $('#btnSubmitClaimApp');
     btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Menghantar Permohonan...');
 
+    const isWelfare = $('#toggleWelfareFund').is(':checked');
+
     const payload = {
         '<?= csrf_token() ?>': $('[name="<?= csrf_token() ?>"]').val() || '<?= csrf_hash() ?>',
         patient_rn: selectedVisit?.rn || currentPatient.rn || $('#selected_patient_rn').val(),
@@ -1443,7 +1477,8 @@ function submitFinalClaim() {
         patient_ic: selectedVisit?.nric || currentPatient.nric || $('#selected_patient_ic').val(),
         visit_id: selectedVisit?.visit?.visit_id || $('#selected_visit_id').val(),
         procedures: JSON.stringify(selectedProcedures),
-        remarks: $('#claim_remarks').val().trim()
+        remarks: $('#claim_remarks').val().trim(),
+        include_welfare: isWelfare ? 1 : 0
     };
 
     $.ajax({

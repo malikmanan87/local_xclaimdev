@@ -362,15 +362,16 @@ class NewApplicationController extends BaseController
         }
 
         // Calculate totals
-        $totalGross   = 0;
-        $totalClaim   = 0;
-        $totalWelfare = 0;
+        $totalGross     = 0;
+        $totalClaim     = 0;
+        $totalWelfare   = 0;
+        $includeWelfare = (bool) $this->request->getPost('include_welfare');
 
         foreach ($procedures as $p) {
             $price      = (float) ($p['price'] ?? 0);
             $pct        = isset($p['claimPct']) ? (float) $p['claimPct'] : 100;
             $claimAmt   = $price * ($pct / 100);
-            $welfareAmt = $price - $claimAmt;
+            $welfareAmt = $includeWelfare ? ($price - $claimAmt) : 0.00;
 
             $totalGross   += $price;
             $totalClaim   += $claimAmt;

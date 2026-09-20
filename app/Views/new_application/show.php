@@ -123,11 +123,13 @@ $procedures = !empty($application['procedures_data']) ? json_decode($application
             </div>
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm rounded-3 bg-warning bg-opacity-10 text-center p-3 border-start border-warning border-4">
-                    <div class="text-warning-emphasis small fw-semibold text-uppercase">Tabung Kebajikan</div>
+                    <div class="text-warning-emphasis small fw-semibold text-uppercase">Tabung Kebajikan (Pilihan)</div>
                     <div class="fs-4 fw-bold font-monospace text-warning-emphasis mt-1">
                         RM <?= number_format($application['total_welfare'] ?? 0, 2) ?>
                     </div>
-                    <div class="small text-muted">Sumbangan Hospital</div>
+                    <div class="small text-muted">
+                        <?= ($application['total_welfare'] ?? 0) > 0 ? 'Sumbangan Diaktifkan' : 'Tidak Diaktifkan (Pilihan)' ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -153,18 +155,19 @@ $procedures = !empty($application['procedures_data']) ? json_decode($application
                                 <th width="16%" class="text-end">Harga Asal (RM)</th>
                                 <th width="14%">Tuntutan (%)</th>
                                 <th width="18%" class="text-end text-success fw-bold">Jumlah Bersih Tuntutan (RM)</th>
-                                <th width="18%" class="text-end text-warning-emphasis">Tabung Kebajikan (RM)</th>
+                                <th width="18%" class="text-end text-warning-emphasis">Tabung Kebajikan (Pilihan) (RM)</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (!empty($procedures)): ?>
-                                <?php foreach ($procedures as $idx => $p): ?>
-                                    <?php
+                                <?php 
+                                $hasWelfare = ($application['total_welfare'] ?? 0) > 0;
+                                foreach ($procedures as $idx => $p): 
                                     $fee = (float) ($p['price'] ?? 0);
                                     $pct = isset($p['claimPct']) ? (float) $p['claimPct'] : 100;
                                     $claimAmt = $fee * ($pct / 100);
-                                    $welfareAmt = $fee - $claimAmt;
-                                    ?>
+                                    $welfareAmt = $hasWelfare ? ($fee - $claimAmt) : 0;
+                                ?>
                                     <tr>
                                         <td class="text-center text-muted"><?= $idx + 1 ?></td>
                                         <td class="text-center font-monospace fw-semibold text-primary"><?= esc($p['code'] ?? '-') ?></td>
@@ -180,8 +183,8 @@ $procedures = !empty($application['procedures_data']) ? json_decode($application
                                         <td class="text-end font-monospace fw-bold text-success">
                                             RM <?= number_format($claimAmt, 2) ?>
                                         </td>
-                                        <td class="text-end font-monospace text-warning-emphasis fw-semibold">
-                                            RM <?= number_format($welfareAmt, 2) ?>
+                                        <td class="text-end font-monospace <?= $hasWelfare ? 'text-warning-emphasis fw-semibold' : 'text-muted' ?>">
+                                            <?= $hasWelfare ? 'RM ' . number_format($welfareAmt, 2) : '<span class="fst-italic text-muted">—</span>' ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
