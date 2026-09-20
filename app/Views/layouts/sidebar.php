@@ -37,13 +37,6 @@ $segment1 = $uri->getSegment(1);
                 </a>
             </li>
 
-            <li class="menu-item <?= $segment1 === 'reports' ? 'active' : '' ?>">
-                <a href="<?= base_url('reports') ?>" class="menu-link">
-                    <span class="menu-icon"><i class="bi bi-file-earmark-bar-graph-fill"></i></span>
-                    <span class="menu-label">Reports</span>
-                </a>
-            </li>
-
             <?php
             $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
             $canReviewJppp     = in_array($userRole, ['admin', 'manager', 'jppp']);
@@ -96,6 +89,13 @@ $segment1 = $uri->getSegment(1);
                         </a>
                     </li>
                 <?php endif; ?>
+
+                <li class="menu-item <?= $segment1 === 'reports' ? 'active' : '' ?>">
+                    <a href="<?= base_url('reports') ?>" class="menu-link">
+                        <span class="menu-icon"><i class="bi bi-file-earmark-bar-graph-fill"></i></span>
+                        <span class="menu-label">Reports</span>
+                    </a>
+                </li>
             <?php endif; ?>
 
             <?php if (session('role') === 'admin'): ?>
