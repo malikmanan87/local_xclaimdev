@@ -49,16 +49,6 @@ $segment1 = $uri->getSegment(1);
             $canManageProcedures = in_array($userRole, ['admin', 'manager']);
             $canReviewJppp = in_array($userRole, ['admin', 'manager', 'jppp']);
             $canReviewFin  = in_array($userRole, ['admin', 'manager', 'kewangan']);
-            ?>
-
-            <?php if ($canManageProcedures): ?>
-            <li class="menu-item <?= $segment1 === 'procedures' ? 'active' : '' ?>">
-                <a href="<?= base_url('procedures') ?>" class="menu-link">
-                    <span class="menu-icon"><i class="bi bi-clipboard2-pulse-fill"></i></span>
-                    <span class="menu-label">Prosedur MMA</span>
-                </a>
-            </li>
-            <?php endif; ?>
 
             $pendingJpppBadge = 0;
             $pendingFinBadge  = 0;
@@ -70,6 +60,15 @@ $segment1 = $uri->getSegment(1);
                 } catch (\Throwable $e) {}
             }
             ?>
+
+            <?php if ($canManageProcedures): ?>
+            <li class="menu-item <?= $segment1 === 'procedures' ? 'active' : '' ?>">
+                <a href="<?= base_url('procedures') ?>" class="menu-link">
+                    <span class="menu-icon"><i class="bi bi-clipboard2-pulse-fill"></i></span>
+                    <span class="menu-label">Prosedur MMA</span>
+                </a>
+            </li>
+            <?php endif; ?>
 
             <?php if ($canReviewJppp || $canReviewFin): ?>
                 <li class="menu-separator"><span>Semakan & Kelulusan</span></li>
