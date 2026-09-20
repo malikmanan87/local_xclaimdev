@@ -28,7 +28,7 @@ $segment1 = $uri->getSegment(1);
                 </a>
             </li>
 
-            <li class="menu-separator"><span>Module Management</span></li>
+            <li class="menu-separator"><span>User Menu</span></li>
 
             <li class="menu-item <?= $segment1 === 'new-application' ? 'active' : '' ?>">
                 <a href="<?= base_url('new-application') ?>" class="menu-link">
@@ -46,9 +46,9 @@ $segment1 = $uri->getSegment(1);
 
             <?php
             $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
-            $canManageProcedures = in_array($userRole, ['admin', 'manager']);
-            $canReviewJppp = in_array($userRole, ['admin', 'manager', 'jppp']);
-            $canReviewFin  = in_array($userRole, ['admin', 'manager', 'kewangan']);
+            $canReviewJppp     = in_array($userRole, ['admin', 'manager', 'jppp']);
+            $canReviewFin      = in_array($userRole, ['admin', 'manager', 'kewangan']);
+            $canViewProcedures = in_array($userRole, ['admin', 'manager', 'jppp', 'kewangan']);
 
             $pendingJpppBadge = 0;
             $pendingFinBadge  = 0;
@@ -61,16 +61,7 @@ $segment1 = $uri->getSegment(1);
             }
             ?>
 
-            <?php if ($canManageProcedures): ?>
-            <li class="menu-item <?= $segment1 === 'procedures' ? 'active' : '' ?>">
-                <a href="<?= base_url('procedures') ?>" class="menu-link">
-                    <span class="menu-icon"><i class="bi bi-clipboard2-pulse-fill"></i></span>
-                    <span class="menu-label">Prosedur MMA</span>
-                </a>
-            </li>
-            <?php endif; ?>
-
-            <?php if ($canReviewJppp || $canReviewFin): ?>
+            <?php if ($canReviewJppp || $canReviewFin || $canViewProcedures): ?>
                 <li class="menu-separator"><span>Semakan & Kelulusan</span></li>
 
                 <?php if ($canReviewJppp): ?>
@@ -96,10 +87,19 @@ $segment1 = $uri->getSegment(1);
                         </a>
                     </li>
                 <?php endif; ?>
+
+                <?php if ($canViewProcedures): ?>
+                    <li class="menu-item <?= $segment1 === 'procedures' ? 'active' : '' ?>">
+                        <a href="<?= base_url('procedures') ?>" class="menu-link">
+                            <span class="menu-icon"><i class="bi bi-journal-medical"></i></span>
+                            <span class="menu-label">Prosedur MMA</span>
+                        </a>
+                    </li>
+                <?php endif; ?>
             <?php endif; ?>
 
             <?php if (session('role') === 'admin'): ?>
-                <li class="menu-separator"><span>System Administration</span></li>
+                <li class="menu-separator"><span>System Admin</span></li>
 
                 <li class="menu-item <?= $segment1 === 'users' ? 'active' : '' ?>">
                     <a href="<?= base_url('users') ?>" class="menu-link">
@@ -111,14 +111,7 @@ $segment1 = $uri->getSegment(1);
                 <li class="menu-item <?= $segment1 === 'roles' ? 'active' : '' ?>">
                     <a href="<?= base_url('roles') ?>" class="menu-link">
                         <span class="menu-icon"><i class="bi bi-shield-lock-fill"></i></span>
-                        <span class="menu-label">Roles & Permissions</span>
-                    </a>
-                </li>
-
-                <li class="menu-item <?= $segment1 === 'activity-logs' ? 'active' : '' ?>">
-                    <a href="<?= base_url('activity-logs') ?>" class="menu-link">
-                        <span class="menu-icon"><i class="bi bi-journal-text"></i></span>
-                        <span class="menu-label">Activity Logs</span>
+                        <span class="menu-label">Roles & Permission</span>
                     </a>
                 </li>
 
@@ -126,6 +119,13 @@ $segment1 = $uri->getSegment(1);
                     <a href="<?= base_url('access-requests') ?>" class="menu-link">
                         <span class="menu-icon"><i class="bi bi-person-check-fill"></i></span>
                         <span class="menu-label">Access Requests</span>
+                    </a>
+                </li>
+
+                <li class="menu-item <?= $segment1 === 'activity-logs' ? 'active' : '' ?>">
+                    <a href="<?= base_url('activity-logs') ?>" class="menu-link">
+                        <span class="menu-icon"><i class="bi bi-journal-text"></i></span>
+                        <span class="menu-label">Activity Logs</span>
                     </a>
                 </li>
 
