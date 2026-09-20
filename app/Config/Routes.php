@@ -74,6 +74,20 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('getPatientContext',    'NewApplicationController::getPatientContext');
     });
 
+    // Modul Semakan Permohonan JPPP
+    $routes->group('review-jppp', function ($routes) {
+        $routes->get('/',                    'ReviewJpppController::index');
+        $routes->get('show/(:num)',          'ReviewJpppController::show/$1');
+        $routes->post('process/(:num)',      'ReviewJpppController::process/$1');
+    });
+
+    // Modul Semakan & Kelulusan Kewangan
+    $routes->group('review-kewangan', function ($routes) {
+        $routes->get('/',                    'ReviewKewanganController::index');
+        $routes->get('show/(:num)',          'ReviewKewanganController::show/$1');
+        $routes->post('process/(:num)',      'ReviewKewanganController::process/$1');
+    });
+
     // 🚀 KEMASKINI MODUL LAPORAN (Menyokong GET, POST, & Sub-URL Jana Laporan)
     $routes->group('reports', function ($routes) {
         $routes->get('/',          'ReportsController::index');    // Papar halaman laporan (GET)

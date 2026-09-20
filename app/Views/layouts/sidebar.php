@@ -44,6 +44,50 @@ $segment1 = $uri->getSegment(1);
                 </a>
             </li>
 
+            <?php
+            $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
+            $canReviewJppp = in_array($userRole, ['admin', 'manager', 'jppp']);
+            $canReviewFin  = in_array($userRole, ['admin', 'manager', 'kewangan']);
+
+            $pendingJpppBadge = 0;
+            $pendingFinBadge  = 0;
+            if ($canReviewJppp || $canReviewFin) {
+                try {
+                    $sidebarAppModel = new \App\Models\NewApplicationModel();
+                    if ($canReviewJppp) $pendingJpppBadge = $sidebarAppModel->getPendingJpppCount();
+                    if ($canReviewFin)  $pendingFinBadge  = $sidebarAppModel->getPendingFinanceCount();
+                } catch (\Throwable $e) {}
+            }
+            ?>
+
+            <?php if ($canReviewJppp || $canReviewFin): ?>
+                <li class="menu-separator"><span>Semakan & Kelulusan</span></li>
+
+                <?php if ($canReviewJppp): ?>
+                    <li class="menu-item <?= $segment1 === 'review-jppp' ? 'active' : '' ?>">
+                        <a href="<?= base_url('review-jppp') ?>" class="menu-link">
+                            <span class="menu-icon"><i class="bi bi-clipboard2-pulse-fill"></i></span>
+                            <span class="menu-label">Semakan JPPP</span>
+                            <?php if ($pendingJpppBadge > 0): ?>
+                                <span class="badge bg-warning text-dark rounded-pill ms-auto" style="font-size: 0.68rem;"><?= $pendingJpppBadge ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+                <?php endif; ?>
+
+                <?php if ($canReviewFin): ?>
+                    <li class="menu-item <?= $segment1 === 'review-kewangan' ? 'active' : '' ?>">
+                        <a href="<?= base_url('review-kewangan') ?>" class="menu-link">
+                            <span class="menu-icon"><i class="bi bi-cash-coin"></i></span>
+                            <span class="menu-label">Semakan Kewangan</span>
+                            <?php if ($pendingFinBadge > 0): ?>
+                                <span class="badge bg-success text-white rounded-pill ms-auto" style="font-size: 0.68rem;"><?= $pendingFinBadge ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+                <?php endif; ?>
+            <?php endif; ?>
+
             <?php if (session('role') === 'admin'): ?>
                 <li class="menu-separator"><span>System Administration</span></li>
 

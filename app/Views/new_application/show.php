@@ -215,10 +215,76 @@ $procedures = !empty($application['procedures_data']) ? json_decode($application
             </div>
         </div>
 
+        <!-- Aliran Status & Keputusan Semakan (JPPP & Kewangan) -->
+        <div class="row g-3 mb-4 d-print-none">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-3 h-100 <?= ($application['jppp_status'] ?? '') === 'approved' ? 'border-start border-success border-4' : (($application['jppp_status'] ?? '') === 'rejected' ? 'border-start border-danger border-4' : 'border-start border-warning border-4') ?>">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold small text-uppercase text-secondary">
+                                <i class="bi bi-clipboard2-pulse me-1 text-primary"></i> 1. Semakan JPPP
+                            </span>
+                            <?php if (($application['jppp_status'] ?? '') === 'approved'): ?>
+                                <span class="badge-status badge-status-success">Disahkan & Disokong</span>
+                            <?php elseif (($application['jppp_status'] ?? '') === 'rejected'): ?>
+                                <span class="badge-status badge-status-danger">Ditolak</span>
+                            <?php else: ?>
+                                <span class="badge-status badge-status-warning">Menunggu Semakan</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="small">
+                            <?php if (!empty($application['jppp_verified_at'])): ?>
+                                <div><strong>Pegawai JPPP:</strong> <?= esc($application['jppp_reviewer_name'] ?? 'Pegawai JPPP') ?></div>
+                                <div class="text-muted">Tarikh: <?= date('d/m/Y h:i A', strtotime($application['jppp_verified_at'])) ?></div>
+                                <?php if (!empty($application['jppp_remarks'])): ?>
+                                    <div class="mt-1 text-dark fst-italic">Catatan: "<?= esc($application['jppp_remarks']) ?>"</div>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <span class="text-muted fst-italic">Dalam giliran semakan Jawatankuasa JPPP.</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-3 h-100 <?= ($application['finance_status'] ?? '') === 'approved' ? 'border-start border-success border-4' : (($application['finance_status'] ?? '') === 'rejected' ? 'border-start border-danger border-4' : 'border-start border-secondary border-4') ?>">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold small text-uppercase text-secondary">
+                                <i class="bi bi-cash-coin me-1 text-success"></i> 2. Kelulusan Kewangan
+                            </span>
+                            <?php if (($application['finance_status'] ?? '') === 'approved'): ?>
+                                <span class="badge-status badge-status-success">Diluluskan Bayaran</span>
+                            <?php elseif (($application['finance_status'] ?? '') === 'rejected'): ?>
+                                <span class="badge-status badge-status-danger">Ditolak</span>
+                            <?php else: ?>
+                                <span class="badge-status badge-status-warning">Menunggu</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="small">
+                            <?php if (!empty($application['finance_verified_at'])): ?>
+                                <div><strong>Pegawai Kewangan:</strong> <?= esc($application['finance_reviewer_name'] ?? 'Pegawai Kewangan') ?></div>
+                                <?php if (!empty($application['finance_voucher_no'])): ?>
+                                    <div><strong>No. Baucar:</strong> <span class="font-monospace text-primary fw-bold"><?= esc($application['finance_voucher_no']) ?></span></div>
+                                <?php endif; ?>
+                                <div class="text-muted">Tarikh: <?= date('d/m/Y h:i A', strtotime($application['finance_verified_at'])) ?></div>
+                                <?php if (!empty($application['finance_remarks'])): ?>
+                                    <div class="mt-1 text-dark fst-italic">Catatan: "<?= esc($application['finance_remarks']) ?>"</div>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <span class="text-muted fst-italic">Menunggu tindakan kelulusan Bahagian Kewangan.</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <?php if (!empty($application['remarks'])): ?>
             <div class="card shadow-sm border-0 rounded-3 bg-light mb-4">
                 <div class="card-body p-3 small">
-                    <span class="fw-semibold text-secondary"><i class="bi bi-chat-left-text me-1"></i> Catatan:</span>
+                    <span class="fw-semibold text-secondary"><i class="bi bi-chat-left-text me-1"></i> Catatan Pemohon:</span>
                     <p class="mb-0 text-dark mt-1"><?= nl2br(esc($application['remarks'])) ?></p>
                 </div>
             </div>
@@ -226,33 +292,55 @@ $procedures = !empty($application['procedures_data']) ? json_decode($application
 
         <!-- Signatures & Verification Section (Print Only) -->
         <div class="d-none d-print-block print-signature-area pt-3">
-            <div class="row g-4">
-                <div class="col-6">
-                    <div class="border rounded p-3 text-center h-100 d-flex flex-column justify-content-between" style="min-height: 180px;">
+            <div class="row g-3">
+                <div class="col-4">
+                    <div class="border rounded p-2.5 text-center h-100 d-flex flex-column justify-content-between" style="min-height: 170px;">
                         <div>
-                            <div class="fw-bold small text-uppercase text-decoration-underline mb-1">Pengesahan Pemohon (Pakar)</div>
-                            <div class="small text-muted fst-italic">Saya mengesahkan bahawa segala butiran tuntutan prosedur perkhidmatan ini adalah tepat dan benar.</div>
+                            <div class="fw-bold small text-uppercase text-decoration-underline mb-1">1. Pengesahan Pemohon (Pakar)</div>
+                            <div class="small text-muted fst-italic" style="font-size: 0.72rem;">Saya mengesahkan bahawa segala butiran tuntutan ini adalah tepat dan benar.</div>
                         </div>
-                        <div class="mt-4 pt-4 border-top">
+                        <div class="mt-3 pt-3 border-top">
                             <div class="fw-bold small"><?= esc($application['specialist_name']) ?></div>
-                            <div class="small text-muted">No. Staf: <?= esc($application['staff_number']) ?> &bull; Tarikh: <?= date('d/m/Y') ?></div>
+                            <div class="small text-muted" style="font-size: 0.7rem;">No. Staf: <?= esc($application['staff_number']) ?> &bull; Tarikh: <?= date('d/m/Y') ?></div>
                         </div>
                     </div>
                 </div>
-                <div class="col-6">
-                    <div class="border rounded p-3 text-center h-100 d-flex flex-column justify-content-between" style="min-height: 180px;">
+                <div class="col-4">
+                    <div class="border rounded p-2.5 text-center h-100 d-flex flex-column justify-content-between" style="min-height: 170px;">
                         <div>
-                            <div class="fw-bold small text-uppercase text-decoration-underline mb-1">Sokongan / Perakuan Ketua Jabatan</div>
-                            <div class="small text-muted fst-italic">Permohonan disokong / diperakui untuk tindakan bahagian kewangan.</div>
+                            <div class="fw-bold small text-uppercase text-decoration-underline mb-1">2. Perakuan JPPP</div>
+                            <div class="small text-muted fst-italic" style="font-size: 0.72rem;">Disahkan & disokong untuk kelulusan Bahagian Kewangan.</div>
                         </div>
-                        <div class="mt-4 pt-4 border-top">
-                            <div class="small text-muted mb-1">(Tandatangan & Cop Rasmi Jabatan)</div>
-                            <div class="small text-muted">Tarikh: ............................................</div>
+                        <div class="mt-3 pt-3 border-top">
+                            <?php if (!empty($application['jppp_verified_at'])): ?>
+                                <div class="fw-bold small"><?= esc($application['jppp_reviewer_name'] ?? 'Pegawai JPPP') ?></div>
+                                <div class="small text-muted" style="font-size: 0.7rem;">Tarikh: <?= date('d/m/Y', strtotime($application['jppp_verified_at'])) ?> (DISOKONG)</div>
+                            <?php else: ?>
+                                <div class="small text-muted mb-1">(Tandatangan & Cop JPPP)</div>
+                                <div class="small text-muted" style="font-size: 0.7rem;">Tarikh: ..............................</div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="border rounded p-2.5 text-center h-100 d-flex flex-column justify-content-between" style="min-height: 170px;">
+                        <div>
+                            <div class="fw-bold small text-uppercase text-decoration-underline mb-1">3. Kelulusan Kewangan</div>
+                            <div class="small text-muted fst-italic" style="font-size: 0.72rem;">Diluluskan untuk pembayaran baucar ke akaun pakar.</div>
+                        </div>
+                        <div class="mt-3 pt-3 border-top">
+                            <?php if (!empty($application['finance_verified_at'])): ?>
+                                <div class="fw-bold small"><?= esc($application['finance_reviewer_name'] ?? 'Pegawai Kewangan') ?></div>
+                                <div class="small text-muted" style="font-size: 0.7rem;">Baucar: <?= esc($application['finance_voucher_no'] ?? '-') ?> &bull; <?= date('d/m/Y', strtotime($application['finance_verified_at'])) ?></div>
+                            <?php else: ?>
+                                <div class="small text-muted mb-1">(Tandatangan & Cop Kewangan)</div>
+                                <div class="small text-muted" style="font-size: 0.7rem;">Tarikh: ..............................</div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="text-center text-muted small mt-4 pt-2 border-top">
+            <div class="text-center text-muted small mt-3 pt-2 border-top" style="font-size: 0.72rem;">
                 Sistem Pengurusan Tuntutan Pakar (X-Claim) &bull; Hospital Pengajar Universiti Sultan Zainal Abidin (HPUniSZA)
             </div>
         </div>
