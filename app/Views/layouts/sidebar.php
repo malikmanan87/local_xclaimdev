@@ -108,17 +108,17 @@ $segment1 = $uri->getSegment(1);
                     </a>
                 </li>
 
-                <li class="menu-item <?= $segment1 === 'roles' ? 'active' : '' ?>">
-                    <a href="<?= base_url('roles') ?>" class="menu-link">
-                        <span class="menu-icon"><i class="bi bi-shield-lock-fill"></i></span>
-                        <span class="menu-label">Roles & Permission</span>
-                    </a>
-                </li>
-
                 <li class="menu-item <?= $segment1 === 'access-requests' ? 'active' : '' ?>">
                     <a href="<?= base_url('access-requests') ?>" class="menu-link">
                         <span class="menu-icon"><i class="bi bi-person-check-fill"></i></span>
                         <span class="menu-label">Access Requests</span>
+                    </a>
+                </li>
+
+                <li class="menu-item <?= $segment1 === 'roles' ? 'active' : '' ?>">
+                    <a href="<?= base_url('roles') ?>" class="menu-link">
+                        <span class="menu-icon"><i class="bi bi-shield-lock-fill"></i></span>
+                        <span class="menu-label">Roles & Permission</span>
                     </a>
                 </li>
 
