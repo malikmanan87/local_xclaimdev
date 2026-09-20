@@ -1490,12 +1490,29 @@ function submitFinalClaim() {
             if (res.status === 'success') {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Berjaya Dihantar!',
-                    html: `Permohonan tuntutan anda telah berjaya disimpan dan dihantar.<br><strong>No. Rujukan:</strong> <span class="badge bg-primary fs-6 font-monospace mt-2">${res.application_no}</span>`,
-                    confirmButtonText: 'Lihat Senarai Permohonan',
+                    title: 'Permohonan Berjaya Dihantar!',
+                    html: `
+                        <div class="text-center mb-3">
+                            <p class="mb-2">Permohonan tuntutan anda telah berjaya disimpan dan dihantar.</p>
+                            <div class="p-2 bg-light rounded border d-inline-block">
+                                <span class="text-muted small">No. Rujukan:</span><br>
+                                <strong class="fs-5 text-primary font-monospace">${res.application_no}</strong>
+                            </div>
+                        </div>
+                        <p class="small text-muted mb-0">Adakah anda ingin mencetak borang permohonan ini sekarang?</p>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bi bi-printer-fill me-1"></i> Cetak Permohonan',
+                    cancelButtonText: '<i class="bi bi-list-ul me-1"></i> Senarai Permohonan',
+                    confirmButtonColor: '#0d6efd',
+                    cancelButtonColor: '#6c757d',
                     allowOutsideClick: false
-                }).then(() => {
-                    window.location.href = BASE_URL + 'new-application';
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = BASE_URL + 'new-application/show/' + res.id + '?print=1';
+                    } else {
+                        window.location.href = BASE_URL + 'new-application';
+                    }
                 });
             } else {
                 Swal.fire({

@@ -36,6 +36,13 @@ $procedures = !empty($application['procedures_data']) ? json_decode($application
     </div>
 
     <div class="card-panel-body">
+        <!-- Official Print Header (Print Only) -->
+        <div class="d-none d-print-block text-center border-bottom pb-3 mb-4">
+            <h4 class="fw-bold mb-1">HOSPITAL PENGAJAR UNIVERSITI SULTAN ZAINAL ABIDIN (HPUniSZA)</h4>
+            <h6 class="text-secondary mb-1">BORANG PERMOHONAN TUNTUTAN PROSEDUR PAKAR</h6>
+            <div class="small text-muted">No. Rujukan: <strong><?= esc($application['application_no']) ?></strong> &bull; Tarikh Cetakan: <?= date('d/m/Y h:i A') ?></div>
+        </div>
+
         <!-- Info Cards: Specialist & Patient -->
         <div class="row g-3 mb-4">
             <div class="col-md-6">
@@ -216,7 +223,117 @@ $procedures = !empty($application['procedures_data']) ? json_decode($application
                 </div>
             </div>
         <?php endif; ?>
+
+        <!-- Signatures & Verification Section (Print Only) -->
+        <div class="d-none d-print-block print-signature-area pt-3">
+            <div class="row g-4">
+                <div class="col-6">
+                    <div class="border rounded p-3 text-center h-100 d-flex flex-column justify-content-between" style="min-height: 180px;">
+                        <div>
+                            <div class="fw-bold small text-uppercase text-decoration-underline mb-1">Pengesahan Pemohon (Pakar)</div>
+                            <div class="small text-muted fst-italic">Saya mengesahkan bahawa segala butiran tuntutan prosedur perkhidmatan ini adalah tepat dan benar.</div>
+                        </div>
+                        <div class="mt-4 pt-4 border-top">
+                            <div class="fw-bold small"><?= esc($application['specialist_name']) ?></div>
+                            <div class="small text-muted">No. Staf: <?= esc($application['staff_number']) ?> &bull; Tarikh: <?= date('d/m/Y') ?></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="border rounded p-3 text-center h-100 d-flex flex-column justify-content-between" style="min-height: 180px;">
+                        <div>
+                            <div class="fw-bold small text-uppercase text-decoration-underline mb-1">Sokongan / Perakuan Ketua Jabatan</div>
+                            <div class="small text-muted fst-italic">Permohonan disokong / diperakui untuk tindakan bahagian kewangan.</div>
+                        </div>
+                        <div class="mt-4 pt-4 border-top">
+                            <div class="small text-muted mb-1">(Tandatangan & Cop Rasmi Jabatan)</div>
+                            <div class="small text-muted">Tarikh: ............................................</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center text-muted small mt-4 pt-2 border-top">
+                Sistem Pengurusan Tuntutan Pakar (X-Claim) &bull; Hospital Pengajar Universiti Sultan Zainal Abidin (HPUniSZA)
+            </div>
+        </div>
+
     </div>
 </div>
 
+<style>
+@media print {
+    /* Hide layout elements not needed when printing */
+    .sidebar,
+    .topbar,
+    .page-header,
+    .page-footer,
+    .btn,
+    nav[aria-label="breadcrumb"] {
+        display: none !important;
+    }
+    .main-wrapper,
+    .page-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    body {
+        background-color: #fff !important;
+        font-size: 11pt !important;
+        color: #000 !important;
+    }
+    .card-panel {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    .card-panel-header {
+        display: none !important;
+    }
+    .card-panel-body {
+        padding: 0 !important;
+    }
+    .card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+    }
+    .table {
+        border-color: #dee2e6 !important;
+    }
+    .table-dark {
+        background-color: #212529 !important;
+        color: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .badge {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .print-signature-area {
+        page-break-inside: avoid;
+        margin-top: 2rem;
+    }
+    @page {
+        size: A4 portrait;
+        margin: 1.2cm 1.5cm;
+    }
+}
+</style>
+
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('print') === '1') {
+        setTimeout(function () {
+            window.print();
+        }, 600);
+    }
+});
+</script>
 <?= $this->endSection() ?>
