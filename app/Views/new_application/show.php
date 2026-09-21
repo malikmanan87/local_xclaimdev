@@ -289,7 +289,8 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
                     $totPelaKadar = 0; $totPelaAgihan = 0;
                     $totKeseluruhanTuntutan = 0;
 
-                    $rowCount = max(count($procedures), 11); // 11 baris mengikut format fizikal asal PDF
+                    // Baris mengikut kapasiti teks prosedur sebenar
+                    $rowCount = max(count($procedures), 1);
 
                     for ($i = 0; $i < $rowCount; $i++):
                         $p = $procedures[$i] ?? null;
@@ -342,7 +343,7 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
                         </tr>
                     <?php else: ?>
                         <tr>
-                            <td class="text-center text-muted"><?= $i + 1 ?></td>
+                            <td class="text-center text-muted">1</td>
                             <td>-</td>
                             <td>-</td>
                             <td>-</td>
@@ -375,27 +376,11 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
             </table>
         </div>
 
-        <!-- Bahagian Bawah Helaian 1: Header Bahagian C & Nombor Helaian 1/ -->
-        <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0 mt-2">
+        <!-- BAHAGIAN C: MAKLUMAT PENGESAHAN (Mengalir terus selepas Bahagian B mengikut kapasiti teks) -->
+        <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0 mt-3">
             BAHAGIAN C: MAKLUMAT PENGESAHAN
         </div>
-        <div class="text-end fw-bold small text-dark d-none d-print-block mt-1">1/</div>
-    </div>
-
-    <!-- Page Break untuk Landskap -->
-    <div class="print-page-break my-4"></div>
-
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <!-- HELAIAN 2 (LANDSKAP): Pengesahan User, PE, J3P & Pengarah      -->
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <div class="sheet-page sheet-page-2">
-        <div class="d-none d-print-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
-            <span class="font-monospace small fw-bold">HoSZA-MGT-J3P (PE)-F-003-01 &bull; <?= esc($application['application_no']) ?></span>
-            <span class="small font-monospace">Helaian 2 / 3</span>
-        </div>
-
-        <!-- BAHAGIAN C: Maklumat Pengesahan (Kandungan) -->
-        <div class="border border-dark p-3 mb-3">
+        <div class="border border-dark p-3 mb-0">
             <p class="mb-3 text-dark" style="font-size: 0.88rem;">
                 Dengan ini saya mengesahkan bahawa Tuntutan Bayaran Pakar di bawah Perkhidmatan Eksekutif seperti maklumat yang disediakan adalah betul dan dilaksanakan oleh saya.
             </p>
@@ -411,6 +396,18 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <!-- HELAIAN BARU: Bahagian D & Bahagian E (Pengesahan Pegawai)    -->
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <div class="print-page-break my-4"></div>
+
+    <div class="sheet-page sheet-page-officers">
+        <div class="d-none d-print-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
+            <span class="font-monospace small fw-bold">HoSZA-MGT-J3P (PE)-F-003-01 &bull; <?= esc($application['application_no']) ?></span>
+            <span class="small font-monospace">Helaian Pengesahan Pegawai</span>
         </div>
 
         <!-- BAHAGIAN D: Pengesahan Pegawai Penyemak dan Pegawai Perkhidmatan Eksekutif -->
@@ -480,7 +477,7 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
         <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0">
             BAHAGIAN E: PENGESAHAN KETUA JABATAN PEMBANGUNAN PERNIAGAAN DAN PELABURAN (J3P) DAN KETUA PUSAT TANGGUNGJAWAB (KPTj)/PENGARAH
         </div>
-        <div class="border border-dark p-3 mb-3">
+        <div class="border border-dark p-3 mb-0">
             <p class="mb-3 text-dark" style="font-size: 0.86rem;">
                 Dengan ini saya mengesahkan bahawa pegawai telah menjalankan perkhidmatan sebagaimana yang dituntut. Tuntutan berjumlah 
                 <strong>RM <?= number_format($application['total_claim'] ?? 0, 2) ?></strong> dan dokumen yang disertakan adalah benar sebagaimana yang disemak oleh Pegawai Penyemak dan Pegawai Perkhidmatan Eksekutif.
@@ -538,28 +535,21 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
                 </div>
             </div>
         </div>
-
-        <!-- Bahagian Bawah Helaian 2: Header Lampiran 1 & Nombor Helaian 2/ -->
-        <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0">
-            LAMPIRAN 1
-        </div>
-        <div class="text-end fw-bold small text-dark d-none d-print-block mt-1">2/</div>
     </div>
 
-    <!-- Page Break untuk Lampiran -->
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <!-- HELAIAN BARU: LAMPIRAN 1 (Senarai Prosedur 1 - 16)            -->
+    <!-- ───────────────────────────────────────────────────────────── -->
     <div class="print-page-break my-4"></div>
 
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <!-- HELAIAN 3 (LANDSKAP): Lampiran 1 (Senarai Prosedur 1 - 16)     -->
-    <!-- ───────────────────────────────────────────────────────────── -->
-    <div class="sheet-page sheet-page-3">
+    <div class="sheet-page sheet-page-lampiran">
         <div class="d-none d-print-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
             <span class="font-monospace small fw-bold">HoSZA-MGT-J3P (PE)-F-003-01 &bull; <?= esc($application['application_no']) ?></span>
-            <span class="small font-monospace">Helaian 3 / 3</span>
+            <span class="small font-monospace">Lampiran 1</span>
         </div>
 
         <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0 d-flex justify-content-between align-items-center">
-            <span>LAMPIRAN 1</span>
+            <span>LAMPIRAN 1: SENARAI PROSEDUR / PERKHIDMATAN</span>
             <span class="font-monospace" style="font-size: 0.68rem;">HoSZA-MGT-J3P (PE)-F-003-01</span>
         </div>
         <table class="table table-bordered table-sm align-middle small mb-0 border-dark">
@@ -588,7 +578,6 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
                 <?php endfor; ?>
             </tbody>
         </table>
-        <div class="text-end fw-bold small text-dark d-none d-print-block mt-2">3/</div>
     </div>
 
 </div>
