@@ -797,8 +797,7 @@ function performPatientSearch() {
                 $('#selected_visit_id').val('');
 
                 resultBox.slideDown();
-                // Butang seterusnya kekal disabled sehingga episod lawatan dipilih
-                btnNext.prop('disabled', true).attr('title', 'Sila pilih salah satu episod lawatan pesakit untuk meneruskan');
+                checkTab2NextButtonState();
 
                 alertBox.html('<div class="alert alert-success py-2 px-3 small mb-0 rounded-2"><i class="bi bi-check-circle-fill me-1"></i> Rekod pesakit ditemui. Sila pilih salah satu episod lawatan di bawah.</div>').slideDown();
 
@@ -1045,8 +1044,8 @@ function proceedWithVisitSelection(visit) {
     const activeType = document.querySelector('#visitTabs .nav-link.active')?.getAttribute('data-type') || 'outpatient';
     renderVisitCards(visitData[activeType] || [], activeType);
 
-    // Dayakan butang seterusnya HANYA selepas episod lawatan dipilih
-    $('#btnNextTab2').prop('disabled', false).removeAttr('title');
+    // Semak status butang seterusnya (perlu lawatan + sekurang-kurangnya 1 prosedur)
+    checkTab2NextButtonState();
 
     // Load billing context
     loadPatientContext(visit.visit_id);
@@ -1291,6 +1290,7 @@ function renderSelectedProcedures() {
         if (totalCountEl) totalCountEl.textContent = '0';
         if (tfoot) tfoot.classList.add('d-none');
         updateProceduresHiddenInput();
+        checkTab2NextButtonState();
         return;
     }
 
@@ -1335,6 +1335,7 @@ function renderSelectedProcedures() {
     if (tfoot) tfoot.classList.remove('d-none');
 
     updateProceduresHiddenInput();
+    checkTab2NextButtonState();
 }
 
 function updateProceduresHiddenInput() {
@@ -1362,8 +1363,31 @@ function escapeHtml(text) {
     return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
+// Function to check and update the enabled/disabled state of btnNextTab2
+function checkTab2NextButtonState() {
+    const hasPatient = !!(selectedPatient && selectedPatient.rn);
+    const hasVisit = !!(selectedVisit && $('#selected_visit_id').val());
+    const hasProcedures = !!(selectedProcedures && selectedProcedures.length > 0);
+
+    const btn = $('#btnNextTab2');
+    if (hasPatient && hasVisit && hasProcedures) {
+        btn.prop('disabled', false).removeAttr('title');
+    } else {
+        let reason = '';
+        if (!hasPatient) {
+            reason = 'Sila buat carian pesakit terlebih dahulu';
+        } else if (!hasVisit) {
+            reason = 'Sila pilih salah satu episod lawatan pesakit';
+        } else if (!hasProcedures) {
+            reason = 'Sila tambah sekurang-kurangnya satu prosedur yang dituntut';
+        }
+        btn.prop('disabled', true).attr('title', reason);
+    }
+}
+
 $(document).ready(function () {
     renderSelectedProcedures();
+    checkTab2NextButtonState();
 });
 
 // Proceed from Tab 2 to Tab 3
@@ -1379,6 +1403,15 @@ $('#btnNextTab2').on('click', function () {
             icon: 'warning',
             title: 'Lawatan Belum Dipilih',
             text: 'Sila pilih salah satu episod lawatan pesakit (Outpatient / Inpatient / Emergency) sebelum meneruskan ke butiran tuntutan.'
+        });
+        return;
+    }
+
+    if (!selectedProcedures || selectedProcedures.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Prosedur Diperlukan',
+            text: 'Sila pilih dan tambah sekurang-kurangnya satu prosedur yang dituntut pada ruangan Select Procedures Performed sebelum meneruskan ke butiran tuntutan.'
         });
         return;
     }
@@ -1402,7 +1435,8 @@ $('#btnNextTab2').on('click', function () {
             Swal.fire({ icon: 'error', title: 'Ralat Pelayan', text: 'Sila cuba lagi sebentar lagi.' });
         },
         complete: function () {
-            btn.prop('disabled', false).html('Seterusnya: Butiran Tuntutan <i class="bi bi-arrow-right ms-2"></i>');
+            btn.html('Seterusnya: Butiran Tuntutan <i class="bi bi-arrow-right ms-2"></i>');
+            checkTab2NextButtonState();
         }
     });
 });

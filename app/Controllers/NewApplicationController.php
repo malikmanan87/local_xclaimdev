@@ -334,7 +334,15 @@ class NewApplicationController extends BaseController
         if (!empty($proceduresJson)) {
             $procedures = is_string($proceduresJson) ? json_decode($proceduresJson, true) : $proceduresJson;
         }
-        session()->set('new_app_procedures', $procedures ?: []);
+
+        if (empty($procedures) || !is_array($procedures)) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Sila pilih dan tambah sekurang-kurangnya satu prosedur yang dituntut.',
+            ]);
+        }
+
+        session()->set('new_app_procedures', $procedures);
 
         return $this->response->setJSON([
             'status'  => 'success',
