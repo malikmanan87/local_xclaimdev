@@ -132,21 +132,29 @@ class ReviewJpppController extends BaseController
 
         if ($action === 'approve') {
             $updateData = [
-                'status'           => 'under_review', // Bersedia untuk semakan kewangan
-                'jppp_status'      => 'approved',
-                'jppp_verified_by' => $userId,
-                'jppp_verified_at' => $now,
-                'jppp_remarks'     => $remarks,
+                'status'              => 'under_review',
+                'jppp_status'         => 'approved',
+                'jppp_verified_by'    => $userId,
+                'jppp_verified_at'    => $now,
+                'jppp_remarks'        => $remarks,
+                'j3p_status'          => 'approved',
+                'j3p_verified_by'     => $userId,
+                'j3p_verified_at'     => $now,
+                'j3p_remarks'         => $remarks,
             ];
             $actionTitle = 'Sahkan Permohonan JPPP';
-            $logMsg = "Permohonan tuntutan {$application['application_no']} telah disahkan dan disokong oleh JPPP. Disalurkan kepada Bahagian Kewangan.";
+            $logMsg = "Permohonan tuntutan {$application['application_no']} telah disahkan dan disokong oleh Ketua J3P/JPPP. Disalurkan kepada Pengarah Hospital untuk kelulusan akhir.";
         } else {
             $updateData = [
-                'status'           => 'rejected',
-                'jppp_status'      => 'rejected',
-                'jppp_verified_by' => $userId,
-                'jppp_verified_at' => $now,
-                'jppp_remarks'     => $remarks,
+                'status'              => 'rejected',
+                'jppp_status'         => 'rejected',
+                'jppp_verified_by'    => $userId,
+                'jppp_verified_at'    => $now,
+                'jppp_remarks'        => $remarks,
+                'j3p_status'          => 'rejected',
+                'j3p_verified_by'     => $userId,
+                'j3p_verified_at'     => $now,
+                'j3p_remarks'         => $remarks,
             ];
             $actionTitle = 'Tolak Permohonan JPPP';
             $logMsg = "Permohonan tuntutan {$application['application_no']} telah ditolak oleh JPPP. Sebab: {$remarks}";

@@ -2,9 +2,14 @@
 <?= $this->section('content') ?>
 
 <?php
-$isPending = ($application['jppp_status'] === 'pending' || empty($application['jppp_status']));
-$isApproved = ($application['jppp_status'] === 'approved');
-$isRejected = ($application['jppp_status'] === 'rejected');
+$penyemakStatus     = $application['penyemak_status'] ?? 'pending';
+$perkhidmatanStatus = $application['perkhidmatan_status'] ?? 'pending';
+$j3pStatus          = $application['j3p_status'] ?? $application['jppp_status'] ?? 'pending';
+$pengarahStatus     = $application['pengarah_status'] ?? 'pending';
+
+$isPending  = ($j3pStatus === 'pending' || empty($j3pStatus));
+$isApproved = ($j3pStatus === 'approved');
+$isRejected = ($j3pStatus === 'rejected');
 ?>
 
 <!-- Header -->
@@ -106,31 +111,71 @@ $isRejected = ($application['jppp_status'] === 'rejected');
                     <span class="fw-bold small text-uppercase text-secondary">Aliran Status Permohonan</span>
                 </div>
                 <ul class="list-unstyled mb-0 small position-relative ps-1">
-                    <li class="mb-2.5 d-flex align-items-start">
+                    <!-- 1. Dihantar oleh Pakar -->
+                    <li class="mb-2 d-flex align-items-start">
                         <i class="bi bi-check-circle-fill text-success fs-6 me-2 mt-0.5"></i>
                         <div>
                             <strong>1. Dihantar oleh Pakar</strong>
-                            <div class="text-muted" style="font-size: 0.75rem;"><?= date('d/m/Y h:i A', strtotime($application['created_at'])) ?></div>
+                            <div class="text-muted" style="font-size: 0.72rem;">
+                                <?= $application['submitted_at'] ? date('d/m/Y h:i A', strtotime($application['submitted_at'])) : date('d/m/Y h:i A', strtotime($application['created_at'])) ?>
+                            </div>
                         </div>
                     </li>
-                    <li class="mb-2.5 d-flex align-items-start">
-                        <i class="bi <?= $isPending ? 'bi-hourglass-split text-warning' : ($isApproved ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger') ?> fs-6 me-2 mt-0.5"></i>
+
+                    <!-- 2. Pegawai Menyemak PE -->
+                    <li class="mb-2 d-flex align-items-start">
+                        <i class="bi <?= $penyemakStatus === 'approved' ? 'bi-check-circle-fill text-success' : ($penyemakStatus === 'rejected' ? 'bi-x-circle-fill text-danger' : 'bi-hourglass-split text-warning') ?> fs-6 me-2 mt-0.5"></i>
                         <div>
-                            <strong>2. Pengesahan JPPP</strong>
-                            <div class="text-muted" style="font-size: 0.75rem;">
-                                <?= $isPending ? '<span class="badge bg-warning text-dark">Sedang Diproses</span>' : ($isApproved ? '<span class="badge bg-success">Disahkan & Disokong</span>' : '<span class="badge bg-danger">Ditolak</span>') ?>
-                                <?php if (!empty($application['jppp_verified_at'])): ?>
+                            <strong>2. Pegawai Menyemak PE</strong>
+                            <div class="text-muted" style="font-size: 0.72rem;">
+                                <?= $penyemakStatus === 'approved' ? '<span class="badge bg-success">Disemak</span>' : ($penyemakStatus === 'rejected' ? '<span class="badge bg-danger">Ditolak</span>' : '<span class="badge bg-warning text-dark">Menunggu</span>') ?>
+                                <?php if (!empty($application['penyemak_verified_at'])): ?>
+                                    &bull; <?= date('d/m/Y', strtotime($application['penyemak_verified_at'])) ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- 3. Pegawai Perkhidmatan PE -->
+                    <li class="mb-2 d-flex align-items-start">
+                        <i class="bi <?= $perkhidmatanStatus === 'approved' ? 'bi-check-circle-fill text-success' : ($perkhidmatanStatus === 'rejected' ? 'bi-x-circle-fill text-danger' : ($penyemakStatus === 'approved' ? 'bi-hourglass-split text-warning' : 'bi-circle text-muted')) ?> fs-6 me-2 mt-0.5"></i>
+                        <div>
+                            <strong>3. Pegawai Perkhidmatan PE</strong>
+                            <div class="text-muted" style="font-size: 0.72rem;">
+                                <?= $perkhidmatanStatus === 'approved' ? '<span class="badge bg-success">Disahkan</span>' : ($perkhidmatanStatus === 'rejected' ? '<span class="badge bg-danger">Ditolak</span>' : ($penyemakStatus === 'approved' ? '<span class="badge bg-warning text-dark">Menunggu</span>' : '<span class="badge bg-secondary">Giliran</span>')) ?>
+                                <?php if (!empty($application['perkhidmatan_verified_at'])): ?>
+                                    &bull; <?= date('d/m/Y', strtotime($application['perkhidmatan_verified_at'])) ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- 4. Ketua J3P -->
+                    <li class="mb-2 d-flex align-items-start">
+                        <i class="bi <?= $isApproved ? 'bi-check-circle-fill text-success' : ($isRejected ? 'bi-x-circle-fill text-danger' : 'bi-hourglass-split text-warning') ?> fs-6 me-2 mt-0.5"></i>
+                        <div>
+                            <strong>4. Ketua J3P</strong>
+                            <div class="text-muted" style="font-size: 0.72rem;">
+                                <?= $isApproved ? '<span class="badge bg-success">Disahkan & Disokong</span>' : ($isRejected ? '<span class="badge bg-danger">Ditolak</span>' : '<span class="badge bg-warning text-dark">Sedang Diproses</span>') ?>
+                                <?php if (!empty($application['j3p_verified_at'])): ?>
+                                    &bull; <?= date('d/m/Y', strtotime($application['j3p_verified_at'])) ?>
+                                <?php elseif (!empty($application['jppp_verified_at'])): ?>
                                     &bull; <?= date('d/m/Y', strtotime($application['jppp_verified_at'])) ?>
                                 <?php endif; ?>
                             </div>
                         </div>
                     </li>
+
+                    <!-- 5. Pengarah Hospital / KPTj -->
                     <li class="d-flex align-items-start">
-                        <i class="bi <?= $application['finance_status'] === 'approved' ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted' ?> fs-6 me-2 mt-0.5"></i>
+                        <i class="bi <?= $pengarahStatus === 'approved' ? 'bi-check-circle-fill text-success' : ($pengarahStatus === 'rejected' ? 'bi-x-circle-fill text-danger' : ($isApproved ? 'bi-hourglass-split text-warning' : 'bi-circle text-muted')) ?> fs-6 me-2 mt-0.5"></i>
                         <div>
-                            <strong>3. Kelulusan Kewangan</strong>
-                            <div class="text-muted" style="font-size: 0.75rem;">
-                                <?= $application['finance_status'] === 'approved' ? '<span class="badge bg-success">Diluluskan Bayaran</span>' : '<span class="badge bg-secondary">Menunggu</span>' ?>
+                            <strong>5. Pengarah / KPTj</strong>
+                            <div class="text-muted" style="font-size: 0.72rem;">
+                                <?= $pengarahStatus === 'approved' ? '<span class="badge bg-success">Diluluskan Penuh</span>' : ($pengarahStatus === 'rejected' ? '<span class="badge bg-danger">Ditolak</span>' : ($isApproved ? '<span class="badge bg-warning text-dark">Menunggu</span>' : '<span class="badge bg-secondary">Giliran</span>')) ?>
+                                <?php if (!empty($application['pengarah_verified_at'])): ?>
+                                    &bull; <?= date('d/m/Y', strtotime($application['pengarah_verified_at'])) ?>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </li>
@@ -274,7 +319,7 @@ $isRejected = ($application['jppp_status'] === 'rejected');
                                 <input class="form-check-input mt-0" type="radio" name="action" id="actionApprove" value="approve" checked>
                                 <div>
                                     <div class="fw-bold text-success"><i class="bi bi-check-circle me-1"></i> Sahkan & Sokong</div>
-                                    <small class="text-muted">Permohonan disahkan teratur dan disalurkan terus ke Bahagian Kewangan.</small>
+                                    <small class="text-muted">Permohonan disahkan teratur dan disalurkan ke Pengarah Hospital untuk kelulusan akhir.</small>
                                 </div>
                             </label>
 
@@ -335,7 +380,7 @@ $isRejected = ($application['jppp_status'] === 'rejected');
                     <div class="p-3 rounded bg-light border">
                         <div class="text-muted small">Keputusan Status:</div>
                         <div class="fw-bold fs-6 mt-1 <?= $isApproved ? 'text-success' : 'text-danger' ?>">
-                            <?= $isApproved ? 'Disokong ke Kewangan' : 'Ditolak' ?>
+                            <?= $isApproved ? 'Disahkan & Disokong' : 'Ditolak' ?>
                         </div>
                     </div>
                 </div>

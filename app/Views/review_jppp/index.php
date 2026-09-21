@@ -39,7 +39,7 @@
                 <span class="stat-label">Disahkan & Disokong</span>
                 <span class="stat-value text-success"><?= number_format($stats['approved']) ?></span>
                 <span class="stat-change text-success">
-                    <i class="bi bi-check2-circle me-1"></i>Disalurkan ke Bahagian Kewangan
+                    <i class="bi bi-check2-circle me-1"></i>Disahkan & disokong ke Pengarah
                 </span>
             </div>
             <div class="stat-icon">
