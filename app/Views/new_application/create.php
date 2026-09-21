@@ -482,7 +482,7 @@
                 <button type="button" class="btn btn-outline-secondary px-4" onclick="goToTab(1)">
                     <i class="bi bi-arrow-left me-2"></i> Kembali: Maklumat Pakar
                 </button>
-                <button type="button" class="btn btn-primary px-4 shadow-sm" id="btnNextTab2" disabled>
+                <button type="button" class="btn btn-primary px-4 shadow-sm" id="btnNextTab2" disabled title="Sila pilih salah satu episod lawatan pesakit terlebih dahulu">
                     Seterusnya: Butiran Tuntutan <i class="bi bi-arrow-right ms-2"></i>
                 </button>
             </div>
@@ -797,9 +797,10 @@ function performPatientSearch() {
                 $('#selected_visit_id').val('');
 
                 resultBox.slideDown();
-                btnNext.prop('disabled', false);
+                // Butang seterusnya kekal disabled sehingga episod lawatan dipilih
+                btnNext.prop('disabled', true).attr('title', 'Sila pilih salah satu episod lawatan pesakit untuk meneruskan');
 
-                alertBox.html('<div class="alert alert-success py-2 px-3 small mb-0 rounded-2"><i class="bi bi-check-circle-fill me-1"></i> Rekod pesakit ditemui. Senarai lawatan dimuatkan di bawah.</div>').slideDown();
+                alertBox.html('<div class="alert alert-success py-2 px-3 small mb-0 rounded-2"><i class="bi bi-check-circle-fill me-1"></i> Rekod pesakit ditemui. Sila pilih salah satu episod lawatan di bawah.</div>').slideDown();
 
                 // Load all visits from HRS API
                 loadAllVisits(p.rn);
@@ -1043,6 +1044,9 @@ function proceedWithVisitSelection(visit) {
     // Re-render visit cards to show active selection
     const activeType = document.querySelector('#visitTabs .nav-link.active')?.getAttribute('data-type') || 'outpatient';
     renderVisitCards(visitData[activeType] || [], activeType);
+
+    // Dayakan butang seterusnya HANYA selepas episod lawatan dipilih
+    $('#btnNextTab2').prop('disabled', false).removeAttr('title');
 
     // Load billing context
     loadPatientContext(visit.visit_id);
@@ -1366,6 +1370,16 @@ $(document).ready(function () {
 $('#btnNextTab2').on('click', function () {
     if (!selectedPatient) {
         Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Sila buat carian pesakit terlebih dahulu.' });
+        return;
+    }
+
+    const visitId = $('#selected_visit_id').val() || selectedVisit?.visit?.visit_id;
+    if (!selectedVisit || !visitId) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Lawatan Belum Dipilih',
+            text: 'Sila pilih salah satu episod lawatan pesakit (Outpatient / Inpatient / Emergency) sebelum meneruskan ke butiran tuntutan.'
+        });
         return;
     }
 

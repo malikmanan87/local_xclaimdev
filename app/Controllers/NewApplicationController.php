@@ -305,12 +305,19 @@ class NewApplicationController extends BaseController
             'patient_rn'   => 'required|min_length[1]|max_length[50]',
             'patient_name' => 'required|min_length[2]|max_length[150]',
             'patient_ic'   => 'permit_empty|max_length[50]',
-            'visit_id'     => 'permit_empty|max_length[50]',
+            'visit_id'     => 'required|min_length[1]|max_length[50]',
         ];
 
-        if (!$this->validate($rules)) {
+        $messages = [
+            'visit_id' => [
+                'required' => 'Sila pilih salah satu episod lawatan pesakit terlebih dahulu.'
+            ]
+        ];
+
+        if (!$this->validate($rules, $messages)) {
             return $this->response->setJSON([
                 'status'  => 'error',
+                'message' => $this->validator->getError('visit_id') ?: 'Sila lengkapkan maklumat pesakit dan pilih episod lawatan.',
                 'errors'  => $this->validator->getErrors(),
             ]);
         }
@@ -384,6 +391,13 @@ class NewApplicationController extends BaseController
             return $this->response->setJSON([
                 'status'  => 'error',
                 'message' => 'Maklumat pesakit tidak lengkap. Sila kembali ke Tab 2.',
+            ]);
+        }
+
+        if (empty($visitId)) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Episod lawatan pesakit tidak dipilih. Sila kembali ke Tab 2 dan pilih salah satu lawatan pesakit.',
             ]);
         }
 
