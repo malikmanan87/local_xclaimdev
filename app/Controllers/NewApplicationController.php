@@ -269,17 +269,22 @@ class NewApplicationController extends BaseController
     public function checkVisitClaim(): \CodeIgniter\HTTP\ResponseInterface
     {
         $visitId = $this->request->getGet('visit_id') ?? $this->request->getPost('visit_id');
+        $excludeId = $this->request->getGet('exclude_id') ?? $this->request->getPost('exclude_id');
 
         if (empty($visitId)) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Visit ID diperlukan.']);
         }
 
-        $existingClaims = $this->model
+        $query = $this->model
             ->select('id, application_no, specialist_name, staff_number, department, total_gross, total_claim, status, created_at')
             ->where('visit_id', $visitId)
-            ->whereIn('status', ['submitted', 'under_review', 'approved'])
-            ->orderBy('created_at', 'DESC')
-            ->findAll();
+            ->whereIn('status', ['submitted', 'under_review', 'approved']);
+
+        if (!empty($excludeId)) {
+            $query->where('id !=', $excludeId);
+        }
+
+        $existingClaims = $query->orderBy('created_at', 'DESC')->findAll();
 
         if (!empty($existingClaims)) {
             return $this->response->setJSON([
@@ -372,6 +377,206 @@ class NewApplicationController extends BaseController
         ];
 
         return view('new_application/show', $data);
+    }
+
+    // ---------------------------------------------------------------
+    // Edit application (Only allowed if status is 'submitted' and unchanged)
+    // ---------------------------------------------------------------
+    public function edit(int $id)
+    {
+        $application = $this->model->find($id);
+
+        if (! $application) {
+            session()->setFlashdata('error', 'Permohonan tidak dijumpai.');
+            return redirect()->to(base_url('new-application'));
+        }
+
+        // Semak status: hanya 'submitted' dibenarkan selagi status tidak berubah
+        $jpppStatus    = $application['jppp_status'] ?? 'pending';
+        $financeStatus = $application['finance_status'] ?? 'pending';
+
+        if ($application['status'] !== 'submitted' || $jpppStatus !== 'pending' || $financeStatus !== 'pending') {
+            session()->setFlashdata('error', 'Permohonan ini tidak boleh diedit kerana status telah berubah (' . ucfirst($application['status']) . ').');
+            return redirect()->to(base_url('new-application/show/' . $id));
+        }
+
+        // Semak kebenaran: hanya pemohon atau admin/manager dibenarkan edit
+        $userId   = session('user_id');
+        $userRole = session('role') ?? '';
+        if ($application['submitted_by'] != $userId && !in_array($userRole, ['admin', 'manager'])) {
+            session()->setFlashdata('error', 'Anda tidak mempunyai kebenaran untuk mengemaskini permohonan ini.');
+            return redirect()->to(base_url('new-application/show/' . $id));
+        }
+
+        $userData = [
+            'specialist_name' => $application['specialist_name'],
+            'staff_number'    => $application['staff_number'],
+            'email'           => $application['email'],
+            'department'      => $application['department'],
+            'position'        => $application['position'],
+        ];
+
+        $mmaModel = new \App\Models\MmaProcedureModel();
+        $masterProcedures = $mmaModel->getAllProcedures();
+
+        $data = [
+            'pageTitle'        => 'Kemaskini Permohonan: ' . $application['application_no'],
+            'breadcrumb'       => [
+                ['label' => 'New Application', 'url' => base_url('new-application')],
+                ['label' => $application['application_no'], 'url' => base_url('new-application/show/' . $id)],
+                'Kemaskini',
+            ],
+            'userData'         => $userData,
+            'masterProcedures' => $masterProcedures,
+            'application'      => $application,
+            'isEdit'           => true,
+        ];
+
+        return view('new_application/create', $data);
+    }
+
+    // ---------------------------------------------------------------
+    // Update submitted claim application
+    // ---------------------------------------------------------------
+    public function update(int $id): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $application = $this->model->find($id);
+
+        if (! $application) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Permohonan tidak dijumpai.',
+            ]);
+        }
+
+        // Semak status: hanya 'submitted' dibenarkan selagi status tidak berubah
+        $jpppStatus    = $application['jppp_status'] ?? 'pending';
+        $financeStatus = $application['finance_status'] ?? 'pending';
+
+        if ($application['status'] !== 'submitted' || $jpppStatus !== 'pending' || $financeStatus !== 'pending') {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Permohonan ini tidak boleh dikemaskini kerana status telah berubah (' . ucfirst($application['status']) . ').',
+            ]);
+        }
+
+        // Semak kebenaran
+        $userId   = session('user_id');
+        $userRole = session('role') ?? '';
+        if ($application['submitted_by'] != $userId && !in_array($userRole, ['admin', 'manager'])) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Anda tidak mempunyai kebenaran untuk mengemaskini permohonan ini.',
+            ]);
+        }
+
+        // Ambil data prosedur
+        $postProcedures = $this->request->getPost('procedures');
+        $procedures = [];
+        if (!empty($postProcedures)) {
+            $procedures = is_string($postProcedures) ? (json_decode($postProcedures, true) ?: []) : $postProcedures;
+        }
+
+        $patientRn   = $this->request->getPost('patient_rn') ?: $application['patient_rn'];
+        $patientName = $this->request->getPost('patient_name') ?: $application['patient_name'];
+        $patientIc   = $this->request->getPost('patient_ic') ?: $application['patient_ic'];
+        $visitId     = $this->request->getPost('visit_id') ?: $application['visit_id'];
+        $remarks     = $this->request->getPost('remarks') !== null ? trim($this->request->getPost('remarks')) : $application['remarks'];
+
+        if (empty($patientRn) || empty($patientName)) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Maklumat pesakit tidak lengkap.',
+            ]);
+        }
+
+        if (empty($visitId)) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Sila pilih salah satu episod lawatan pesakit.',
+            ]);
+        }
+
+        if (empty($procedures) || !is_array($procedures)) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Sila pilih dan tambah sekurang-kurangnya satu prosedur yang dituntut.',
+            ]);
+        }
+
+        // Specialist info jika diubah
+        $specialistName = $this->request->getPost('specialist_name') ?: $application['specialist_name'];
+        $staffNumber    = $this->request->getPost('staff_number') ?: $application['staff_number'];
+        $email          = $this->request->getPost('email') ?: $application['email'];
+        $department     = $this->request->getPost('department') ?: $application['department'];
+        $position       = $this->request->getPost('position') ?: $application['position'];
+
+        // Kira semula jumlah kewangan
+        $totalGross     = 0;
+        $totalClaim     = 0;
+        $totalWelfare   = 0;
+        $includeWelfare = (bool) $this->request->getPost('include_welfare');
+
+        foreach ($procedures as $p) {
+            $price      = (float) ($p['price'] ?? 0);
+            $pct        = isset($p['claimPct']) ? (float) $p['claimPct'] : 100;
+            $claimAmt   = $price * ($pct / 100);
+            $welfareAmt = $includeWelfare ? ($price - $claimAmt) : 0.00;
+
+            $totalGross   += $price;
+            $totalClaim   += $claimAmt;
+            $totalWelfare += $welfareAmt;
+        }
+
+        $updateData = [
+            'specialist_name' => $specialistName,
+            'staff_number'    => $staffNumber,
+            'email'           => $email,
+            'department'      => $department,
+            'position'        => $position,
+            'patient_rn'      => $patientRn,
+            'patient_name'    => $patientName,
+            'patient_ic'      => $patientIc,
+            'visit_id'        => $visitId,
+            'total_gross'     => $totalGross,
+            'total_claim'     => $totalClaim,
+            'total_welfare'   => $totalWelfare,
+            'procedures_data' => json_encode($procedures),
+            'remarks'         => $remarks,
+        ];
+
+        try {
+            $this->model->update($id, $updateData);
+
+            // Log activity
+            try {
+                $db = \Config\Database::connect();
+                $db->table('activity_logs')->insert([
+                    'user_id'     => $userId,
+                    'username'    => session('name') ?? $specialistName,
+                    'action'      => 'Kemaskini Tuntutan',
+                    'description' => "Permohonan tuntutan {$application['application_no']} dikemaskini. Jumlah bersih: RM " . number_format($totalClaim, 2),
+                    'ip_address'  => $this->request->getIPAddress(),
+                    'user_agent'  => $this->request->getUserAgent()->getAgentString(),
+                    'created_at'  => date('Y-m-d H:i:s'),
+                ]);
+            } catch (\Throwable $logEx) {
+                log_message('warning', 'Gagal merekod log aktiviti: ' . $logEx->getMessage());
+            }
+
+            return $this->response->setJSON([
+                'status'         => 'success',
+                'message'        => 'Permohonan tuntutan berjaya dikemaskini!',
+                'application_no' => $application['application_no'],
+                'id'             => $id,
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Ralat sistem semasa mengemaskini permohonan: ' . $e->getMessage(),
+            ]);
+        }
     }
 
     // ---------------------------------------------------------------

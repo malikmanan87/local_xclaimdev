@@ -26,6 +26,16 @@ $procedures = !empty($application['procedures_data']) ? json_decode($application
         </div>
         <div class="d-flex align-items-center gap-2">
             <span class="badge-status <?= $s[0] ?> fs-6 py-1 px-3"><?= $s[1] ?></span>
+            <?php 
+            $isEditable = ($application['status'] === 'submitted' && 
+                           ($application['jppp_status'] ?? 'pending') === 'pending' && 
+                           ($application['finance_status'] ?? 'pending') === 'pending');
+            if ($isEditable): 
+            ?>
+            <a href="<?= base_url('new-application/edit/' . $application['id']) ?>" class="btn btn-warning btn-sm shadow-sm">
+                <i class="bi bi-pencil-square me-1"></i> Edit Permohonan
+            </a>
+            <?php endif; ?>
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
                 <i class="bi bi-printer me-1"></i> Cetak
             </button>
@@ -36,6 +46,18 @@ $procedures = !empty($application['procedures_data']) ? json_decode($application
     </div>
 
     <div class="card-panel-body">
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i><?= session()->getFlashdata('error') ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+        <?php if (session()->getFlashdata('success')): ?>
+            <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i><?= session()->getFlashdata('success') ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
         <!-- Official Print Header (Print Only) -->
         <div class="d-none d-print-block text-center border-bottom pb-3 mb-4">
             <h4 class="fw-bold mb-1">HOSPITAL PENGAJAR UNIVERSITI SULTAN ZAINAL ABIDIN (HPUniSZA)</h4>

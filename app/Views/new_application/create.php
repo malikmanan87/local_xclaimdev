@@ -1,6 +1,10 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
+<?php
+$isEdit = !empty($isEdit) && !empty($application);
+?>
+
 <div class="card-panel">
 
     <!-- ═══════════════════════════════════════════════
@@ -8,11 +12,25 @@
     ═══════════════════════════════════════════════ -->
     <div class="card-panel-header py-3">
         <h5 class="card-panel-title">
-            <i class="bi bi-file-earmark-medical-fill me-2 text-primary"></i>New Application
+            <?php if ($isEdit): ?>
+                <i class="bi bi-pencil-square me-2 text-warning"></i>
+                Kemaskini Permohonan: <span class="font-monospace text-primary"><?= esc($application['application_no']) ?></span>
+                <span class="badge bg-warning-subtle text-warning-emphasis ms-2 fs-6">Submitted</span>
+            <?php else: ?>
+                <i class="bi bi-file-earmark-medical-fill me-2 text-primary"></i>New Application
+            <?php endif; ?>
         </h5>
-        <a href="<?= base_url('new-application') ?>" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i> Back to List
-        </a>
+        <div class="d-flex align-items-center gap-2">
+            <?php if ($isEdit): ?>
+                <a href="<?= base_url('new-application/show/' . $application['id']) ?>" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-circle me-1"></i> Batal
+                </a>
+            <?php else: ?>
+                <a href="<?= base_url('new-application') ?>" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Back to List
+                </a>
+            <?php endif; ?>
+        </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════
@@ -211,6 +229,7 @@
                                    class="form-control border-start-0"
                                    id="search_rn"
                                    name="search_rn"
+                                   value="<?= $isEdit ? esc($application['patient_rn']) : '' ?>"
                                    placeholder="Contoh: 10000001"
                                    autocomplete="off">
                             <button class="btn btn-primary px-4 fw-medium shadow-sm" type="button" id="btnSearchPatient">
@@ -470,11 +489,11 @@
             <!-- Hidden input form for selected patient -->
             <form id="formPatientSelected">
                 <?= csrf_field() ?>
-                <input type="hidden" id="selected_patient_rn" name="patient_rn" value="">
-                <input type="hidden" id="selected_patient_name" name="patient_name" value="">
-                <input type="hidden" id="selected_patient_ic" name="patient_ic" value="">
-                <input type="hidden" id="selected_visit_id" name="visit_id" value="">
-                <input type="hidden" id="selected_procedures_json" name="procedures" value="[]">
+                <input type="hidden" id="selected_patient_rn" name="patient_rn" value="<?= $isEdit ? esc($application['patient_rn']) : '' ?>">
+                <input type="hidden" id="selected_patient_name" name="patient_name" value="<?= $isEdit ? esc($application['patient_name']) : '' ?>">
+                <input type="hidden" id="selected_patient_ic" name="patient_ic" value="<?= $isEdit ? esc($application['patient_ic'] ?? '') : '' ?>">
+                <input type="hidden" id="selected_visit_id" name="visit_id" value="<?= $isEdit ? esc($application['visit_id'] ?? '') : '' ?>">
+                <input type="hidden" id="selected_procedures_json" name="procedures" value="<?= $isEdit ? esc($application['procedures_data'] ?? '[]') : '[]' ?>">
             </form>
 
             <!-- Navigation Buttons -->
@@ -641,10 +660,10 @@
                         <label class="form-label fw-semibold small text-secondary">
                             <i class="bi bi-chat-left-text me-1"></i> Catatan Tambahan (Pilihan):
                         </label>
-                        <textarea class="form-control form-control-sm" id="claim_remarks" rows="2" placeholder="Masukkan sebarang nota atau rujukan tambahan jika perlu..."></textarea>
+                        <textarea class="form-control form-control-sm" id="claim_remarks" rows="2" placeholder="Masukkan sebarang nota atau rujukan tambahan jika perlu..."><?= $isEdit ? esc($application['remarks'] ?? '') : '' ?></textarea>
                     </div>
                     <div class="form-check p-3 bg-white border rounded-2 shadow-sm">
-                        <input class="form-check-input ms-0 me-2" type="checkbox" id="declarationCheck">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" id="declarationCheck" <?= $isEdit ? 'checked' : '' ?>>
                         <label class="form-check-label fw-semibold text-dark small" for="declarationCheck">
                             Saya mengesahkan bahawa segala butiran tuntutan prosedur perkhidmatan ini adalah tepat, benar, dan menepati peraturan yang ditetapkan oleh pihak Hospital Pengajar UniSZA.
                         </label>
@@ -657,8 +676,12 @@
                 <button type="button" class="btn btn-outline-secondary px-4" onclick="goToTab(2)">
                     <i class="bi bi-arrow-left me-2"></i> Kembali: Carian Pesakit & Prosedur
                 </button>
-                <button type="button" class="btn btn-success px-5 shadow-sm fw-semibold" id="btnSubmitClaimApp" disabled>
-                    <i class="bi bi-send-check me-2"></i> Hantar Permohonan Tuntutan
+                <button type="button" class="btn <?= $isEdit ? 'btn-warning' : 'btn-success' ?> px-5 shadow-sm fw-semibold" id="btnSubmitClaimApp" <?= $isEdit ? '' : 'disabled' ?>>
+                    <?php if ($isEdit): ?>
+                        <i class="bi bi-check-circle-fill me-2"></i> Kemaskini Permohonan Tuntutan
+                    <?php else: ?>
+                        <i class="bi bi-send-check me-2"></i> Hantar Permohonan Tuntutan
+                    <?php endif; ?>
                 </button>
             </div>
         </div><!-- /#tab3 -->
@@ -744,14 +767,18 @@ $('#formSpecialist').on('submit', function (e) {
 // ──────────────────────────────────────────────────────────────────
 // Tab 2 — Search Patient, Visits & Billing via API
 // ──────────────────────────────────────────────────────────────────
+const isEditMode  = <?= $isEdit ? 'true' : 'false' ?>;
+const editAppId   = <?= $isEdit ? (int)$application['id'] : 'null' ?>;
+const editAppData = <?= $isEdit ? json_encode($application) : 'null' ?>;
+
 let selectedPatient    = null;
 let currentPatient     = { rn: null, name: null, nric: null };
 let visitData          = { outpatient: [], inpatient: [], emergency: [] };
 let selectedVisit      = null;
 let patientContext     = null;
-let selectedProcedures = <?= json_encode(session('new_app_procedures') ?? []) ?>;
+let selectedProcedures = <?= $isEdit ? (!empty($application['procedures_data']) ? $application['procedures_data'] : '[]') : json_encode(session('new_app_procedures') ?? []) ?>;
 
-function performPatientSearch() {
+function performPatientSearch(onSuccess) {
     const rn = $('#search_rn').val().trim();
     const alertBox = $('#patientSearchAlert');
     const resultBox = $('#patientResultContainer');
@@ -787,10 +814,13 @@ function performPatientSearch() {
                 selectedPatient = p;
                 currentPatient = { rn: p.rn, name: p.name, nric: p.ic };
 
-                // Reset visit & billing state
-                selectedVisit  = null;
-                patientContext = null;
-                $('#billingContextWrapper').hide();
+                const isSameEditPatient = isEditMode && editAppData && editAppData.patient_rn === p.rn;
+                if (!isSameEditPatient) {
+                    selectedVisit  = null;
+                    patientContext = null;
+                    $('#billingContextWrapper').hide();
+                    $('#selected_visit_id').val('');
+                }
 
                 // Populate display card
                 $('#res_patient_rn').text(p.rn);
@@ -801,7 +831,6 @@ function performPatientSearch() {
                 $('#selected_patient_rn').val(p.rn);
                 $('#selected_patient_name').val(p.name);
                 $('#selected_patient_ic').val(p.ic || '');
-                $('#selected_visit_id').val('');
 
                 resultBox.slideDown();
                 checkTab2NextButtonState();
@@ -809,7 +838,7 @@ function performPatientSearch() {
                 alertBox.html('<div class="alert alert-success py-2 px-3 small mb-0 rounded-2"><i class="bi bi-check-circle-fill me-1"></i> Rekod pesakit ditemui. Sila pilih salah satu episod lawatan di bawah.</div>').slideDown();
 
                 // Load all visits from HRS API
-                loadAllVisits(p.rn);
+                loadAllVisits(p.rn, onSuccess);
             } else {
                 selectedPatient = null;
                 resultBox.slideUp();
@@ -818,10 +847,25 @@ function performPatientSearch() {
             }
         },
         error: function () {
-            selectedPatient = null;
-            resultBox.slideUp();
-            btnNext.prop('disabled', true);
-            alertBox.html('<div class="alert alert-danger py-2 px-3 small mb-0 rounded-2"><i class="bi bi-exclamation-octagon-fill me-1"></i> Gagal menghubungi pelayan API Pesakit. Sila cuba lagi.</div>').slideDown();
+            // Fallback for edit mode if API is unreachable
+            if (isEditMode && editAppData && editAppData.patient_rn === rn) {
+                selectedPatient = { rn: editAppData.patient_rn, name: editAppData.patient_name, ic: editAppData.patient_ic };
+                currentPatient = { ...selectedPatient };
+                $('#res_patient_rn').text(selectedPatient.rn);
+                $('#res_patient_name').text(selectedPatient.name);
+                $('#res_patient_ic').text(selectedPatient.ic || 'N/A');
+                resultBox.slideDown();
+                checkTab2NextButtonState();
+                alertBox.html('<div class="alert alert-info py-2 px-3 small mb-0 rounded-2"><i class="bi bi-info-circle-fill me-1"></i> Menggunakan rekod pesakit sedia ada dari permohonan.</div>').slideDown();
+                if (typeof onSuccess === 'function') {
+                    onSuccess(visitData);
+                }
+            } else {
+                selectedPatient = null;
+                resultBox.slideUp();
+                btnNext.prop('disabled', true);
+                alertBox.html('<div class="alert alert-danger py-2 px-3 small mb-0 rounded-2"><i class="bi bi-exclamation-octagon-fill me-1"></i> Gagal menghubungi pelayan API Pesakit. Sila cuba lagi.</div>').slideDown();
+            }
         },
         complete: function () {
             btnSearch.prop('disabled', false);
@@ -841,7 +885,7 @@ $('#search_rn').on('keypress', function (e) {
 });
 
 // Load all visits (Outpatient, Inpatient, Emergency) from HRS API
-function loadAllVisits(rn) {
+function loadAllVisits(rn, onSuccess) {
     const container = document.getElementById('visitContent');
     container.innerHTML = '<div class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm me-2 text-primary"></span>Memuatkan rekod lawatan dari API...</div>';
 
@@ -861,6 +905,10 @@ function loadAllVisits(rn) {
 
                 // Default show outpatient
                 showVisit('outpatient');
+
+                if (typeof onSuccess === 'function') {
+                    onSuccess(visitData);
+                }
             } else {
                 container.innerHTML = '<div class="alert alert-warning py-2 px-3 small mb-0"><i class="bi bi-exclamation-circle me-1"></i> ' + (result.message || 'Tiada rekod lawatan.') + '</div>';
             }
@@ -946,11 +994,16 @@ function renderVisitCards(data, type) {
 function selectVisit(visit) {
     if (!visit || !visit.visit_id) return;
 
+    const checkData = { visit_id: visit.visit_id };
+    if (isEditMode && editAppId) {
+        checkData.exclude_id = editAppId;
+    }
+
     // Semak sama ada permohonan telah wujud bagi visit_id ini
     $.ajax({
         url: BASE_URL + 'new-application/check-visit-claim',
         method: 'GET',
-        data: { visit_id: visit.visit_id },
+        data: checkData,
         dataType: 'json',
         success: function (res) {
             if (res && res.status === 'exists' && res.claims && res.claims.length > 0) {
@@ -1395,6 +1448,43 @@ function checkTab2NextButtonState() {
 $(document).ready(function () {
     renderSelectedProcedures();
     checkTab2NextButtonState();
+
+    if (isEditMode && editAppData) {
+        // Automatically restore patient & visits
+        if (editAppData.patient_rn) {
+            $('#search_rn').val(editAppData.patient_rn);
+            performPatientSearch(function (vData) {
+                if (editAppData.visit_id) {
+                    for (let type of ['outpatient', 'inpatient', 'emergency']) {
+                        const found = (vData[type] || []).find(v => v.visit_id == editAppData.visit_id);
+                        if (found) {
+                            showVisit(type);
+                            proceedWithVisitSelection(found);
+                            break;
+                        }
+                    }
+                }
+            });
+        }
+
+        // Restore remarks
+        if (editAppData.remarks) {
+            $('#claim_remarks').val(editAppData.remarks);
+        }
+
+        // Restore welfare toggle state if total_welfare > 0
+        if (parseFloat(editAppData.total_welfare || 0) > 0) {
+            isAISuggestionActive = true;
+            $('#toggleWelfareFund').prop('checked', true);
+            $('#btnAIToggle')
+                .removeClass('btn-outline-primary')
+                .addClass('btn-success')
+                .html('<i class="bi bi-check-circle-fill me-1"></i> AI 80/20 & Kebajikan Aktif <span class="badge bg-white text-success ms-1 small">Klik Reset</span>');
+            $('#aiBannerContainer')
+                .removeClass('border-primary-subtle bg-light')
+                .addClass('border-success bg-success bg-opacity-10');
+        }
+    }
 });
 
 // Proceed from Tab 2 to Tab 3
@@ -1627,7 +1717,7 @@ $('#declarationCheck').on('change', function () {
     $('#btnSubmitClaimApp').prop('disabled', !this.checked);
 });
 
-// Final Claim Submission Handler
+// Final Claim Submission / Update Handler
 $('#btnSubmitClaimApp').on('click', function () {
     if (!selectedProcedures || selectedProcedures.length === 0) {
         Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Sila pilih sekurang-kurangnya satu prosedur untuk permohonan.' });
@@ -1641,9 +1731,13 @@ $('#btnSubmitClaimApp').on('click', function () {
 
     const isWelfare = $('#toggleWelfareFund').is(':checked');
 
+    const promptTitle = isEditMode ? 'Kemaskini Permohonan Tuntutan?' : 'Hantar Permohonan Tuntutan?';
+    const promptText  = isEditMode ? 'Adakah anda pasti untuk mengemaskini maklumat tuntutan ini?' : 'Adakah anda pasti untuk menghantar tuntutan ini?';
+    const confirmText = isEditMode ? '<i class="bi bi-check-circle me-1"></i> Ya, Kemaskini Sekarang' : '<i class="bi bi-check-circle me-1"></i> Ya, Hantar Sekarang';
+
     Swal.fire({
-        title: 'Hantar Permohonan Tuntutan?',
-        html: `<p class="mb-2">Adakah anda pasti untuk menghantar tuntutan ini?</p>
+        title: promptTitle,
+        html: `<p class="mb-2">${promptText}</p>
                <div class="text-start p-3 bg-light rounded small border">
                    <div><strong>Jumlah Kasar:</strong> RM ${tab3Totals.gross.toFixed(2)}</div>
                    <div><strong>Jumlah Bersih Tuntutan:</strong> <span class="text-success fw-bold">RM ${tab3Totals.claim.toFixed(2)}</span></div>
@@ -1651,7 +1745,7 @@ $('#btnSubmitClaimApp').on('click', function () {
                </div>`,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Ya, Hantar Sekarang',
+        confirmButtonText: confirmText,
         cancelButtonText: 'Batal',
         confirmButtonColor: '#198754'
     }).then((result) => {
@@ -1663,12 +1757,19 @@ $('#btnSubmitClaimApp').on('click', function () {
 
 function submitFinalClaim() {
     const btn = $('#btnSubmitClaimApp');
-    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Menghantar Permohonan...');
+    btn.prop('disabled', true).html(isEditMode 
+        ? '<span class="spinner-border spinner-border-sm me-2"></span>Mengemaskini Permohonan...' 
+        : '<span class="spinner-border spinner-border-sm me-2"></span>Menghantar Permohonan...');
 
     const isWelfare = $('#toggleWelfareFund').is(':checked');
 
     const payload = {
         '<?= csrf_token() ?>': $('[name="<?= csrf_token() ?>"]').val() || '<?= csrf_hash() ?>',
+        specialist_name: $('#specialist_name').val(),
+        staff_number: $('#staff_number').val(),
+        email: $('#email').val(),
+        department: $('#department').val(),
+        position: $('#position').val(),
         patient_rn: selectedVisit?.rn || currentPatient.rn || $('#selected_patient_rn').val(),
         patient_name: selectedVisit?.patient_name || currentPatient.name || $('#selected_patient_name').val(),
         patient_ic: selectedVisit?.nric || currentPatient.nric || $('#selected_patient_ic').val(),
@@ -1678,19 +1779,27 @@ function submitFinalClaim() {
         include_welfare: isWelfare ? 1 : 0
     };
 
+    const targetUrl = isEditMode 
+        ? BASE_URL + 'new-application/update/' + editAppId 
+        : BASE_URL + 'new-application/submit-claim';
+
     $.ajax({
-        url: BASE_URL + 'new-application/submit-claim',
+        url: targetUrl,
         method: 'POST',
         data: payload,
         dataType: 'json',
         success: function (res) {
             if (res.status === 'success') {
+                const titleSuccess = isEditMode ? 'Permohonan Berjaya Dikemaskini!' : 'Permohonan Berjaya Dihantar!';
+                const msgSuccess   = isEditMode ? 'Maklumat permohonan tuntutan anda telah berjaya dikemaskini.' : 'Permohonan tuntutan anda telah berjaya disimpan dan dihantar.';
+                const listBtnText  = isEditMode ? '<i class="bi bi-eye me-1"></i> Lihat Permohonan' : '<i class="bi bi-list-ul me-1"></i> Senarai Permohonan';
+
                 Swal.fire({
                     icon: 'success',
-                    title: 'Permohonan Berjaya Dihantar!',
+                    title: titleSuccess,
                     html: `
                         <div class="text-center mb-3">
-                            <p class="mb-2">Permohonan tuntutan anda telah berjaya disimpan dan dihantar.</p>
+                            <p class="mb-2">${msgSuccess}</p>
                             <div class="p-2 bg-light rounded border d-inline-block">
                                 <span class="text-muted small">No. Rujukan:</span><br>
                                 <strong class="fs-5 text-primary font-monospace">${res.application_no}</strong>
@@ -1700,7 +1809,7 @@ function submitFinalClaim() {
                     `,
                     showCancelButton: true,
                     confirmButtonText: '<i class="bi bi-printer-fill me-1"></i> Cetak Permohonan',
-                    cancelButtonText: '<i class="bi bi-list-ul me-1"></i> Senarai Permohonan',
+                    cancelButtonText: listBtnText,
                     confirmButtonColor: '#0d6efd',
                     cancelButtonColor: '#6c757d',
                     allowOutsideClick: false
@@ -1708,16 +1817,22 @@ function submitFinalClaim() {
                     if (result.isConfirmed) {
                         window.location.href = BASE_URL + 'new-application/show/' + res.id + '?print=1';
                     } else {
-                        window.location.href = BASE_URL + 'new-application';
+                        if (isEditMode) {
+                            window.location.href = BASE_URL + 'new-application/show/' + res.id;
+                        } else {
+                            window.location.href = BASE_URL + 'new-application';
+                        }
                     }
                 });
             } else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Ralat',
-                    text: res.message || 'Gagal menghantar permohonan.'
+                    text: res.message || (isEditMode ? 'Gagal mengemaskini permohonan.' : 'Gagal menghantar permohonan.')
                 });
-                btn.prop('disabled', false).html('<i class="bi bi-send-check me-2"></i> Hantar Permohonan Tuntutan');
+                btn.prop('disabled', false).html(isEditMode 
+                    ? '<i class="bi bi-check-circle-fill me-2"></i> Kemaskini Permohonan Tuntutan' 
+                    : '<i class="bi bi-send-check me-2"></i> Hantar Permohonan Tuntutan');
             }
         },
         error: function () {
@@ -1726,7 +1841,9 @@ function submitFinalClaim() {
                 title: 'Ralat Pelayan',
                 text: 'Sila cuba lagi sebentar lagi.'
             });
-            btn.prop('disabled', false).html('<i class="bi bi-send-check me-2"></i> Hantar Permohonan Tuntutan');
+            btn.prop('disabled', false).html(isEditMode 
+                ? '<i class="bi bi-check-circle-fill me-2"></i> Kemaskini Permohonan Tuntutan' 
+                : '<i class="bi bi-send-check me-2"></i> Hantar Permohonan Tuntutan');
         }
     });
 }

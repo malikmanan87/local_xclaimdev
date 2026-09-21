@@ -65,8 +65,9 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->post('check-visit-claim',   'NewApplicationController::checkVisitClaim');
         $routes->post('store-patient',       'NewApplicationController::storePatient');
         $routes->post('submit-claim',        'NewApplicationController::submitClaim');
-        $routes->post('submit',              'NewApplicationController::submitClaim');
         $routes->get('show/(:num)',          'NewApplicationController::show/$1');
+        $routes->get('edit/(:num)',          'NewApplicationController::edit/$1');
+        $routes->post('update/(:num)',        'NewApplicationController::update/$1');
     });
 
     // Alias routes for application/* if called by legacy scripts

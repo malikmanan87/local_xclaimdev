@@ -61,10 +61,23 @@
                                 <?= $app['submitted_at'] ? date('d/m/Y h:i A', strtotime($app['submitted_at'])) : '<span class="text-muted fst-italic">—</span>' ?>
                             </td>
                             <td class="text-center">
-                                <a href="<?= base_url('new-application/show/' . $app['id']) ?>"
-                                   class="btn-action btn-action-view" title="View">
-                                    <i class="bi bi-eye"></i>
-                                </a>
+                                <div class="d-flex align-items-center justify-content-center gap-1">
+                                    <a href="<?= base_url('new-application/show/' . $app['id']) ?>"
+                                       class="btn-action btn-action-view" title="Lihat Perincian">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <?php 
+                                    $isEditable = ($app['status'] === 'submitted' && 
+                                                   ($app['jppp_status'] ?? 'pending') === 'pending' && 
+                                                   ($app['finance_status'] ?? 'pending') === 'pending');
+                                    if ($isEditable): 
+                                    ?>
+                                    <a href="<?= base_url('new-application/edit/' . $app['id']) ?>"
+                                       class="btn-action text-warning" title="Edit Permohonan">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; ?>
