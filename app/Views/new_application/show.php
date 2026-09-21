@@ -262,26 +262,26 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
                 <thead class="align-middle">
                     <tr class="fw-bold">
                         <th rowspan="2" style="width: 3%;" class="bg-light">BIL.</th>
-                        <th rowspan="2" style="width: 12%;" class="bg-light">NAMA PESAKIT</th>
-                        <th rowspan="2" style="width: 7%;" class="bg-light">NO. R/N</th>
-                        <th rowspan="2" style="width: 20%;" class="bg-light">
-                            PROSEDUR/ PERKHIDMATAN<br>
-                            <span class="fw-normal text-muted fst-italic" style="font-size: 0.62rem;">** Sila Ke Lampiran 1 Jika Ruang Tidak Mencukupi</span>
+                        <th rowspan="2" style="width: 11%;" class="bg-light">NAMA PESAKIT</th>
+                        <th rowspan="2" style="width: 6%;" class="bg-light">NO. R/N</th>
+                        <th rowspan="2" style="width: 23%;" class="bg-light">
+                            PROSEDUR / PERKHIDMATAN<br>
+                            <span class="fw-normal text-muted fst-italic" style="font-size: 0.58rem;">** Sila Ke Lampiran 1 Jika Ruang Tidak Mencukupi</span>
                         </th>
-                        <th rowspan="2" style="width: 7%;" class="bg-light">TARIKH BIL.</th>
-                        <th rowspan="2" style="width: 7%;" class="bg-light">NO. RESIT</th>
-                        <th colspan="2" style="width: 11%;" class="bg-light">CAJ RUNDINGAN</th>
-                        <th colspan="2" style="width: 11%;" class="bg-light">CAJ TATACARA</th>
-                        <th colspan="2" style="width: 11%;" class="bg-light">CAJ PELAPORAN PERUBATAN</th>
-                        <th rowspan="2" style="width: 11%;" class="bg-light">JUMLAH TUNTUTAN (RM)</th>
+                        <th rowspan="2" style="width: 6%;" class="bg-light">TARIKH BIL.</th>
+                        <th rowspan="2" style="width: 6%;" class="bg-light">NO. RESIT</th>
+                        <th colspan="2" style="width: 12.5%;" class="bg-light">CAJ RUNDINGAN</th>
+                        <th colspan="2" style="width: 12.5%;" class="bg-light">CAJ TATACARA</th>
+                        <th colspan="2" style="width: 12.5%;" class="bg-light">CAJ PELAPORAN PERUBATAN</th>
+                        <th rowspan="2" style="width: 7.5%;" class="bg-light">JUMLAH TUNTUTAN (RM)</th>
                     </tr>
-                    <tr class="fw-bold" style="font-size: 0.65rem;">
-                        <th style="width: 5.5%;" class="bg-light">KADAR CAJ (RM)</th>
-                        <th style="width: 5.5%;" class="bg-light">KADAR AGIHAN (75%) (RM)</th>
-                        <th style="width: 5.5%;" class="bg-light">KADAR CAJ (RM)</th>
-                        <th style="width: 5.5%;" class="bg-light">KADAR AGIHAN (75%) (RM)</th>
-                        <th style="width: 5.5%;" class="bg-light">KADAR CAJ (RM)</th>
-                        <th style="width: 5.5%;" class="bg-light">KADAR AGIHAN (70%) (RM)</th>
+                    <tr class="fw-bold claims-subhead">
+                        <th style="width: 6.25%;" class="bg-light">KADAR CAJ<br>(RM)</th>
+                        <th style="width: 6.25%;" class="bg-light">AGIHAN PAKAR<br>(75%) (RM)</th>
+                        <th style="width: 6.25%;" class="bg-light">KADAR CAJ<br>(RM)</th>
+                        <th style="width: 6.25%;" class="bg-light">AGIHAN PAKAR<br>(75%) (RM)</th>
+                        <th style="width: 6.25%;" class="bg-light">KADAR CAJ<br>(RM)</th>
+                        <th style="width: 6.25%;" class="bg-light">AGIHAN PAKAR<br>(70%) (RM)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -694,24 +694,39 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
         width: 100% !important;
         table-layout: fixed !important;
         font-size: 6.8pt !important;
-        word-break: break-word !important;
     }
 
     .form-claims-table th,
     .form-claims-table td {
-        padding: 2.5px 2px !important;
-        line-height: 1.15 !important;
         vertical-align: middle !important;
     }
 
-    .form-claims-table thead tr:first-child th {
-        font-size: 6.4pt !important;
-        padding: 3px 1px !important;
+    .form-claims-table td {
+        padding: 3px 2px !important;
+        line-height: 1.2 !important;
+        word-break: break-word !important;
     }
 
-    .form-claims-table thead tr:last-child th {
-        font-size: 5.8pt !important;
-        padding: 2px 1px !important;
+    /* Elak pertindihan teks pada tajuk kolum semasa cetakan */
+    .form-claims-table thead th {
+        line-height: 1.35 !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+        white-space: normal !important;
+        hyphens: none !important;
+    }
+
+    .form-claims-table thead tr:first-child th {
+        font-size: 6.5pt !important;
+        padding: 4px 1px !important;
+        line-height: 1.25 !important;
+    }
+
+    .form-claims-table thead tr:last-child th,
+    .form-claims-table thead .claims-subhead th {
+        font-size: 5.6pt !important;
+        padding: 3px 1px !important;
+        line-height: 1.35 !important;
     }
 
     /* Sembunyikan badge status setiap pegawai pada borang cetakan fizikal */
