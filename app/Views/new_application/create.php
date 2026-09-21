@@ -495,9 +495,6 @@
                     <i class="bi bi-receipt text-primary me-2"></i>
                     <strong>Tab 3 — Claim Details (Perincian & Jumlah Bersih Tuntutan)</strong>
                 </div>
-                <button type="button" class="btn btn-outline-info btn-sm shadow-sm" onclick="runAISuggestions()">
-                    <i class="bi bi-robot me-1"></i> AI Auto-Suggest (80/20)
-                </button>
             </div>
 
             <!-- Context Info Cards: Specialist & Patient Summary -->
@@ -541,18 +538,28 @@
                 </div>
             </div>
 
-            <!-- Optional Welfare Fund Toggle Box -->
-            <div class="card border-warning-subtle bg-warning bg-opacity-10 shadow-sm rounded-3 mb-3 p-3">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input fs-5" type="checkbox" role="switch" id="toggleWelfareFund">
-                        <label class="form-check-label fw-semibold text-dark ms-2 pt-1" for="toggleWelfareFund">
-                            <i class="bi bi-heart-pulse-fill text-danger me-1"></i> Sumbang Baki ke Tabung Kebajikan Hospital (Welfare Fund)
-                            <span class="badge bg-secondary ms-1">Pilihan / Optional</span>
-                        </label>
+            <!-- Smart Action Banner: AI Auto-Suggest (80/20) & Tabung Kebajikan (Pilihan A) -->
+            <input class="d-none" type="checkbox" id="toggleWelfareFund">
+            <div class="card border border-primary-subtle bg-light shadow-sm rounded-3 mb-3 p-3 transition-all" id="aiBannerContainer">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div class="d-flex align-items-center">
+                        <div class="badge bg-primary bg-gradient p-2 me-3 rounded-3 shadow-sm text-white fs-5">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark d-flex align-items-center gap-2">
+                                <span>Skim Agihan Pintar (AI 80/20 & Tabung Kebajikan)</span>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace" style="font-size: 0.72rem;">Syor Automatik</span>
+                            </div>
+                            <div class="text-muted small mt-1">
+                                Selaraskan prosedur bernilai tinggi (> RM 500) kepada <strong>80% tuntutan pakar</strong> dan salurkan baki <strong>20% ke Tabung Kebajikan Hospital</strong>.
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-muted small">
-                        <i class="bi bi-info-circle me-1"></i> Jika tidak diaktifkan, baki potongan tidak disalurkan ke Tabung Kebajikan (RM 0.00).
+                    <div>
+                        <button type="button" class="btn btn-outline-primary btn-sm px-3 py-2 shadow-sm rounded-2 fw-semibold" id="btnAIToggle" onclick="toggleAISuggestion()">
+                            <i class="bi bi-stars me-1 text-warning"></i> Aktifkan AI 80/20 & Tabung Kebajikan
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1536,35 +1543,83 @@ function updateTab3KPIs(gross, claim, welfare) {
     $('#tab3_kpi_claim').text('RM ' + claim.toFixed(2));
     $('#tab3_kpi_welfare').text('RM ' + welfare.toFixed(2));
     $('#tab3_kpi_welfare_status').html(isWelfareEnabled 
-        ? '<span class="text-success fw-medium"><i class="bi bi-check-circle me-1"></i>Diaktifkan</span>' 
+        ? '<span class="text-success fw-medium"><i class="bi bi-check-circle-fill me-1"></i>Diaktifkan (AI 80/20)</span>' 
         : '<span class="text-muted"><i class="bi bi-dash-circle me-1"></i>Tidak Diaktifkan</span>'
     );
 }
 
-// AI Auto Suggest (80/20 rule)
-function runAISuggestions() {
+// AI Auto Suggest & Welfare Fund Toggle (Pilihan A)
+let isAISuggestionActive = false;
+
+function toggleAISuggestion() {
     if (!selectedProcedures || selectedProcedures.length === 0) {
-        Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Sila pilih sekurang-kurangnya satu prosedur terlebih dahulu.' });
+        Swal.fire({
+            icon: 'warning',
+            title: 'Perhatian',
+            text: 'Sila pilih sekurang-kurangnya satu prosedur terlebih dahulu di Tab 2.'
+        });
         return;
     }
 
-    selectedProcedures.forEach(p => {
-        const fee = parseFloat(p.price) || 0;
-        // High-value fees (> RM 500) suggest 80% claim (20% to welfare fund)
-        p.claimPct = fee > 500 ? 80 : 100;
-    });
+    isAISuggestionActive = !isAISuggestionActive;
 
-    // Auto-enable welfare toggle when AI suggestion is chosen
-    $('#toggleWelfareFund').prop('checked', true);
+    if (isAISuggestionActive) {
+        // High-value fees (> RM 500) suggest 80% claim (20% to welfare fund)
+        selectedProcedures.forEach(p => {
+            const fee = parseFloat(p.price) || 0;
+            p.claimPct = fee > 500 ? 80 : 100;
+        });
+        $('#toggleWelfareFund').prop('checked', true);
+
+        // Update button & banner styling
+        $('#btnAIToggle')
+            .removeClass('btn-outline-primary')
+            .addClass('btn-success')
+            .html('<i class="bi bi-check-circle-fill me-1"></i> AI 80/20 & Kebajikan Aktif <span class="badge bg-white text-success ms-1 small">Klik Reset</span>');
+
+        $('#aiBannerContainer')
+            .removeClass('border-primary-subtle bg-light')
+            .addClass('border-success bg-success bg-opacity-10');
+
+        Swal.fire({
+            icon: 'success',
+            title: 'AI 80/20 & Tabung Kebajikan Diaktifkan',
+            text: 'Prosedur bernilai tinggi (>RM 500) diselaraskan kepada 80% tuntutan pakar. Baki 20% disalurkan ke Tabung Kebajikan Hospital.',
+            timer: 2200,
+            showConfirmButton: false
+        });
+    } else {
+        // Reset procedures to 100% claim
+        selectedProcedures.forEach(p => {
+            p.claimPct = 100;
+        });
+        $('#toggleWelfareFund').prop('checked', false);
+
+        // Reset button & banner styling
+        $('#btnAIToggle')
+            .removeClass('btn-success')
+            .addClass('btn-outline-primary')
+            .html('<i class="bi bi-stars me-1 text-warning"></i> Aktifkan AI 80/20 & Tabung Kebajikan');
+
+        $('#aiBannerContainer')
+            .removeClass('border-success bg-success bg-opacity-10')
+            .addClass('border-primary-subtle bg-light');
+
+        Swal.fire({
+            icon: 'info',
+            title: 'Ditetapkan Semula (Reset)',
+            text: 'Semua prosedur ditetapkan semula kepada 100% tuntutan pakar (Tiada sumbangan kebajikan).',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
 
     renderSelectedProcedures();
     renderTab3ClaimDetails();
+}
 
-    Swal.fire({
-        icon: 'info',
-        title: 'AI Auto-Suggest Selesai',
-        text: 'Prosedur bernilai tinggi (>RM 500) diselaraskan kepada 80% tuntutan. Sumbangan Tabung Kebajikan (20%) diaktifkan secara pilihan (boleh dinyahaktifkan bila-bila masa).'
-    });
+function runAISuggestions() {
+    toggleAISuggestion();
 }
 
 // Declaration Checkbox Handler
