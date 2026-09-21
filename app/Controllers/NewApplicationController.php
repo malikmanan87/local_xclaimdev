@@ -400,10 +400,10 @@ class NewApplicationController extends BaseController
             return redirect()->to(base_url('new-application/show/' . $id));
         }
 
-        // Semak kebenaran: hanya pemohon atau admin/manager dibenarkan edit
+        // Semak kebenaran: hanya pemohon atau admin/manager/pegawai PE/J3P/Pengarah dibenarkan edit
         $userId   = session('user_id');
-        $userRole = session('role') ?? '';
-        if ($application['submitted_by'] != $userId && !in_array($userRole, ['admin', 'manager'])) {
+        $userRole = session('role_name') ?? session('role') ?? '';
+        if ($application['submitted_by'] != $userId && !in_array($userRole, ['admin', 'manager', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah'])) {
             session()->setFlashdata('error', 'Anda tidak mempunyai kebenaran untuk mengemaskini permohonan ini.');
             return redirect()->to(base_url('new-application/show/' . $id));
         }
@@ -462,8 +462,8 @@ class NewApplicationController extends BaseController
 
         // Semak kebenaran
         $userId   = session('user_id');
-        $userRole = session('role') ?? '';
-        if ($application['submitted_by'] != $userId && !in_array($userRole, ['admin', 'manager'])) {
+        $userRole = session('role_name') ?? session('role') ?? '';
+        if ($application['submitted_by'] != $userId && !in_array($userRole, ['admin', 'manager', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah'])) {
             return $this->response->setJSON([
                 'status'  => 'error',
                 'message' => 'Anda tidak mempunyai kebenaran untuk mengemaskini permohonan ini.',

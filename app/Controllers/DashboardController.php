@@ -16,7 +16,7 @@ class DashboardController extends BaseController
 
         $userId   = session('user_id');
         $userRole = session('role_name') ?? session('role') ?? 'user';
-        $isAdmin  = in_array(strtolower($userRole), ['admin', 'manager']);
+        $isAdmin  = in_array(strtolower($userRole), ['admin', 'manager', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah']);
 
         // 1. KPI Metrik Utama Sistem Tuntutan
         $totalClaims        = (int) $db->table('new_applications')->countAllResults();

@@ -38,11 +38,18 @@
                         <label class="form-label text-muted small text-uppercase">System Role</label>
                         <div>
                             <?php
-                            $roleClasses = ['admin' => 'badge-role-admin', 'manager' => 'badge-role-manager', 'user' => 'badge-role-user'];
-                            $roleName    = $user['role_name'] ?? 'user';
+                            $roleClasses = [
+                                'admin'                   => 'badge-role-admin',
+                                'user'                    => 'badge-role-user',
+                                'pegawai_penyemak_pe'     => 'bg-primary text-white',
+                                'pegawai_perkhidmatan_pe' => 'bg-info text-dark',
+                                'ketua_j3p'               => 'bg-warning text-dark',
+                                'pengarah'                => 'bg-success text-white',
+                            ];
+                            $roleName = $user['role_name'] ?? 'user';
                             ?>
-                            <span class="badge-role fs-6 px-3 py-1 <?= $roleClasses[$roleName] ?? 'badge-role-user' ?>">
-                                <?= esc($user['role_display'] ?? ucfirst($roleName)) ?>
+                            <span class="badge-role fs-6 px-3 py-1 <?= $roleClasses[$roleName] ?? 'bg-secondary text-white' ?>">
+                                <?= esc($user['role_display'] ?? ucfirst(str_replace('_', ' ', $roleName))) ?>
                             </span>
                         </div>
                     </div>

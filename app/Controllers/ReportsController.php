@@ -31,7 +31,7 @@ class ReportsController extends BaseController
 
         // Kawalan akses: Jika peranan adalah 'user' biasa, hadkan kepada tuntutan miliknya
         $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
-        $isPrivileged = in_array($userRole, ['admin', 'manager', 'jppp', 'kewangan']);
+        $isPrivileged = in_array($userRole, ['admin', 'manager', 'jppp', 'kewangan', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah']);
         $userId = $isPrivileged ? null : (int)session('user_id');
 
         $reportResult = $this->appModel->getReportData($filters, $userId);
@@ -72,7 +72,7 @@ class ReportsController extends BaseController
         ];
 
         $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
-        $isPrivileged = in_array($userRole, ['admin', 'manager', 'jppp', 'kewangan']);
+        $isPrivileged = in_array($userRole, ['admin', 'manager', 'jppp', 'kewangan', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah']);
         $userId = $isPrivileged ? null : (int)session('user_id');
 
         $reportResult = $this->appModel->getReportData($filters, $userId);
@@ -169,7 +169,7 @@ class ReportsController extends BaseController
         ];
 
         $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
-        $isPrivileged = in_array($userRole, ['admin', 'manager', 'jppp', 'kewangan']);
+        $isPrivileged = in_array($userRole, ['admin', 'manager', 'jppp', 'kewangan', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah']);
         $userId = $isPrivileged ? null : (int)session('user_id');
 
         $reportResult = $this->appModel->getReportData($filters, $userId);

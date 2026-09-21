@@ -30,7 +30,9 @@ $procedures = !empty($application['procedures_data']) ? json_decode($application
             $isEditable = ($application['status'] === 'submitted' && 
                            ($application['jppp_status'] ?? 'pending') === 'pending' && 
                            ($application['finance_status'] ?? 'pending') === 'pending');
-            if ($isEditable): 
+            $currentUserRole = session('role_name') ?? session('role') ?? '';
+            $isOwnerOrStaff  = ($application['submitted_by'] == session('user_id')) || in_array($currentUserRole, ['admin', 'manager', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah']);
+            if ($isEditable && $isOwnerOrStaff): 
             ?>
             <a href="<?= base_url('new-application/edit/' . $application['id']) ?>" class="btn btn-warning btn-sm shadow-sm">
                 <i class="bi bi-pencil-square me-1"></i> Edit Permohonan

@@ -24,7 +24,7 @@
                                    class="form-control <?= isset($errors['name']) ? 'is-invalid' : '' ?>" 
                                    value="<?= old('name', $role['name'] ?? '') ?>" 
                                    placeholder="e.g. supervisor, auditor (lowercase only)"
-                                   <?= (isset($role) && in_array($role['name'], ['admin', 'manager', 'user'])) ? 'readonly' : '' ?>
+                                   <?= (isset($role) && in_array($role['name'], ['admin', 'user', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah', 'manager'])) ? 'readonly' : '' ?>
                                    required>
                             <div class="form-text small text-muted">Use lowercase letters only without spaces or special symbols.</div>
                             <?php if (isset($errors['name'])): ?>

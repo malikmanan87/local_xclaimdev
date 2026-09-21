@@ -19,7 +19,7 @@ class ReviewJpppController extends BaseController
     protected function checkAccess()
     {
         $role = strtolower(session('role_name') ?? session('role') ?? 'user');
-        if (!in_array($role, ['admin', 'manager', 'jppp'])) {
+        if (!in_array($role, ['admin', 'manager', 'jppp', 'pegawai_penyemak_pe', 'ketua_j3p', 'pengarah'])) {
             return redirect()->to('dashboard')->with('error', 'Akses tidak dibenarkan. Modul ini khusus untuk Jawatankuasa JPPP.');
         }
         return null;

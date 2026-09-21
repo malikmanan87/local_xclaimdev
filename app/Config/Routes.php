@@ -102,7 +102,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     });
 
     // Modul Pengurusan Prosedur MMA (Tambah / Kemaskini / Padam)
-    $routes->group('procedures', ['filter' => 'auth:admin,manager,jppp,kewangan'], function ($routes) {
+    $routes->group('procedures', ['filter' => 'auth:admin,manager,jppp,kewangan,pegawai_penyemak_pe,pegawai_perkhidmatan_pe,ketua_j3p,pengarah'], function ($routes) {
         $routes->get('/',              'ProceduresController::index');
         $routes->get('create',         'ProceduresController::create');
         $routes->post('store',         'ProceduresController::store');

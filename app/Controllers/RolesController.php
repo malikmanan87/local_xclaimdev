@@ -103,7 +103,9 @@ class RolesController extends BaseController
             'display_name' => 'required|min_length[3]|max_length[100]',
         ];
 
-        if (!in_array($role['name'], ['admin', 'manager', 'user'])) {
+        $coreRoles = ['admin', 'user', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah', 'manager'];
+
+        if (!in_array($role['name'], $coreRoles)) {
             $rules['name'] = "required|alpha_dash|min_length[3]|max_length[50]|is_unique[roles.name,id,{$id}]";
         }
 
@@ -116,7 +118,7 @@ class RolesController extends BaseController
             'description'  => $this->request->getPost('description'),
         ];
 
-        if (!in_array($role['name'], ['admin', 'manager', 'user'])) {
+        if (!in_array($role['name'], $coreRoles)) {
             $data['name'] = strtolower($this->request->getPost('name'));
         }
 
@@ -140,7 +142,8 @@ class RolesController extends BaseController
             return redirect()->to('roles')->with('error', 'Role not found.');
         }
 
-        if (in_array($role['name'], ['admin', 'manager', 'user'])) {
+        $coreRoles = ['admin', 'user', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah', 'manager'];
+        if (in_array($role['name'], $coreRoles)) {
             return redirect()->to('roles')->with('error', 'Default system roles cannot be deleted.');
         }
 

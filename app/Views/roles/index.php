@@ -29,8 +29,16 @@
                             <td class="text-center text-muted fw-medium"><?= $i + 1 ?></td>
                             <td>
                                 <?php
-                                $roleClasses = ['admin' => 'badge-role-admin', 'manager' => 'badge-role-manager', 'user' => 'badge-role-user'];
+                                $roleClasses = [
+                                    'admin'                   => 'badge-role-admin',
+                                    'user'                    => 'badge-role-user',
+                                    'pegawai_penyemak_pe'     => 'bg-primary text-white',
+                                    'pegawai_perkhidmatan_pe' => 'bg-info text-dark',
+                                    'ketua_j3p'               => 'bg-warning text-dark',
+                                    'pengarah'                => 'bg-success text-white',
+                                ];
                                 $roleName = esc($role['name']);
+                                $coreRoles = ['admin', 'user', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah'];
                                 ?>
                                 <span class="badge-role fw-semibold <?= $roleClasses[$roleName] ?? 'bg-secondary text-white' ?>">
                                     <?= $roleName ?>
@@ -45,7 +53,7 @@
                                     </a>
                                     
                                     <?php 
-                                    if (!in_array($role['name'], ['admin', 'manager', 'user'])): 
+                                    if (!in_array($role['name'], $coreRoles)): 
                                     ?>
                                         <button class="btn-action btn-action-delete" 
                                                 title="Delete" 

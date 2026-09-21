@@ -19,7 +19,7 @@ class ReviewKewanganController extends BaseController
     protected function checkAccess()
     {
         $role = strtolower(session('role_name') ?? session('role') ?? 'user');
-        if (!in_array($role, ['admin', 'manager', 'kewangan'])) {
+        if (!in_array($role, ['admin', 'manager', 'kewangan', 'pegawai_perkhidmatan_pe', 'pengarah'])) {
             return redirect()->to('dashboard')->with('error', 'Akses tidak dibenarkan. Modul ini khusus untuk Bahagian Kewangan.');
         }
         return null;

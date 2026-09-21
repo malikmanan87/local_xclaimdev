@@ -63,11 +63,18 @@
                             <td>
                                 <?php
                                 $roleName = esc($user['role_name'] ?? 'user');
-                                $roleLabels = ['admin' => 'Admin', 'manager' => 'Manager', 'user' => 'User'];
-                                $roleClasses = ['admin' => 'badge-role-admin', 'manager' => 'badge-role-manager', 'user' => 'badge-role-user'];
+                                $roleClasses = [
+                                    'admin'                   => 'badge-role-admin',
+                                    'user'                    => 'badge-role-user',
+                                    'pegawai_penyemak_pe'     => 'bg-primary text-white',
+                                    'pegawai_perkhidmatan_pe' => 'bg-info text-dark',
+                                    'ketua_j3p'               => 'bg-warning text-dark',
+                                    'pengarah'                => 'bg-success text-white',
+                                ];
+                                $displayName = esc($user['role_display'] ?? ucfirst(str_replace('_', ' ', $roleName)));
                                 ?>
-                                <span class="badge-role <?= $roleClasses[$roleName] ?? 'badge-role-user' ?>">
-                                    <?= $roleLabels[$roleName] ?? ucfirst($roleName) ?>
+                                <span class="badge-role <?= $roleClasses[$roleName] ?? 'bg-secondary text-white' ?>">
+                                    <?= $displayName ?>
                                 </span>
                             </td>
                             
