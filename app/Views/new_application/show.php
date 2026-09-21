@@ -64,6 +64,7 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
             <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-dark font-monospace">HoSZA-MGT-J3P (PE)-F-003-01</span>
                 <span class="badge-status <?= $mainBadgeClass ?> py-1 px-3"><?= $mainStatusText ?></span>
+                <span class="badge bg-secondary-subtle text-secondary border font-monospace">Format Landskap A4</span>
             </div>
             <h5 class="fw-bold mb-0 mt-1 text-dark">
                 Borang Tuntutan Bayaran Pakar: <span class="font-monospace text-primary"><?= esc($application['application_no']) ?></span>
@@ -78,8 +79,8 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
                     <i class="bi bi-pencil-square me-1"></i> Edit Permohonan
                 </a>
             <?php endif; ?>
-            <button type="button" class="btn btn-primary btn-sm shadow-sm" onclick="window.print()">
-                <i class="bi bi-printer-fill me-1"></i> Cetak Borang Rasmi
+            <button type="button" class="btn btn-primary btn-sm shadow-sm fw-semibold" onclick="window.print()">
+                <i class="bi bi-printer-fill me-1"></i> Cetak Borang (Landskap)
             </button>
             <a href="<?= base_url('new-application') ?>" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i> Kembali
@@ -183,368 +184,404 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
 </div>
 
 <!-- ================================================================= -->
-<!-- OFFICIAL FORM CONTAINER (HoSZA-MGT-J3P (PE)-F-003-01)              -->
+<!-- OFFICIAL FORM CONTAINER (HoSZA-MGT-J3P (PE)-F-003-01) - LANDSCAPE  -->
 <!-- ================================================================= -->
-<div class="official-form-sheet bg-white p-4 p-md-5 rounded-3 shadow-sm border mb-4">
+<div class="official-form-sheet bg-white p-3 p-md-4 rounded-3 shadow-sm border mb-4">
 
-    <!-- Form Top Bar: Logo, Institution, Document Code -->
-    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
-        <div>
-            <div class="fw-bold text-dark fs-5 text-uppercase" style="letter-spacing: 0.5px;">Hospital Sultan Zainal Abidin</div>
-            <div class="text-secondary small">Sultan Zainal Abidin Hospital (UniSZA)</div>
-            <div class="text-muted small mt-1 font-monospace">No. Rujukan: <strong><?= esc($application['application_no']) ?></strong></div>
-        </div>
-        <div class="text-end">
-            <div class="border border-dark px-2 py-1 fw-bold text-dark font-monospace small bg-light d-inline-block">
-                HoSZA-MGT-J3P (PE)-F-003-01
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <!-- HELAIAN 1 (LANDSKAP): Maklumat Pegawai & Butiran Tuntutan      -->
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <div class="sheet-page sheet-page-1">
+        <!-- Form Top Bar: Logo, Institution, Document Code -->
+        <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
+            <div>
+                <div class="fw-bold text-dark fs-5 text-uppercase" style="letter-spacing: 0.5px;">Hospital Sultan Zainal Abidin</div>
+                <div class="text-secondary small">Sultan Zainal Abidin Hospital (UniSZA)</div>
+                <div class="text-muted small mt-1 font-monospace">No. Rujukan: <strong><?= esc($application['application_no']) ?></strong></div>
             </div>
-            <div class="small text-muted mt-1">Helaian: 1 / 2</div>
+            <div class="text-end">
+                <div class="border border-dark px-2 py-1 fw-bold text-dark font-monospace small bg-light d-inline-block">
+                    HoSZA-MGT-J3P (PE)-F-003-01
+                </div>
+                <div class="small text-muted mt-1 font-monospace">Helaian 1 / 3</div>
+            </div>
         </div>
-    </div>
 
-    <!-- Official Title -->
-    <div class="text-center my-3">
-        <h5 class="fw-bold text-dark text-uppercase mb-1" style="letter-spacing: 0.5px;">
-            BORANG TUNTUTAN BAYARAN PAKAR DI BAWAH PERKHIDMATAN EKSEKUTIF (PE)
-        </h5>
-        <div class="fw-bold text-dark text-uppercase">
-            BAGI BULAN <span class="border-bottom border-dark px-3"><?= esc($monthText) ?></span> 
-            TAHUN <span class="border-bottom border-dark px-3"><?= esc($claimYear) ?></span>
+        <!-- Official Title -->
+        <div class="text-center my-2">
+            <h5 class="fw-bold text-dark text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 1.05rem;">
+                BORANG TUNTUTAN BAYARAN PAKAR DI BAWAH PERKHIDMATAN EKSEKUTIF (PE)
+            </h5>
+            <div class="fw-bold text-dark text-uppercase small">
+                BAGI BULAN <span class="border-bottom border-dark px-3 fw-bold"><?= esc($monthText) ?></span> 
+                TAHUN <span class="border-bottom border-dark px-3 fw-bold"><?= esc($claimYear) ?></span>
+            </div>
         </div>
-    </div>
 
-    <!-- BAHAGIAN A: Maklumat Pegawai Yang Menuntut -->
-    <div class="form-section-header bg-dark text-white fw-bold px-3 py-1 text-uppercase small mb-0">
-        BAHAGIAN A: MAKLUMAT PEGAWAI YANG MENUNTUT
-    </div>
-    <table class="table table-bordered table-sm align-middle small mb-4 border-dark">
-        <tbody>
-            <tr>
-                <td width="50%">
-                    <strong>NAMA PEGAWAI :</strong> <?= esc($application['specialist_name']) ?>
-                </td>
-                <td width="50%">
-                    <strong>NO. KAD PENGENALAN :</strong> <?= esc($application['staff_ic'] ?? '-') ?>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <strong>NO. PEKERJA :</strong> <?= esc($application['staff_number']) ?>
-                </td>
-                <td>
-                    <strong>JAWATAN & GRED :</strong> <?= esc($application['position']) ?> <?= !empty($application['grade']) ? '(' . esc($application['grade']) . ')' : '' ?>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <strong>NO. TELEFON :</strong> <?= esc($application['phone'] ?? '-') ?>
-                </td>
-                <td>
-                    <strong>E-MEL :</strong> <?= esc($application['email']) ?>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <!-- BAHAGIAN B: Butiran Tuntutan (13 Kolum) -->
-    <div class="form-section-header bg-dark text-white fw-bold px-3 py-1 text-uppercase small mb-0">
-        BAHAGIAN B: BUTIRAN TUNTUTAN
-    </div>
-    <div class="table-responsive mb-0">
-        <table class="table table-bordered table-sm align-middle text-center small mb-0 border-dark form-claims-table" style="font-size: 0.76rem;">
-            <thead class="align-middle">
-                <tr class="fw-bold">
-                    <th rowspan="2" width="3%" class="bg-light">BIL.</th>
-                    <th rowspan="2" width="13%" class="bg-light">NAMA PESAKIT</th>
-                    <th rowspan="2" width="8%" class="bg-light">NO. R/N</th>
-                    <th rowspan="2" width="22%" class="bg-light">
-                        PROSEDUR/ PERKHIDMATAN<br>
-                        <span class="fw-normal text-muted" style="font-size: 0.65rem;">** Sila Ke Lampiran 1 Jika Ruang Tidak Mencukupi</span>
-                    </th>
-                    <th rowspan="2" width="8%" class="bg-light">TARIKH BIL.</th>
-                    <th rowspan="2" width="8%" class="bg-light">NO. RESIT</th>
-                    <th colspan="2" width="12%" class="bg-light">CAJ RUNDINGAN</th>
-                    <th colspan="2" width="12%" class="bg-light">CAJ TATACARA</th>
-                    <th colspan="2" width="12%" class="bg-light">CAJ PELAPORAN PERUBATAN</th>
-                    <th rowspan="2" width="10%" class="bg-light">JUMLAH TUNTUTAN (RM)</th>
+        <!-- BAHAGIAN A: Maklumat Pegawai Yang Menuntut -->
+        <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0">
+            BAHAGIAN A: MAKLUMAT PEGAWAI YANG MENUNTUT
+        </div>
+        <table class="table table-bordered table-sm align-middle small mb-3 border-dark" style="font-size: 0.8rem;">
+            <tbody>
+                <tr>
+                    <td width="50%">
+                        <strong>NAMA PEGAWAI :</strong> <?= esc($application['specialist_name']) ?>
+                    </td>
+                    <td width="50%">
+                        <strong>NO. KAD PENGENALAN :</strong> <?= esc($application['staff_ic'] ?? '-') ?>
+                    </td>
                 </tr>
-                <tr class="fw-bold" style="font-size: 0.68rem;">
-                    <th class="bg-light">KADAR CAJ (RM)</th>
-                    <th class="bg-light">KADAR AGIHAN PAKAR (75%) (RM)</th>
-                    <th class="bg-light">KADAR CAJ (RM)</th>
-                    <th class="bg-light">KADAR AGIHAN PAKAR (75%) (RM)</th>
-                    <th class="bg-light">KADAR CAJ (RM)</th>
-                    <th class="bg-light">KADAR AGIHAN PAKAR (70%) (RM)</th>
+                <tr>
+                    <td>
+                        <strong>NO. PEKERJA :</strong> <?= esc($application['staff_number']) ?>
+                    </td>
+                    <td>
+                        <strong>JAWATAN & GRED :</strong> <?= esc($application['position']) ?> <?= !empty($application['grade']) ? '(' . esc($application['grade']) . ')' : '' ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>NO. TELEFON :</strong> <?= esc($application['phone'] ?? '-') ?>
+                    </td>
+                    <td>
+                        <strong>E-MEL :</strong> <?= esc($application['email']) ?>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- BAHAGIAN B: Butiran Tuntutan (13 Kolum Landskap) -->
+        <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0">
+            BAHAGIAN B: BUTIRAN TUNTUTAN
+        </div>
+        <div class="table-responsive mb-0">
+            <table class="table table-bordered table-sm align-middle text-center small mb-0 border-dark form-claims-table" style="font-size: 0.74rem;">
+                <thead class="align-middle">
+                    <tr class="fw-bold">
+                        <th rowspan="2" width="3%" class="bg-light">BIL.</th>
+                        <th rowspan="2" width="13%" class="bg-light">NAMA PESAKIT</th>
+                        <th rowspan="2" width="7%" class="bg-light">NO. R/N</th>
+                        <th rowspan="2" width="23%" class="bg-light">
+                            PROSEDUR/ PERKHIDMATAN<br>
+                            <span class="fw-normal text-muted" style="font-size: 0.65rem;">** Sila Ke Lampiran 1 Jika Ruang Tidak Mencukupi</span>
+                        </th>
+                        <th rowspan="2" width="7%" class="bg-light">TARIKH BIL.</th>
+                        <th rowspan="2" width="7%" class="bg-light">NO. RESIT</th>
+                        <th colspan="2" width="12%" class="bg-light">CAJ RUNDINGAN</th>
+                        <th colspan="2" width="12%" class="bg-light">CAJ TATACARA</th>
+                        <th colspan="2" width="12%" class="bg-light">CAJ PELAPORAN PERUBATAN</th>
+                        <th rowspan="2" width="9%" class="bg-light">JUMLAH TUNTUTAN (RM)</th>
+                    </tr>
+                    <tr class="fw-bold" style="font-size: 0.68rem;">
+                        <th class="bg-light">KADAR CAJ (RM)</th>
+                        <th class="bg-light">KADAR AGIHAN PAKAR (75%) (RM)</th>
+                        <th class="bg-light">KADAR CAJ (RM)</th>
+                        <th class="bg-light">KADAR AGIHAN PAKAR (75%) (RM)</th>
+                        <th class="bg-light">KADAR CAJ (RM)</th>
+                        <th class="bg-light">KADAR AGIHAN PAKAR (70%) (RM)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $totRundKadar = 0; $totRundAgihan = 0;
+                    $totTataKadar = 0; $totTataAgihan = 0;
+                    $totPelaKadar = 0; $totPelaAgihan = 0;
+                    $totKeseluruhanTuntutan = 0;
+
+                    $rowCount = max(count($procedures), 11); // 11 baris mengikut format fizikal asal PDF
+
+                    for ($i = 0; $i < $rowCount; $i++):
+                        $p = $procedures[$i] ?? null;
+
+                        if ($p):
+                            $fee = (float)($p['price'] ?? 0);
+                            $cType = $p['charge_type'] ?? 'tatacara';
+                            $defaultPct = $cType === 'pelaporan' ? 70 : 75;
+                            $pct = isset($p['claimPct']) ? (float)$p['claimPct'] : $defaultPct;
+                            $claimAmt = $fee * ($pct / 100);
+                            $totKeseluruhanTuntutan += $claimAmt;
+
+                            $rundKadar = '-'; $rundAgihan = '-';
+                            $tataKadar = '-'; $tataAgihan = '-';
+                            $pelaKadar = '-'; $pelaAgihan = '-';
+
+                            if ($cType === 'rundingan') {
+                                $totRundKadar += $fee; $totRundAgihan += $claimAmt;
+                                $rundKadar = number_format($fee, 2); $rundAgihan = number_format($claimAmt, 2);
+                            } elseif ($cType === 'pelaporan') {
+                                $totPelaKadar += $fee; $totPelaAgihan += $claimAmt;
+                                $pelaKadar = number_format($fee, 2); $pelaAgihan = number_format($claimAmt, 2);
+                            } else {
+                                $totTataKadar += $fee; $totTataAgihan += $claimAmt;
+                                $tataKadar = number_format($fee, 2); $tataAgihan = number_format($claimAmt, 2);
+                            }
+
+                            $pName = $application['patient_name'] ?? '-';
+                            $pRn   = $application['patient_rn'] ?? '-';
+                            $billDate = !empty($p['bill_date']) ? date('d/m/Y', strtotime($p['bill_date'])) : '-';
+                            $receiptNo = !empty($p['receipt_no']) ? $p['receipt_no'] : '-';
+                    ?>
+                        <tr>
+                            <td class="text-center"><?= $i + 1 ?></td>
+                            <td class="text-start fw-semibold"><?= esc($pName) ?></td>
+                            <td class="font-monospace"><?= esc($pRn) ?></td>
+                            <td class="text-start">
+                                <span class="font-monospace fw-semibold text-primary"><?= esc($p['code'] ?? '') ?></span>
+                                <?= esc($p['name'] ?? '-') ?>
+                            </td>
+                            <td><?= esc($billDate) ?></td>
+                            <td class="font-monospace"><?= esc($receiptNo) ?></td>
+                            <td class="text-end font-monospace"><?= $rundKadar ?></td>
+                            <td class="text-end font-monospace fw-semibold"><?= $rundAgihan ?></td>
+                            <td class="text-end font-monospace"><?= $tataKadar ?></td>
+                            <td class="text-end font-monospace fw-semibold"><?= $tataAgihan ?></td>
+                            <td class="text-end font-monospace"><?= $pelaKadar ?></td>
+                            <td class="text-end font-monospace fw-semibold"><?= $pelaAgihan ?></td>
+                            <td class="text-end font-monospace fw-bold text-success"><?= number_format($claimAmt, 2) ?></td>
+                        </tr>
+                    <?php else: ?>
+                        <tr>
+                            <td class="text-center text-muted"><?= $i + 1 ?></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td class="text-end">-</td>
+                            <td class="text-end">-</td>
+                            <td class="text-end">-</td>
+                            <td class="text-end">-</td>
+                            <td class="text-end">-</td>
+                            <td class="text-end">-</td>
+                            <td class="text-end">-</td>
+                        </tr>
+                    <?php endif; endfor; ?>
+                </tbody>
+                <tfoot class="fw-bold align-middle border-dark">
+                    <tr class="bg-light">
+                        <td colspan="6" class="text-end text-uppercase">JUMLAH (RM):</td>
+                        <td class="text-end font-monospace"><?= number_format($totRundKadar, 2) ?></td>
+                        <td class="text-end font-monospace text-primary"><?= number_format($totRundAgihan, 2) ?></td>
+                        <td class="text-end font-monospace"><?= number_format($totTataKadar, 2) ?></td>
+                        <td class="text-end font-monospace text-dark"><?= number_format($totTataAgihan, 2) ?></td>
+                        <td class="text-end font-monospace"><?= number_format($totPelaKadar, 2) ?></td>
+                        <td class="text-end font-monospace text-dark"><?= number_format($totPelaAgihan, 2) ?></td>
+                        <td class="text-end font-monospace text-success fs-6 fw-bold">
+                            <?= number_format($totKeseluruhanTuntutan > 0 ? $totKeseluruhanTuntutan : ($application['total_claim'] ?? 0), 2) ?>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Bahagian Bawah Helaian 1: Header Bahagian C & Nombor Helaian 1/ -->
+        <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0 mt-2">
+            BAHAGIAN C: MAKLUMAT PENGESAHAN
+        </div>
+        <div class="text-end fw-bold small text-dark d-none d-print-block mt-1">1/</div>
+    </div>
+
+    <!-- Page Break untuk Landskap -->
+    <div class="print-page-break my-4"></div>
+
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <!-- HELAIAN 2 (LANDSKAP): Pengesahan User, PE, J3P & Pengarah      -->
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <div class="sheet-page sheet-page-2">
+        <div class="d-none d-print-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
+            <span class="font-monospace small fw-bold">HoSZA-MGT-J3P (PE)-F-003-01 &bull; <?= esc($application['application_no']) ?></span>
+            <span class="small font-monospace">Helaian 2 / 3</span>
+        </div>
+
+        <!-- BAHAGIAN C: Maklumat Pengesahan (Kandungan) -->
+        <div class="border border-dark p-3 mb-3">
+            <p class="mb-3 text-dark" style="font-size: 0.88rem;">
+                Dengan ini saya mengesahkan bahawa Tuntutan Bayaran Pakar di bawah Perkhidmatan Eksekutif seperti maklumat yang disediakan adalah betul dan dilaksanakan oleh saya.
+            </p>
+            <div class="row">
+                <div class="col-sm-6 offset-sm-3 text-center pt-2">
+                    <div class="border-top border-dark pt-1">
+                        <div class="fw-bold text-dark"><?= esc($application['specialist_name']) ?></div>
+                        <div class="text-muted small">Tandatangan dan Cop Pegawai</div>
+                        <div class="small mt-1">
+                            <strong>Tarikh:</strong> <?= !empty($application['user_declared_at']) ? date('d/m/Y', strtotime($application['user_declared_at'])) : date('d/m/Y', strtotime($application['submitted_at'] ?? 'now')) ?>
+                            <span class="badge bg-success-subtle text-success border border-success ms-1 font-monospace">Disahkan Digital</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BAHAGIAN D: Pengesahan Pegawai Penyemak dan Pegawai Perkhidmatan Eksekutif -->
+        <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0">
+            BAHAGIAN D: PENGESAHAN PEGAWAI PENYEMAK DAN PEGAWAI PERKHIDMATAN EKSEKUTIF
+        </div>
+        <div class="border border-dark p-3 mb-3">
+            <p class="mb-3 text-dark" style="font-size: 0.86rem;">
+                Dengan ini saya mengesahkan bahawa pegawai telah menjalankan perkhidmatan sebagaimana yang dituntut. Tuntutan berjumlah 
+                <strong>RM <?= number_format($application['total_claim'] ?? 0, 2) ?></strong> dan dokumen yang disertakan adalah benar.
+            </p>
+            <div class="row g-3 text-center">
+                <div class="col-6">
+                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 125px;">
+                        <div>
+                            <div class="small fw-semibold text-secondary">PEGAWAI PENYEMAK PE</div>
+                            <?php if ($penyemakStatus === 'approved'): ?>
+                                <span class="badge bg-success my-1">Disemak & Disahkan</span>
+                            <?php elseif ($penyemakStatus === 'rejected'): ?>
+                                <span class="badge bg-danger my-1">Ditolak</span>
+                            <?php else: ?>
+                                <span class="badge bg-warning text-dark my-1">Menunggu Semakan</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="border-top border-dark pt-1 mt-2">
+                            <div class="fw-bold small text-dark"><?= esc($application['penyemak_reviewer_name'] ?? 'Tandatangan dan Cop Pegawai Penyemak') ?></div>
+                            <div class="small text-muted">
+                                Tarikh: <?= !empty($application['penyemak_verified_at']) ? date('d/m/Y', strtotime($application['penyemak_verified_at'])) : '................................' ?>
+                            </div>
+                            <?php if (!empty($application['penyemak_remarks'])): ?>
+                                <div class="small text-muted fst-italic mt-1">Nota: "<?= esc($application['penyemak_remarks']) ?>"</div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 125px;">
+                        <div>
+                            <div class="small fw-semibold text-secondary">PEGAWAI PERKHIDMATAN EKSEKUTIF</div>
+                            <?php if ($perkhidmatanStatus === 'approved'): ?>
+                                <span class="badge bg-success my-1">Disahkan</span>
+                            <?php elseif ($perkhidmatanStatus === 'rejected'): ?>
+                                <span class="badge bg-danger my-1">Ditolak</span>
+                            <?php else: ?>
+                                <span class="badge bg-warning text-dark my-1">Menunggu Tindakan</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="border-top border-dark pt-1 mt-2">
+                            <div class="fw-bold small text-dark"><?= esc($application['perkhidmatan_reviewer_name'] ?? 'Tandatangan dan Cop Pegawai Perkhidmatan Eksekutif') ?></div>
+                            <div class="small text-muted">
+                                Tarikh: <?= !empty($application['perkhidmatan_verified_at']) ? date('d/m/Y', strtotime($application['perkhidmatan_verified_at'])) : '................................' ?>
+                            </div>
+                            <?php if (!empty($application['perkhidmatan_remarks'])): ?>
+                                <div class="small text-muted fst-italic mt-1">Nota: "<?= esc($application['perkhidmatan_remarks']) ?>"</div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BAHAGIAN E: Pengesahan Ketua J3P dan Pengarah -->
+        <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0">
+            BAHAGIAN E: PENGESAHAN KETUA JABATAN PEMBANGUNAN PERNIAGAAN DAN PELABURAN (J3P) DAN KETUA PUSAT TANGGUNGJAWAB (KPTj)/PENGARAH
+        </div>
+        <div class="border border-dark p-3 mb-3">
+            <p class="mb-3 text-dark" style="font-size: 0.86rem;">
+                Dengan ini saya mengesahkan bahawa pegawai telah menjalankan perkhidmatan sebagaimana yang dituntut. Tuntutan berjumlah 
+                <strong>RM <?= number_format($application['total_claim'] ?? 0, 2) ?></strong> dan dokumen yang disertakan adalah benar sebagaimana yang disemak oleh Pegawai Penyemak dan Pegawai Perkhidmatan Eksekutif.
+            </p>
+            <div class="row g-3 text-center">
+                <div class="col-6">
+                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 125px;">
+                        <div>
+                            <div class="small fw-semibold text-secondary">KETUA JABATAN J3P</div>
+                            <?php if ($j3pStatus === 'approved'): ?>
+                                <span class="badge bg-success my-1">Disahkan & Disokong</span>
+                            <?php elseif ($j3pStatus === 'rejected'): ?>
+                                <span class="badge bg-danger my-1">Ditolak</span>
+                            <?php else: ?>
+                                <span class="badge bg-warning text-dark my-1">Menunggu Tindakan</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="border-top border-dark pt-1 mt-2">
+                            <div class="fw-bold small text-dark"><?= esc($application['j3p_reviewer_name'] ?? 'Tandatangan dan Cop Ketua J3P') ?></div>
+                            <div class="small text-muted">
+                                Tarikh: <?= !empty($application['j3p_verified_at']) ? date('d/m/Y', strtotime($application['j3p_verified_at'])) : '................................' ?>
+                            </div>
+                            <?php if (!empty($application['j3p_remarks'])): ?>
+                                <div class="small text-muted fst-italic mt-1">Nota: "<?= esc($application['j3p_remarks']) ?>"</div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 125px;">
+                        <div>
+                            <div class="small fw-semibold text-secondary">KETUA PUSAT TANGGUNGJAWAB (KPTj) / PENGARAH</div>
+                            <?php if ($pengarahStatus === 'approved'): ?>
+                                <span class="badge bg-success my-1">Diluluskan Penuh</span>
+                            <?php elseif ($pengarahStatus === 'rejected'): ?>
+                                <span class="badge bg-danger my-1">Ditolak</span>
+                            <?php else: ?>
+                                <span class="badge bg-warning text-dark my-1">Menunggu Kelulusan</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="border-top border-dark pt-1 mt-2">
+                            <div class="fw-bold small text-dark"><?= esc($application['pengarah_reviewer_name'] ?? 'Tandatangan dan Cop KPTj/Pengarah') ?></div>
+                            <div class="small text-muted">
+                                Tarikh: <?= !empty($application['pengarah_verified_at']) ? date('d/m/Y', strtotime($application['pengarah_verified_at'])) : '................................' ?>
+                            </div>
+                            <?php if (!empty($application['pengarah_remarks'])): ?>
+                                <div class="small text-muted fst-italic mt-1">Nota: "<?= esc($application['pengarah_remarks']) ?>"</div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bahagian Bawah Helaian 2: Header Lampiran 1 & Nombor Helaian 2/ -->
+        <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0">
+            LAMPIRAN 1
+        </div>
+        <div class="text-end fw-bold small text-dark d-none d-print-block mt-1">2/</div>
+    </div>
+
+    <!-- Page Break untuk Lampiran -->
+    <div class="print-page-break my-4"></div>
+
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <!-- HELAIAN 3 (LANDSKAP): Lampiran 1 (Senarai Prosedur 1 - 16)     -->
+    <!-- ───────────────────────────────────────────────────────────── -->
+    <div class="sheet-page sheet-page-3">
+        <div class="d-none d-print-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
+            <span class="font-monospace small fw-bold">HoSZA-MGT-J3P (PE)-F-003-01 &bull; <?= esc($application['application_no']) ?></span>
+            <span class="small font-monospace">Helaian 3 / 3</span>
+        </div>
+
+        <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0 d-flex justify-content-between align-items-center">
+            <span>LAMPIRAN 1</span>
+            <span class="font-monospace" style="font-size: 0.68rem;">HoSZA-MGT-J3P (PE)-F-003-01</span>
+        </div>
+        <table class="table table-bordered table-sm align-middle small mb-0 border-dark">
+            <thead class="table-light">
+                <tr>
+                    <th width="6%" class="text-center">BIL.</th>
+                    <th>PROSEDUR/PERKHIDMATAN</th>
                 </tr>
             </thead>
             <tbody>
-                <?php
-                $totRundKadar = 0; $totRundAgihan = 0;
-                $totTataKadar = 0; $totTataAgihan = 0;
-                $totPelaKadar = 0; $totPelaAgihan = 0;
-                $totKeseluruhanTuntutan = 0;
-
-                $rowCount = max(count($procedures), 6); // Keep minimum 6 rows for authentic look
-
-                for ($i = 0; $i < $rowCount; $i++):
-                    $p = $procedures[$i] ?? null;
-
-                    if ($p):
-                        $fee = (float)($p['price'] ?? 0);
-                        $cType = $p['charge_type'] ?? 'tatacara';
-                        $defaultPct = $cType === 'pelaporan' ? 70 : 75;
-                        $pct = isset($p['claimPct']) ? (float)$p['claimPct'] : $defaultPct;
-                        $claimAmt = $fee * ($pct / 100);
-                        $totKeseluruhanTuntutan += $claimAmt;
-
-                        $rundKadar = '-'; $rundAgihan = '-';
-                        $tataKadar = '-'; $tataAgihan = '-';
-                        $pelaKadar = '-'; $pelaAgihan = '-';
-
-                        if ($cType === 'rundingan') {
-                            $totRundKadar += $fee; $totRundAgihan += $claimAmt;
-                            $rundKadar = number_format($fee, 2); $rundAgihan = number_format($claimAmt, 2);
-                        } elseif ($cType === 'pelaporan') {
-                            $totPelaKadar += $fee; $totPelaAgihan += $claimAmt;
-                            $pelaKadar = number_format($fee, 2); $pelaAgihan = number_format($claimAmt, 2);
-                        } else {
-                            $totTataKadar += $fee; $totTataAgihan += $claimAmt;
-                            $tataKadar = number_format($fee, 2); $tataAgihan = number_format($claimAmt, 2);
-                        }
-
-                        $pName = $application['patient_name'] ?? '-';
-                        $pRn   = $application['patient_rn'] ?? '-';
-                        $billDate = !empty($p['bill_date']) ? date('d/m/Y', strtotime($p['bill_date'])) : '-';
-                        $receiptNo = !empty($p['receipt_no']) ? $p['receipt_no'] : '-';
+                <?php for ($n = 1; $n <= 16; $n++): 
+                    $procItem = $procedures[$n - 1] ?? null;
                 ?>
-                    <tr>
-                        <td class="text-center"><?= $i + 1 ?></td>
-                        <td class="text-start fw-semibold"><?= esc($pName) ?></td>
-                        <td class="font-monospace"><?= esc($pRn) ?></td>
-                        <td class="text-start">
-                            <span class="font-monospace fw-semibold text-primary"><?= esc($p['code'] ?? '') ?></span>
-                            <?= esc($p['name'] ?? '-') ?>
+                    <tr style="height: 28px;">
+                        <td class="text-center fw-semibold text-muted"><?= $n ?></td>
+                        <td>
+                            <?php if ($procItem): ?>
+                                <span class="font-monospace fw-semibold text-primary"><?= esc($procItem['code'] ?? '') ?></span> - 
+                                <?= esc($procItem['name'] ?? '') ?> 
+                                (Kategori: <?= strtoupper(esc($procItem['charge_type'] ?? 'TATACARA')) ?> &bull; Nilai: RM <?= number_format($procItem['price'] ?? 0, 2) ?>)
+                            <?php else: ?>
+                                &nbsp;
+                            <?php endif; ?>
                         </td>
-                        <td><?= esc($billDate) ?></td>
-                        <td class="font-monospace"><?= esc($receiptNo) ?></td>
-                        <td class="text-end font-monospace"><?= $rundKadar ?></td>
-                        <td class="text-end font-monospace fw-semibold"><?= $rundAgihan ?></td>
-                        <td class="text-end font-monospace"><?= $tataKadar ?></td>
-                        <td class="text-end font-monospace fw-semibold"><?= $tataAgihan ?></td>
-                        <td class="text-end font-monospace"><?= $pelaKadar ?></td>
-                        <td class="text-end font-monospace fw-semibold"><?= $pelaAgihan ?></td>
-                        <td class="text-end font-monospace fw-bold text-success"><?= number_format($claimAmt, 2) ?></td>
                     </tr>
-                <?php else: ?>
-                    <tr>
-                        <td class="text-center text-muted"><?= $i + 1 ?></td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td class="text-end">-</td>
-                        <td class="text-end">-</td>
-                        <td class="text-end">-</td>
-                        <td class="text-end">-</td>
-                        <td class="text-end">-</td>
-                        <td class="text-end">-</td>
-                        <td class="text-end">-</td>
-                    </tr>
-                <?php endif; endfor; ?>
+                <?php endfor; ?>
             </tbody>
-            <tfoot class="fw-bold align-middle border-dark">
-                <tr class="bg-light">
-                    <td colspan="6" class="text-end text-uppercase">JUMLAH (RM):</td>
-                    <td class="text-end font-monospace"><?= number_format($totRundKadar, 2) ?></td>
-                    <td class="text-end font-monospace text-primary"><?= number_format($totRundAgihan, 2) ?></td>
-                    <td class="text-end font-monospace"><?= number_format($totTataKadar, 2) ?></td>
-                    <td class="text-end font-monospace text-dark"><?= number_format($totTataAgihan, 2) ?></td>
-                    <td class="text-end font-monospace"><?= number_format($totPelaKadar, 2) ?></td>
-                    <td class="text-end font-monospace text-dark"><?= number_format($totPelaAgihan, 2) ?></td>
-                    <td class="text-end font-monospace text-success fs-6 fw-bold">
-                        <?= number_format($totKeseluruhanTuntutan > 0 ? $totKeseluruhanTuntutan : ($application['total_claim'] ?? 0), 2) ?>
-                    </td>
-                </tr>
-            </tfoot>
         </table>
+        <div class="text-end fw-bold small text-dark d-none d-print-block mt-2">3/</div>
     </div>
-
-    <!-- Page Break for Clean 2-Page Printing -->
-    <div class="print-page-break my-4"></div>
-
-    <!-- BAHAGIAN C: Maklumat Pengesahan -->
-    <div class="form-section-header bg-dark text-white fw-bold px-3 py-1 text-uppercase small mb-0 mt-3">
-        BAHAGIAN C: MAKLUMAT PENGESAHAN
-    </div>
-    <div class="border border-dark p-3 mb-4">
-        <p class="mb-4 text-dark" style="font-size: 0.9rem;">
-            Dengan ini saya mengesahkan bahawa Tuntutan Bayaran Pakar di bawah Perkhidmatan Eksekutif seperti maklumat yang disediakan adalah betul dan dilaksanakan oleh saya.
-        </p>
-        <div class="row">
-            <div class="col-sm-6 offset-sm-3 text-center pt-3">
-                <div class="border-top border-dark pt-2">
-                    <div class="fw-bold text-dark"><?= esc($application['specialist_name']) ?></div>
-                    <div class="text-muted small">Tandatangan dan Cop Pegawai</div>
-                    <div class="small mt-1">
-                        <strong>Tarikh:</strong> <?= !empty($application['user_declared_at']) ? date('d/m/Y', strtotime($application['user_declared_at'])) : date('d/m/Y', strtotime($application['submitted_at'] ?? 'now')) ?>
-                        <span class="badge bg-success-subtle text-success border border-success ms-1 font-monospace">Disahkan Digital</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- BAHAGIAN D: Pengesahan Pegawai Penyemak dan Pegawai Perkhidmatan Eksekutif -->
-    <div class="form-section-header bg-dark text-white fw-bold px-3 py-1 text-uppercase small mb-0">
-        BAHAGIAN D: PENGESAHAN PEGAWAI PENYEMAK DAN PEGAWAI PERKHIDMATAN EKSEKUTIF
-    </div>
-    <div class="border border-dark p-3 mb-4">
-        <p class="mb-4 text-dark" style="font-size: 0.88rem;">
-            Dengan ini saya mengesahkan bahawa pegawai telah menjalankan perkhidmatan sebagaimana yang dituntut. Tuntutan berjumlah 
-            <strong>RM <?= number_format($application['total_claim'] ?? 0, 2) ?></strong> dan dokumen yang disertakan adalah benar.
-        </p>
-        <div class="row g-4 text-center">
-            <div class="col-6">
-                <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 140px;">
-                    <div>
-                        <div class="small fw-semibold text-secondary">PEGAWAI PENYEMAK PE</div>
-                        <?php if ($penyemakStatus === 'approved'): ?>
-                            <span class="badge bg-success my-1">Disemak & Disahkan</span>
-                        <?php elseif ($penyemakStatus === 'rejected'): ?>
-                            <span class="badge bg-danger my-1">Ditolak</span>
-                        <?php else: ?>
-                            <span class="badge bg-warning text-dark my-1">Menunggu Semakan</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="border-top border-dark pt-2 mt-3">
-                        <div class="fw-bold small text-dark"><?= esc($application['penyemak_reviewer_name'] ?? 'Tandatangan dan Cop Pegawai Penyemak') ?></div>
-                        <div class="small text-muted">
-                            Tarikh: <?= !empty($application['penyemak_verified_at']) ? date('d/m/Y', strtotime($application['penyemak_verified_at'])) : '................................' ?>
-                        </div>
-                        <?php if (!empty($application['penyemak_remarks'])): ?>
-                            <div class="small text-muted fst-italic mt-1">Nota: "<?= esc($application['penyemak_remarks']) ?>"</div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 140px;">
-                    <div>
-                        <div class="small fw-semibold text-secondary">PEGAWAI PERKHIDMATAN EKSEKUTIF</div>
-                        <?php if ($perkhidmatanStatus === 'approved'): ?>
-                            <span class="badge bg-success my-1">Disahkan</span>
-                        <?php elseif ($perkhidmatanStatus === 'rejected'): ?>
-                            <span class="badge bg-danger my-1">Ditolak</span>
-                        <?php else: ?>
-                            <span class="badge bg-warning text-dark my-1">Menunggu Tindakan</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="border-top border-dark pt-2 mt-3">
-                        <div class="fw-bold small text-dark"><?= esc($application['perkhidmatan_reviewer_name'] ?? 'Tandatangan dan Cop Pegawai Perkhidmatan Eksekutif') ?></div>
-                        <div class="small text-muted">
-                            Tarikh: <?= !empty($application['perkhidmatan_verified_at']) ? date('d/m/Y', strtotime($application['perkhidmatan_verified_at'])) : '................................' ?>
-                        </div>
-                        <?php if (!empty($application['perkhidmatan_remarks'])): ?>
-                            <div class="small text-muted fst-italic mt-1">Nota: "<?= esc($application['perkhidmatan_remarks']) ?>"</div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- BAHAGIAN E: Pengesahan Ketua J3P dan Pengarah -->
-    <div class="form-section-header bg-dark text-white fw-bold px-3 py-1 text-uppercase small mb-0">
-        BAHAGIAN E: PENGESAHAN KETUA JABATAN PEMBANGUNAN PERNIAGAAN DAN PELABURAN (J3P) DAN KETUA PUSAT TANGGUNGJAWAB (KPTj)/PENGARAH
-    </div>
-    <div class="border border-dark p-3 mb-4">
-        <p class="mb-4 text-dark" style="font-size: 0.88rem;">
-            Dengan ini saya mengesahkan bahawa pegawai telah menjalankan perkhidmatan sebagaimana yang dituntut. Tuntutan berjumlah 
-            <strong>RM <?= number_format($application['total_claim'] ?? 0, 2) ?></strong> dan dokumen yang disertakan adalah benar sebagaimana yang disemak oleh Pegawai Penyemak dan Pegawai Perkhidmatan Eksekutif.
-        </p>
-        <div class="row g-4 text-center">
-            <div class="col-6">
-                <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 140px;">
-                    <div>
-                        <div class="small fw-semibold text-secondary">KETUA JABATAN J3P</div>
-                        <?php if ($j3pStatus === 'approved'): ?>
-                            <span class="badge bg-success my-1">Disahkan & Disokong</span>
-                        <?php elseif ($j3pStatus === 'rejected'): ?>
-                            <span class="badge bg-danger my-1">Ditolak</span>
-                        <?php else: ?>
-                            <span class="badge bg-warning text-dark my-1">Menunggu Tindakan</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="border-top border-dark pt-2 mt-3">
-                        <div class="fw-bold small text-dark"><?= esc($application['j3p_reviewer_name'] ?? 'Tandatangan dan Cop Ketua J3P') ?></div>
-                        <div class="small text-muted">
-                            Tarikh: <?= !empty($application['j3p_verified_at']) ? date('d/m/Y', strtotime($application['j3p_verified_at'])) : '................................' ?>
-                        </div>
-                        <?php if (!empty($application['j3p_remarks'])): ?>
-                            <div class="small text-muted fst-italic mt-1">Nota: "<?= esc($application['j3p_remarks']) ?>"</div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 140px;">
-                    <div>
-                        <div class="small fw-semibold text-secondary">KETUA PUSAT TANGGUNGJAWAB (KPTj) / PENGARAH</div>
-                        <?php if ($pengarahStatus === 'approved'): ?>
-                            <span class="badge bg-success my-1">Diluluskan Penuh</span>
-                        <?php elseif ($pengarahStatus === 'rejected'): ?>
-                            <span class="badge bg-danger my-1">Ditolak</span>
-                        <?php else: ?>
-                            <span class="badge bg-warning text-dark my-1">Menunggu Kelulusan</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="border-top border-dark pt-2 mt-3">
-                        <div class="fw-bold small text-dark"><?= esc($application['pengarah_reviewer_name'] ?? 'Tandatangan dan Cop KPTj/Pengarah') ?></div>
-                        <div class="small text-muted">
-                            Tarikh: <?= !empty($application['pengarah_verified_at']) ? date('d/m/Y', strtotime($application['pengarah_verified_at'])) : '................................' ?>
-                        </div>
-                        <?php if (!empty($application['pengarah_remarks'])): ?>
-                            <div class="small text-muted fst-italic mt-1">Nota: "<?= esc($application['pengarah_remarks']) ?>"</div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- LAMPIRAN 1 (Annex) -->
-    <div class="print-page-break my-4"></div>
-    <div class="form-section-header bg-dark text-white fw-bold px-3 py-1 text-uppercase small mb-0 mt-3 d-flex justify-content-between align-items-center">
-        <span>LAMPIRAN 1: SENARAI PROSEDUR / PERKHIDMATAN</span>
-        <span class="font-monospace" style="font-size: 0.68rem;">HoSZA-MGT-J3P (PE)-F-003-01</span>
-    </div>
-    <table class="table table-bordered table-sm align-middle small mb-0 border-dark">
-        <thead class="table-light">
-            <tr>
-                <th width="8%" class="text-center">BIL.</th>
-                <th>PROSEDUR / PERKHIDMATAN</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php for ($n = 1; $n <= 16; $n++): 
-                $procItem = $procedures[$n - 1] ?? null;
-            ?>
-                <tr>
-                    <td class="text-center fw-semibold text-muted"><?= $n ?></td>
-                    <td>
-                        <?php if ($procItem): ?>
-                            <span class="font-monospace fw-semibold text-primary"><?= esc($procItem['code'] ?? '') ?></span> - 
-                            <?= esc($procItem['name'] ?? '') ?> 
-                            (Kategori: <?= strtoupper(esc($procItem['charge_type'] ?? 'TATACARA')) ?> &bull; Nilai: RM <?= number_format($procItem['price'] ?? 0, 2) ?>)
-                        <?php else: ?>
-                            &nbsp;
-                        <?php endif; ?>
-                    </td>
-                </tr>
-            <?php endfor; ?>
-        </tbody>
-    </table>
 
 </div>
 
@@ -558,16 +595,22 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
     </div>
 <?php endif; ?>
 
-<!-- Print Stylesheet -->
+<!-- Print Stylesheet (LANDSCAPE ORIENTATION) -->
 <style>
 @media screen {
     .official-form-sheet {
-        max-width: 1080px;
+        max-width: 1240px;
         margin: 0 auto;
     }
 }
 
 @media print {
+    /* Set Page Orientation to LANDSCAPE */
+    @page {
+        size: A4 landscape;
+        margin: 0.7cm 0.9cm;
+    }
+
     /* Hide layout chrome */
     .sidebar,
     .topbar,
@@ -583,12 +626,15 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
     .page-content {
         margin: 0 !important;
         padding: 0 !important;
+        width: 100% !important;
     }
 
     body {
         background-color: #fff !important;
-        font-size: 9.5pt !important;
+        font-size: 8.5pt !important;
         color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     .official-form-sheet {
@@ -603,18 +649,21 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
     .form-section-header {
         background-color: #000 !important;
         color: #fff !important;
+        font-size: 8pt !important;
+        padding: 3px 6px !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 
     .table {
         border-color: #000 !important;
+        margin-bottom: 0.25rem !important;
     }
 
     .table th,
     .table td {
         border-color: #000 !important;
-        padding: 4px 6px !important;
+        padding: 3px 4px !important;
     }
 
     .table thead th {
@@ -627,11 +676,8 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
     .print-page-break {
         page-break-before: always;
         break-before: page;
-    }
-
-    @page {
-        size: A4 portrait;
-        margin: 1.2cm 1.2cm;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 }
 </style>
