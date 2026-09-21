@@ -564,26 +564,30 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
             <thead class="table-light">
                 <tr>
                     <th width="6%" class="text-center">BIL.</th>
-                    <th>PROSEDUR/PERKHIDMATAN</th>
+                    <th>PROSEDUR / PERKHIDMATAN</th>
                 </tr>
             </thead>
             <tbody>
-                <?php for ($n = 1; $n <= 16; $n++): 
-                    $procItem = $procedures[$n - 1] ?? null;
-                ?>
-                    <tr style="height: 28px;">
-                        <td class="text-center fw-semibold text-muted"><?= $n ?></td>
-                        <td>
-                            <?php if ($procItem): ?>
-                                <span class="font-monospace fw-semibold text-primary"><?= esc($procItem['code'] ?? '') ?></span> - 
-                                <?= esc($procItem['name'] ?? '') ?> 
-                                (Kategori: <?= strtoupper(esc($procItem['charge_type'] ?? 'TATACARA')) ?> &bull; Nilai: RM <?= number_format($procItem['price'] ?? 0, 2) ?>)
-                            <?php else: ?>
-                                &nbsp;
-                            <?php endif; ?>
-                        </td>
+                <?php if (!empty($procedures)): ?>
+                    <?php foreach ($procedures as $idx => $procItem): ?>
+                        <tr>
+                            <td class="text-center fw-semibold text-muted" style="width: 6%;"><?= $idx + 1 ?></td>
+                            <td>
+                                <span class="font-monospace fw-semibold text-primary"><?= esc($procItem['code'] ?? '') ?></span>
+                                <?php if (!empty($procItem['code'])): ?> - <?php endif; ?>
+                                <?= esc($procItem['name'] ?? '-') ?> 
+                                <span class="text-muted small">
+                                    (Kategori: <?= strtoupper(esc($procItem['charge_type'] ?? 'TATACARA')) ?> &bull; Nilai: RM <?= number_format($procItem['price'] ?? 0, 2) ?>)
+                                </span>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td class="text-center text-muted" style="width: 6%;">1</td>
+                        <td class="text-muted fst-italic">Tiada maklumat prosedur direkodkan.</td>
                     </tr>
-                <?php endfor; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
