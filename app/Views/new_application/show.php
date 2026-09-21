@@ -193,17 +193,19 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
     <!-- ───────────────────────────────────────────────────────────── -->
     <div class="sheet-page sheet-page-1">
         <!-- Form Top Bar: Logo, Institution, Document Code -->
-        <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
-            <div>
-                <div class="fw-bold text-dark fs-5 text-uppercase" style="letter-spacing: 0.5px;">Hospital Sultan Zainal Abidin</div>
-                <div class="text-secondary small">Sultan Zainal Abidin Hospital (UniSZA)</div>
-                <div class="text-muted small mt-1 font-monospace">No. Rujukan: <strong><?= esc($application['application_no']) ?></strong></div>
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+            <div class="d-flex align-items-center gap-3">
+                <img src="<?= base_url('assets/img/unisza_logo.png') ?>" alt="Logo UniSZA" style="height: 55px; max-width: 180px; object-fit: contain;">
+                <div>
+                    <div class="fw-bold text-dark fs-5 text-uppercase" style="letter-spacing: 0.5px; line-height: 1.2;">Hospital Sultan Zainal Abidin</div>
+                    <div class="text-secondary small">Universiti Sultan Zainal Abidin (UniSZA)</div>
+                    <div class="text-muted small mt-0.5 font-monospace">No. Rujukan: <strong><?= esc($application['application_no']) ?></strong></div>
+                </div>
             </div>
             <div class="text-end">
                 <div class="border border-dark px-2 py-1 fw-bold text-dark font-monospace small bg-light d-inline-block">
                     HoSZA-MGT-J3P (PE)-F-003-01
                 </div>
-                <div class="small text-muted mt-1 font-monospace">Helaian 1 / 3</div>
             </div>
         </div>
 
@@ -406,7 +408,10 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
 
     <div class="sheet-page sheet-page-officers">
         <div class="d-none d-print-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
-            <span class="font-monospace small fw-bold">HoSZA-MGT-J3P (PE)-F-003-01 &bull; <?= esc($application['application_no']) ?></span>
+            <div class="d-flex align-items-center gap-2">
+                <img src="<?= base_url('assets/img/unisza_logo.png') ?>" alt="Logo UniSZA" style="height: 28px; object-fit: contain;">
+                <span class="font-monospace small fw-bold">HoSZA-MGT-J3P (PE)-F-003-01 &bull; <?= esc($application['application_no']) ?></span>
+            </div>
             <span class="small font-monospace">Helaian Pengesahan Pegawai</span>
         </div>
 
@@ -544,7 +549,10 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
 
     <div class="sheet-page sheet-page-lampiran">
         <div class="d-none d-print-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
-            <span class="font-monospace small fw-bold">HoSZA-MGT-J3P (PE)-F-003-01 &bull; <?= esc($application['application_no']) ?></span>
+            <div class="d-flex align-items-center gap-2">
+                <img src="<?= base_url('assets/img/unisza_logo.png') ?>" alt="Logo UniSZA" style="height: 28px; object-fit: contain;">
+                <span class="font-monospace small fw-bold">HoSZA-MGT-J3P (PE)-F-003-01 &bull; <?= esc($application['application_no']) ?></span>
+            </div>
             <span class="small font-monospace">Lampiran 1</span>
         </div>
 
