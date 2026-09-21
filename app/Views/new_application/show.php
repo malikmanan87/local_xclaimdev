@@ -255,31 +255,31 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
         <div class="form-section-header bg-dark text-white fw-bold px-2 py-1 text-uppercase small mb-0">
             BAHAGIAN B: BUTIRAN TUNTUTAN
         </div>
-        <div class="table-responsive mb-0">
+        <div class="table-responsive mb-0 print-no-overflow">
             <table class="table table-bordered table-sm align-middle text-center small mb-0 border-dark form-claims-table" style="font-size: 0.74rem;">
                 <thead class="align-middle">
                     <tr class="fw-bold">
-                        <th rowspan="2" width="3%" class="bg-light">BIL.</th>
-                        <th rowspan="2" width="13%" class="bg-light">NAMA PESAKIT</th>
-                        <th rowspan="2" width="7%" class="bg-light">NO. R/N</th>
-                        <th rowspan="2" width="23%" class="bg-light">
+                        <th rowspan="2" style="width: 3%;" class="bg-light">BIL.</th>
+                        <th rowspan="2" style="width: 12%;" class="bg-light">NAMA PESAKIT</th>
+                        <th rowspan="2" style="width: 7%;" class="bg-light">NO. R/N</th>
+                        <th rowspan="2" style="width: 20%;" class="bg-light">
                             PROSEDUR/ PERKHIDMATAN<br>
-                            <span class="fw-normal text-muted" style="font-size: 0.65rem;">** Sila Ke Lampiran 1 Jika Ruang Tidak Mencukupi</span>
+                            <span class="fw-normal text-muted fst-italic" style="font-size: 0.62rem;">** Sila Ke Lampiran 1 Jika Ruang Tidak Mencukupi</span>
                         </th>
-                        <th rowspan="2" width="7%" class="bg-light">TARIKH BIL.</th>
-                        <th rowspan="2" width="7%" class="bg-light">NO. RESIT</th>
-                        <th colspan="2" width="12%" class="bg-light">CAJ RUNDINGAN</th>
-                        <th colspan="2" width="12%" class="bg-light">CAJ TATACARA</th>
-                        <th colspan="2" width="12%" class="bg-light">CAJ PELAPORAN PERUBATAN</th>
-                        <th rowspan="2" width="9%" class="bg-light">JUMLAH TUNTUTAN (RM)</th>
+                        <th rowspan="2" style="width: 7%;" class="bg-light">TARIKH BIL.</th>
+                        <th rowspan="2" style="width: 7%;" class="bg-light">NO. RESIT</th>
+                        <th colspan="2" style="width: 11%;" class="bg-light">CAJ RUNDINGAN</th>
+                        <th colspan="2" style="width: 11%;" class="bg-light">CAJ TATACARA</th>
+                        <th colspan="2" style="width: 11%;" class="bg-light">CAJ PELAPORAN PERUBATAN</th>
+                        <th rowspan="2" style="width: 11%;" class="bg-light">JUMLAH TUNTUTAN (RM)</th>
                     </tr>
-                    <tr class="fw-bold" style="font-size: 0.68rem;">
-                        <th class="bg-light">KADAR CAJ (RM)</th>
-                        <th class="bg-light">KADAR AGIHAN PAKAR (75%) (RM)</th>
-                        <th class="bg-light">KADAR CAJ (RM)</th>
-                        <th class="bg-light">KADAR AGIHAN PAKAR (75%) (RM)</th>
-                        <th class="bg-light">KADAR CAJ (RM)</th>
-                        <th class="bg-light">KADAR AGIHAN PAKAR (70%) (RM)</th>
+                    <tr class="fw-bold" style="font-size: 0.65rem;">
+                        <th style="width: 5.5%;" class="bg-light">KADAR CAJ (RM)</th>
+                        <th style="width: 5.5%;" class="bg-light">KADAR AGIHAN (75%) (RM)</th>
+                        <th style="width: 5.5%;" class="bg-light">KADAR CAJ (RM)</th>
+                        <th style="width: 5.5%;" class="bg-light">KADAR AGIHAN (75%) (RM)</th>
+                        <th style="width: 5.5%;" class="bg-light">KADAR CAJ (RM)</th>
+                        <th style="width: 5.5%;" class="bg-light">KADAR AGIHAN (70%) (RM)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -406,7 +406,7 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
                         <div class="text-muted small">Tandatangan dan Cop Pegawai</div>
                         <div class="small mt-1">
                             <strong>Tarikh:</strong> <?= !empty($application['user_declared_at']) ? date('d/m/Y', strtotime($application['user_declared_at'])) : date('d/m/Y', strtotime($application['submitted_at'] ?? 'now')) ?>
-                            <span class="badge bg-success-subtle text-success border border-success ms-1 font-monospace">Disahkan Digital</span>
+                            <span class="badge bg-success-subtle text-success border border-success ms-1 font-monospace d-print-none">Disahkan Digital</span>
                         </div>
                     </div>
                 </div>
@@ -424,16 +424,18 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
             </p>
             <div class="row g-3 text-center">
                 <div class="col-6">
-                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 125px;">
+                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100 officer-sign-box" style="min-height: 125px;">
                         <div>
                             <div class="small fw-semibold text-secondary">PEGAWAI PENYEMAK PE</div>
-                            <?php if ($penyemakStatus === 'approved'): ?>
-                                <span class="badge bg-success my-1">Disemak & Disahkan</span>
-                            <?php elseif ($penyemakStatus === 'rejected'): ?>
-                                <span class="badge bg-danger my-1">Ditolak</span>
-                            <?php else: ?>
-                                <span class="badge bg-warning text-dark my-1">Menunggu Semakan</span>
-                            <?php endif; ?>
+                            <div class="officer-status-badge d-print-none">
+                                <?php if ($penyemakStatus === 'approved'): ?>
+                                    <span class="badge bg-success my-1">Disemak & Disahkan</span>
+                                <?php elseif ($penyemakStatus === 'rejected'): ?>
+                                    <span class="badge bg-danger my-1">Ditolak</span>
+                                <?php else: ?>
+                                    <span class="badge bg-warning text-dark my-1">Menunggu Semakan</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <div class="border-top border-dark pt-1 mt-2">
                             <div class="fw-bold small text-dark"><?= esc($application['penyemak_reviewer_name'] ?? 'Tandatangan dan Cop Pegawai Penyemak') ?></div>
@@ -447,16 +449,18 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
                     </div>
                 </div>
                 <div class="col-6">
-                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 125px;">
+                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100 officer-sign-box" style="min-height: 125px;">
                         <div>
                             <div class="small fw-semibold text-secondary">PEGAWAI PERKHIDMATAN EKSEKUTIF</div>
-                            <?php if ($perkhidmatanStatus === 'approved'): ?>
-                                <span class="badge bg-success my-1">Disahkan</span>
-                            <?php elseif ($perkhidmatanStatus === 'rejected'): ?>
-                                <span class="badge bg-danger my-1">Ditolak</span>
-                            <?php else: ?>
-                                <span class="badge bg-warning text-dark my-1">Menunggu Tindakan</span>
-                            <?php endif; ?>
+                            <div class="officer-status-badge d-print-none">
+                                <?php if ($perkhidmatanStatus === 'approved'): ?>
+                                    <span class="badge bg-success my-1">Disahkan</span>
+                                <?php elseif ($perkhidmatanStatus === 'rejected'): ?>
+                                    <span class="badge bg-danger my-1">Ditolak</span>
+                                <?php else: ?>
+                                    <span class="badge bg-warning text-dark my-1">Menunggu Tindakan</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <div class="border-top border-dark pt-1 mt-2">
                             <div class="fw-bold small text-dark"><?= esc($application['perkhidmatan_reviewer_name'] ?? 'Tandatangan dan Cop Pegawai Perkhidmatan Eksekutif') ?></div>
@@ -483,16 +487,18 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
             </p>
             <div class="row g-3 text-center">
                 <div class="col-6">
-                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 125px;">
+                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100 officer-sign-box" style="min-height: 125px;">
                         <div>
                             <div class="small fw-semibold text-secondary">KETUA JABATAN J3P</div>
-                            <?php if ($j3pStatus === 'approved'): ?>
-                                <span class="badge bg-success my-1">Disahkan & Disokong</span>
-                            <?php elseif ($j3pStatus === 'rejected'): ?>
-                                <span class="badge bg-danger my-1">Ditolak</span>
-                            <?php else: ?>
-                                <span class="badge bg-warning text-dark my-1">Menunggu Tindakan</span>
-                            <?php endif; ?>
+                            <div class="officer-status-badge d-print-none">
+                                <?php if ($j3pStatus === 'approved'): ?>
+                                    <span class="badge bg-success my-1">Disahkan & Disokong</span>
+                                <?php elseif ($j3pStatus === 'rejected'): ?>
+                                    <span class="badge bg-danger my-1">Ditolak</span>
+                                <?php else: ?>
+                                    <span class="badge bg-warning text-dark my-1">Menunggu Tindakan</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <div class="border-top border-dark pt-1 mt-2">
                             <div class="fw-bold small text-dark"><?= esc($application['j3p_reviewer_name'] ?? 'Tandatangan dan Cop Ketua J3P') ?></div>
@@ -506,16 +512,18 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
                     </div>
                 </div>
                 <div class="col-6">
-                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100" style="min-height: 125px;">
+                    <div class="p-2 border rounded bg-light d-flex flex-column justify-content-between h-100 officer-sign-box" style="min-height: 125px;">
                         <div>
                             <div class="small fw-semibold text-secondary">KETUA PUSAT TANGGUNGJAWAB (KPTj) / PENGARAH</div>
-                            <?php if ($pengarahStatus === 'approved'): ?>
-                                <span class="badge bg-success my-1">Diluluskan Penuh</span>
-                            <?php elseif ($pengarahStatus === 'rejected'): ?>
-                                <span class="badge bg-danger my-1">Ditolak</span>
-                            <?php else: ?>
-                                <span class="badge bg-warning text-dark my-1">Menunggu Kelulusan</span>
-                            <?php endif; ?>
+                            <div class="officer-status-badge d-print-none">
+                                <?php if ($pengarahStatus === 'approved'): ?>
+                                    <span class="badge bg-success my-1">Diluluskan Penuh</span>
+                                <?php elseif ($pengarahStatus === 'rejected'): ?>
+                                    <span class="badge bg-danger my-1">Ditolak</span>
+                                <?php else: ?>
+                                    <span class="badge bg-warning text-dark my-1">Menunggu Kelulusan</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <div class="border-top border-dark pt-1 mt-2">
                             <div class="fw-bold small text-dark"><?= esc($application['pengarah_reviewer_name'] ?? 'Tandatangan dan Cop KPTj/Pengarah') ?></div>
@@ -671,6 +679,51 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
         color: #000 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+    }
+
+    /* Pastikan Bahagian B (13 Kolum) muat tepat dalam Landskap tanpa scroll / overflow */
+    .table-responsive,
+    .print-no-overflow {
+        overflow: visible !important;
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .form-claims-table {
+        width: 100% !important;
+        table-layout: fixed !important;
+        font-size: 6.8pt !important;
+        word-break: break-word !important;
+    }
+
+    .form-claims-table th,
+    .form-claims-table td {
+        padding: 2.5px 2px !important;
+        line-height: 1.15 !important;
+        vertical-align: middle !important;
+    }
+
+    .form-claims-table thead tr:first-child th {
+        font-size: 6.4pt !important;
+        padding: 3px 1px !important;
+    }
+
+    .form-claims-table thead tr:last-child th {
+        font-size: 5.8pt !important;
+        padding: 2px 1px !important;
+    }
+
+    /* Sembunyikan badge status setiap pegawai pada borang cetakan fizikal */
+    .officer-status-badge,
+    .badge-status {
+        display: none !important;
+    }
+
+    /* Kotak pengesahan pegawai kelihatan kemas seperti borang rasmi kerajaan */
+    .officer-sign-box {
+        background-color: transparent !important;
+        border: 1px solid #000 !important;
+        min-height: 110px !important;
     }
 
     .print-page-break {
