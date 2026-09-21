@@ -46,16 +46,35 @@
                             </td>
                             <td>
                                 <?php
-                                $statusMap = [
-                                    'draft'        => ['badge-status-secondary', 'Draft'],
-                                    'submitted'    => ['badge-status-warning',   'Submitted'],
-                                    'under_review' => ['badge-status-info',      'Under Review'],
-                                    'approved'     => ['badge-status-success',   'Approved'],
-                                    'rejected'     => ['badge-status-danger',    'Rejected'],
-                                ];
-                                $s = $statusMap[$app['status']] ?? ['badge-status-secondary', ucfirst($app['status'])];
+                                $penyemakStatus     = $app['penyemak_status'] ?? 'pending';
+                                $perkhidmatanStatus = $app['perkhidmatan_status'] ?? 'pending';
+                                $j3pStatus          = $app['j3p_status'] ?? 'pending';
+                                $pengarahStatus     = $app['pengarah_status'] ?? 'pending';
+
+                                if ($app['status'] === 'rejected' || in_array('rejected', [$penyemakStatus, $perkhidmatanStatus, $j3pStatus, $pengarahStatus])) {
+                                    $badgeClass = 'badge-status-danger';
+                                    $badgeText  = 'Ditolak';
+                                } elseif ($pengarahStatus === 'approved' || $app['status'] === 'approved') {
+                                    $badgeClass = 'badge-status-success';
+                                    $badgeText  = 'Lulus Penuh (Pengarah)';
+                                } elseif ($j3pStatus === 'approved') {
+                                    $badgeClass = 'badge-status-info';
+                                    $badgeText  = 'Menunggu Pengarah';
+                                } elseif ($perkhidmatanStatus === 'approved') {
+                                    $badgeClass = 'badge-status-info';
+                                    $badgeText  = 'Menunggu Ketua J3P';
+                                } elseif ($penyemakStatus === 'approved') {
+                                    $badgeClass = 'badge-status-info';
+                                    $badgeText  = 'Menunggu Perkhidmatan PE';
+                                } elseif ($app['status'] === 'submitted') {
+                                    $badgeClass = 'badge-status-warning';
+                                    $badgeText  = 'Menunggu Penyemak PE';
+                                } else {
+                                    $badgeClass = 'badge-status-secondary';
+                                    $badgeText  = ucfirst($app['status']);
+                                }
                                 ?>
-                                <span class="badge-status <?= $s[0] ?> py-1"><?= $s[1] ?></span>
+                                <span class="badge-status <?= $badgeClass ?> py-1"><?= $badgeText ?></span>
                             </td>
                             <td class="text-secondary small">
                                 <?= $app['submitted_at'] ? date('d/m/Y h:i A', strtotime($app['submitted_at'])) : '<span class="text-muted fst-italic">—</span>' ?>
@@ -68,8 +87,10 @@
                                     </a>
                                     <?php 
                                     $isEditable = ($app['status'] === 'submitted' && 
-                                                   ($app['jppp_status'] ?? 'pending') === 'pending' && 
-                                                   ($app['finance_status'] ?? 'pending') === 'pending');
+                                                   $penyemakStatus === 'pending' && 
+                                                   $perkhidmatanStatus === 'pending' && 
+                                                   $j3pStatus === 'pending' && 
+                                                   $pengarahStatus === 'pending');
                                     if ($isEditable): 
                                     ?>
                                     <a href="<?= base_url('new-application/edit/' . $app['id']) ?>"

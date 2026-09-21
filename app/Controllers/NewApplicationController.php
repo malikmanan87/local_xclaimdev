@@ -38,10 +38,15 @@ class NewApplicationController extends BaseController
 
         $userData = [
             'specialist_name' => session('name') ?? ($currentUser['fullname'] ?? ''),
+            'staff_ic'        => session('ic_no') ?? '',
             'staff_number'    => session('staffno') ?? ($currentUser['username'] ?? ''),
+            'grade'           => session('grade') ?? '',
+            'phone'           => session('phone') ?? ($currentUser['phone'] ?? ''),
             'email'           => session('email') ?? ($currentUser['email'] ?? ''),
             'department'      => session('department') ?? '',
             'position'        => session('position') ?? '',
+            'claim_month'     => date('m'),
+            'claim_year'      => date('Y'),
         ];
 
         if ($draft = session('new_app_specialist')) {
@@ -52,7 +57,7 @@ class NewApplicationController extends BaseController
         $masterProcedures = $mmaModel->getAllProcedures();
 
         $data = [
-            'pageTitle'        => 'New Application',
+            'pageTitle'        => 'New Application (Borang HoSZA-MGT-J3P (PE)-F-003-01)',
             'breadcrumb'       => [
                 ['label' => 'New Application', 'url' => base_url('new-application')],
                 'Create',
@@ -71,10 +76,15 @@ class NewApplicationController extends BaseController
     {
         $rules = [
             'specialist_name' => 'required|min_length[2]|max_length[150]',
+            'staff_ic'        => 'permit_empty|max_length[25]',
             'staff_number'    => 'required|min_length[2]|max_length[50]',
+            'grade'           => 'permit_empty|max_length[50]',
+            'phone'           => 'permit_empty|max_length[30]',
             'email'           => 'required|valid_email|max_length[150]',
             'department'      => 'permit_empty|max_length[150]',
             'position'        => 'permit_empty|max_length[150]',
+            'claim_month'     => 'permit_empty|max_length[20]',
+            'claim_year'      => 'permit_empty|max_length[10]',
         ];
 
         if (! $this->validate($rules)) {
@@ -87,15 +97,20 @@ class NewApplicationController extends BaseController
         // Simpan dalam session untuk digunakan pada tab seterusnya
         session()->set('new_app_specialist', [
             'specialist_name' => $this->request->getPost('specialist_name'),
+            'staff_ic'        => $this->request->getPost('staff_ic'),
             'staff_number'    => $this->request->getPost('staff_number'),
+            'grade'           => $this->request->getPost('grade'),
+            'phone'           => $this->request->getPost('phone'),
             'email'           => $this->request->getPost('email'),
             'department'      => $this->request->getPost('department'),
             'position'        => $this->request->getPost('position'),
+            'claim_month'     => $this->request->getPost('claim_month') ?: date('m'),
+            'claim_year'      => $this->request->getPost('claim_year') ?: date('Y'),
         ]);
 
         return $this->response->setJSON([
             'status'  => 'success',
-            'message' => 'Specialist information saved. Proceed to patient search.',
+            'message' => 'Maklumat Bahagian A berjaya disimpan. Sila teruskan ke carian pesakit & prosedur.',
         ]);
     }
 
@@ -360,18 +375,18 @@ class NewApplicationController extends BaseController
     // ---------------------------------------------------------------
     public function show(int $id): string
     {
-        $application = $this->model->find($id);
+        $application = $this->model->getWithReviewers($id);
 
         if (! $application) {
-            session()->setFlashdata('error', 'Application not found.');
+            session()->setFlashdata('error', 'Permohonan tidak dijumpai.');
             return redirect()->to(base_url('new-application'));
         }
 
         $data = [
-            'pageTitle'   => 'Application Detail',
+            'pageTitle'   => 'Borang Tuntutan HoSZA-MGT-J3P (PE)-F-003-01: ' . $application['application_no'],
             'breadcrumb'  => [
                 ['label' => 'New Application', 'url' => base_url('new-application')],
-                'Detail',
+                $application['application_no'],
             ],
             'application' => $application,
         ];
@@ -391,11 +406,21 @@ class NewApplicationController extends BaseController
             return redirect()->to(base_url('new-application'));
         }
 
-        // Semak status: hanya 'submitted' dibenarkan selagi status tidak berubah
-        $jpppStatus    = $application['jppp_status'] ?? 'pending';
-        $financeStatus = $application['finance_status'] ?? 'pending';
+        // Semak status: hanya 'submitted' dibenarkan selagi status tidak berubah oleh mana-mana pegawai penyemak/kelulusan
+        $penyemakStatus     = $application['penyemak_status'] ?? 'pending';
+        $perkhidmatanStatus = $application['perkhidmatan_status'] ?? 'pending';
+        $j3pStatus          = $application['j3p_status'] ?? 'pending';
+        $pengarahStatus     = $application['pengarah_status'] ?? 'pending';
+        $jpppStatus         = $application['jppp_status'] ?? 'pending';
+        $financeStatus      = $application['finance_status'] ?? 'pending';
 
-        if ($application['status'] !== 'submitted' || $jpppStatus !== 'pending' || $financeStatus !== 'pending') {
+        if ($application['status'] !== 'submitted' || 
+            $penyemakStatus !== 'pending' || 
+            $perkhidmatanStatus !== 'pending' || 
+            $j3pStatus !== 'pending' || 
+            $pengarahStatus !== 'pending' || 
+            $jpppStatus !== 'pending' || 
+            $financeStatus !== 'pending') {
             session()->setFlashdata('error', 'Permohonan ini tidak boleh diedit kerana status telah berubah (' . ucfirst($application['status']) . ').');
             return redirect()->to(base_url('new-application/show/' . $id));
         }
@@ -410,17 +435,22 @@ class NewApplicationController extends BaseController
 
         $userData = [
             'specialist_name' => $application['specialist_name'],
+            'staff_ic'        => $application['staff_ic'] ?? '',
             'staff_number'    => $application['staff_number'],
+            'grade'           => $application['grade'] ?? '',
+            'phone'           => $application['phone'] ?? '',
             'email'           => $application['email'],
             'department'      => $application['department'],
             'position'        => $application['position'],
+            'claim_month'     => $application['claim_month'] ?? date('m'),
+            'claim_year'      => $application['claim_year'] ?? date('Y'),
         ];
 
         $mmaModel = new \App\Models\MmaProcedureModel();
         $masterProcedures = $mmaModel->getAllProcedures();
 
         $data = [
-            'pageTitle'        => 'Kemaskini Permohonan: ' . $application['application_no'],
+            'pageTitle'        => 'Kemaskini Borang Tuntutan: ' . $application['application_no'],
             'breadcrumb'       => [
                 ['label' => 'New Application', 'url' => base_url('new-application')],
                 ['label' => $application['application_no'], 'url' => base_url('new-application/show/' . $id)],
@@ -449,11 +479,21 @@ class NewApplicationController extends BaseController
             ]);
         }
 
-        // Semak status: hanya 'submitted' dibenarkan selagi status tidak berubah
-        $jpppStatus    = $application['jppp_status'] ?? 'pending';
-        $financeStatus = $application['finance_status'] ?? 'pending';
+        // Semak status: hanya 'submitted' dibenarkan selagi status tidak berubah oleh mana-mana pegawai penyemak/kelulusan
+        $penyemakStatus     = $application['penyemak_status'] ?? 'pending';
+        $perkhidmatanStatus = $application['perkhidmatan_status'] ?? 'pending';
+        $j3pStatus          = $application['j3p_status'] ?? 'pending';
+        $pengarahStatus     = $application['pengarah_status'] ?? 'pending';
+        $jpppStatus         = $application['jppp_status'] ?? 'pending';
+        $financeStatus      = $application['finance_status'] ?? 'pending';
 
-        if ($application['status'] !== 'submitted' || $jpppStatus !== 'pending' || $financeStatus !== 'pending') {
+        if ($application['status'] !== 'submitted' || 
+            $penyemakStatus !== 'pending' || 
+            $perkhidmatanStatus !== 'pending' || 
+            $j3pStatus !== 'pending' || 
+            $pengarahStatus !== 'pending' || 
+            $jpppStatus !== 'pending' || 
+            $financeStatus !== 'pending') {
             return $this->response->setJSON([
                 'status'  => 'error',
                 'message' => 'Permohonan ini tidak boleh dikemaskini kerana status telah berubah (' . ucfirst($application['status']) . ').',
@@ -506,10 +546,15 @@ class NewApplicationController extends BaseController
 
         // Specialist info jika diubah
         $specialistName = $this->request->getPost('specialist_name') ?: $application['specialist_name'];
+        $staffIc        = $this->request->getPost('staff_ic') ?: ($application['staff_ic'] ?? null);
         $staffNumber    = $this->request->getPost('staff_number') ?: $application['staff_number'];
+        $grade          = $this->request->getPost('grade') ?: ($application['grade'] ?? null);
+        $phone          = $this->request->getPost('phone') ?: ($application['phone'] ?? null);
         $email          = $this->request->getPost('email') ?: $application['email'];
         $department     = $this->request->getPost('department') ?: $application['department'];
         $position       = $this->request->getPost('position') ?: $application['position'];
+        $claimMonth     = $this->request->getPost('claim_month') ?: ($application['claim_month'] ?? date('m'));
+        $claimYear      = $this->request->getPost('claim_year') ?: ($application['claim_year'] ?? date('Y'));
 
         // Kira semula jumlah kewangan
         $totalGross     = 0;
@@ -530,10 +575,15 @@ class NewApplicationController extends BaseController
 
         $updateData = [
             'specialist_name' => $specialistName,
+            'staff_ic'        => $staffIc,
             'staff_number'    => $staffNumber,
+            'grade'           => $grade,
+            'phone'           => $phone,
             'email'           => $email,
             'department'      => $department,
             'position'        => $position,
+            'claim_month'     => $claimMonth,
+            'claim_year'      => $claimYear,
             'patient_rn'      => $patientRn,
             'patient_name'    => $patientName,
             'patient_ic'      => $patientIc,
@@ -642,33 +692,51 @@ class NewApplicationController extends BaseController
         $userModel = new \App\Models\UserModel();
         $currentUser = $userId ? $userModel->getUserWithRole($userId) : null;
 
-        $specialistName = $specialist['specialist_name'] ?? session('name') ?? ($currentUser['fullname'] ?? 'Specialist');
-        $staffNumber    = $specialist['staff_number'] ?? session('staffno') ?? ($currentUser['username'] ?? '');
-        $email          = $specialist['email'] ?? session('email') ?? ($currentUser['email'] ?? '');
-        $department     = $specialist['department'] ?? session('department') ?? '';
-        $position       = $specialist['position'] ?? session('position') ?? '';
+        $specialistName = $this->request->getPost('specialist_name') ?: ($specialist['specialist_name'] ?? session('name') ?? ($currentUser['fullname'] ?? 'Specialist'));
+        $staffIc        = $this->request->getPost('staff_ic') ?: ($specialist['staff_ic'] ?? null);
+        $staffNumber    = $this->request->getPost('staff_number') ?: ($specialist['staff_number'] ?? session('staffno') ?? ($currentUser['username'] ?? ''));
+        $grade          = $this->request->getPost('grade') ?: ($specialist['grade'] ?? null);
+        $phone          = $this->request->getPost('phone') ?: ($specialist['phone'] ?? ($currentUser['phone'] ?? null));
+        $email          = $this->request->getPost('email') ?: ($specialist['email'] ?? session('email') ?? ($currentUser['email'] ?? ''));
+        $department     = $this->request->getPost('department') ?: ($specialist['department'] ?? session('department') ?? '');
+        $position       = $this->request->getPost('position') ?: ($specialist['position'] ?? session('position') ?? '');
+        $claimMonth     = $this->request->getPost('claim_month') ?: ($specialist['claim_month'] ?? date('m'));
+        $claimYear      = $this->request->getPost('claim_year') ?: ($specialist['claim_year'] ?? date('Y'));
 
         $applicationNo = $this->model->generateAppNo();
 
         $saveData = [
-            'application_no'  => $applicationNo,
-            'specialist_name' => $specialistName,
-            'staff_number'    => $staffNumber,
-            'email'           => $email,
-            'department'      => $department,
-            'position'        => $position,
-            'patient_rn'      => $patientRn,
-            'patient_name'    => $patientName,
-            'patient_ic'      => $patientIc,
-            'visit_id'        => $visitId,
-            'status'          => 'submitted',
-            'total_gross'     => $totalGross,
-            'total_claim'     => $totalClaim,
-            'total_welfare'   => $totalWelfare,
-            'procedures_data' => json_encode($procedures),
-            'remarks'         => $remarks,
-            'submitted_by'    => $userId,
-            'submitted_at'    => date('Y-m-d H:i:s'),
+            'application_no'      => $applicationNo,
+            'specialist_name'     => $specialistName,
+            'staff_ic'            => $staffIc,
+            'staff_number'        => $staffNumber,
+            'grade'               => $grade,
+            'phone'               => $phone,
+            'email'               => $email,
+            'department'          => $department,
+            'position'            => $position,
+            'claim_month'         => $claimMonth,
+            'claim_year'          => $claimYear,
+            'patient_rn'          => $patientRn,
+            'patient_name'        => $patientName,
+            'patient_ic'          => $patientIc,
+            'visit_id'            => $visitId,
+            'status'              => 'submitted',
+            'penyemak_status'     => 'pending',
+            'perkhidmatan_status' => 'pending',
+            'j3p_status'          => 'pending',
+            'pengarah_status'     => 'pending',
+            'jppp_status'         => 'pending',
+            'finance_status'      => 'pending',
+            'total_gross'         => $totalGross,
+            'total_claim'         => $totalClaim,
+            'total_welfare'       => $totalWelfare,
+            'procedures_data'     => json_encode($procedures),
+            'remarks'             => $remarks,
+            'user_declaration'    => 1,
+            'user_declared_at'    => date('Y-m-d H:i:s'),
+            'submitted_by'        => $userId,
+            'submitted_at'        => date('Y-m-d H:i:s'),
         ];
 
         try {

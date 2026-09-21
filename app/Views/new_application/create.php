@@ -67,20 +67,48 @@ $isEdit = !empty($isEdit) && !empty($application);
     ═══════════════════════════════════════════════ -->
     <div class="card-panel-body pt-2">
 
-        <!-- ─── TAB 1: Specialist Identification ─── -->
+        <!-- ─── TAB 1: Maklumat Pegawai Yang Menuntut (Bahagian A) ─── -->
         <div class="tab-pane-custom" id="tab1">
-            <div class="tab-pane-title">
-                <i class="bi bi-person-badge-fill text-primary me-2"></i>
-                <strong>Tab 1 — Specialist Identification</strong>
+            <div class="tab-pane-title d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="bi bi-person-badge-fill text-primary me-2"></i>
+                    <strong>BAHAGIAN A: MAKLUMAT PEGAWAI YANG MENUNTUT</strong>
+                    <span class="badge bg-primary-subtle text-primary ms-2">HoSZA-MGT-J3P (PE)-F-003-01</span>
+                </div>
             </div>
 
             <form id="formSpecialist" novalidate>
                 <?= csrf_field() ?>
 
-                <div class="alert alert-light border py-2 px-3 d-flex align-items-center mt-2 mb-3 text-secondary small rounded-3">
-                    <i class="bi bi-shield-lock-fill text-primary me-2 fs-6"></i>
-                    <div>
-                        Maklumat identiti pakar / pegawai dijana secara automatik daripada akaun anda (<strong>Read Only</strong>).
+                <!-- Claim Period Box (Bagi Bulan ___ Tahun ___) -->
+                <div class="card border-primary border-opacity-25 bg-primary bg-opacity-10 rounded-3 p-3 my-3">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-6">
+                            <label for="claim_month" class="form-label fw-bold text-dark small mb-1">
+                                <i class="bi bi-calendar-month me-1 text-primary"></i> BAGI BULAN <span class="text-danger">*</span>
+                            </label>
+                            <?php
+                            $months = [
+                                '01' => 'Januari', '02' => 'Februari', '03' => 'Mac',
+                                '04' => 'April',   '05' => 'Mei',      '06' => 'Jun',
+                                '07' => 'Julai',   '08' => 'Ogos',     '09' => 'September',
+                                '10' => 'Oktober', '11' => 'November', '12' => 'Disember'
+                            ];
+                            $curMonth = $userData['claim_month'] ?? date('m');
+                            $curYear  = $userData['claim_year'] ?? date('Y');
+                            ?>
+                            <select class="form-select" id="claim_month" name="claim_month" required>
+                                <?php foreach ($months as $mVal => $mName): ?>
+                                    <option value="<?= $mVal ?>" <?= $curMonth == $mVal ? 'selected' : '' ?>><?= $mVal ?> - <?= $mName ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="claim_year" class="form-label fw-bold text-dark small mb-1">
+                                <i class="bi bi-calendar me-1 text-primary"></i> TAHUN <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control font-monospace fw-bold" id="claim_year" name="claim_year" value="<?= esc($curYear) ?>" min="2020" max="2035" required>
+                        </div>
                     </div>
                 </div>
 
@@ -89,7 +117,7 @@ $isEdit = !empty($isEdit) && !empty($application);
                     <!-- Specialist Name -->
                     <div class="col-md-6">
                         <label for="specialist_name" class="form-label fw-medium">
-                            Specialist Name <span class="text-danger">*</span>
+                            NAMA PEGAWAI <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0">
@@ -108,10 +136,30 @@ $isEdit = !empty($isEdit) && !empty($application);
                         <div class="invalid-feedback-custom" id="err_specialist_name"></div>
                     </div>
 
+                    <!-- No. Kad Pengenalan -->
+                    <div class="col-md-6">
+                        <label for="staff_ic" class="form-label fw-medium">
+                            NO. KAD PENGENALAN
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-person-vcard-fill text-muted"></i>
+                            </span>
+                            <input type="text"
+                                   class="form-control border-start-0"
+                                   id="staff_ic"
+                                   name="staff_ic"
+                                   value="<?= esc($userData['staff_ic'] ?? '') ?>"
+                                   placeholder="Contoh: 850101-11-1234"
+                                   maxlength="25">
+                        </div>
+                        <div class="invalid-feedback-custom" id="err_staff_ic"></div>
+                    </div>
+
                     <!-- Staff Number -->
                     <div class="col-md-6">
                         <label for="staff_number" class="form-label fw-medium">
-                            Staff Number <span class="text-danger">*</span>
+                            NO. PEKERJA <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0">
@@ -130,10 +178,50 @@ $isEdit = !empty($isEdit) && !empty($application);
                         <div class="invalid-feedback-custom" id="err_staff_number"></div>
                     </div>
 
+                    <!-- Jawatan & Gred -->
+                    <div class="col-md-6">
+                        <label for="grade" class="form-label fw-medium">
+                            JAWATAN & GRED
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-award-fill text-muted"></i>
+                            </span>
+                            <input type="text"
+                                   class="form-control border-start-0"
+                                   id="grade"
+                                   name="grade"
+                                   value="<?= esc($userData['grade'] ?? '') ?>"
+                                   placeholder="Contoh: Pakar Perubatan UD54 / JUSA C"
+                                   maxlength="50">
+                        </div>
+                        <div class="invalid-feedback-custom" id="err_grade"></div>
+                    </div>
+
+                    <!-- No Telefon -->
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label fw-medium">
+                            NO. TELEFON
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-telephone-fill text-muted"></i>
+                            </span>
+                            <input type="text"
+                                   class="form-control border-start-0"
+                                   id="phone"
+                                   name="phone"
+                                   value="<?= esc($userData['phone'] ?? '') ?>"
+                                   placeholder="Contoh: 012-3456789"
+                                   maxlength="30">
+                        </div>
+                        <div class="invalid-feedback-custom" id="err_phone"></div>
+                    </div>
+
                     <!-- Email Address -->
                     <div class="col-md-6">
                         <label for="email" class="form-label fw-medium">
-                            Email Address <span class="text-danger">*</span>
+                            E-MEL <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0">
@@ -155,7 +243,7 @@ $isEdit = !empty($isEdit) && !empty($application);
                     <!-- Department -->
                     <div class="col-md-6">
                         <label for="department" class="form-label fw-medium">
-                            Department
+                            JABATAN
                         </label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0">
@@ -176,7 +264,7 @@ $isEdit = !empty($isEdit) && !empty($application);
                     <!-- Position -->
                     <div class="col-md-6">
                         <label for="position" class="form-label fw-medium">
-                            Position
+                            JAWATAN HAKIKI
                         </label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0">
@@ -199,7 +287,7 @@ $isEdit = !empty($isEdit) && !empty($application);
                 <!-- Action -->
                 <div class="d-flex justify-content-end mt-4 pt-3 border-top">
                     <button type="submit" class="btn btn-primary px-4" id="btnNextTab1">
-                        Next: Search Patient
+                        Seterusnya: Carian Pesakit & Prosedur
                         <i class="bi bi-arrow-right ms-2"></i>
                     </button>
                 </div>
@@ -401,14 +489,18 @@ $isEdit = !empty($isEdit) && !empty($application);
                                 <div class="card-body p-3">
                                     <!-- Procedure Selection & Add to List -->
                                     <div class="row g-2 mb-2">
-                                        <div class="col-sm-8 col-12">
+                                        <div class="col-12">
+                                            <label class="form-label small fw-semibold text-secondary mb-1">
+                                                <i class="bi bi-search me-1"></i> Pilih Prosedur / Perkhidmatan (MMA Master):
+                                            </label>
                                             <select class="form-select form-select-sm" id="procSelect">
-                                                <option value="" selected disabled>Choose Procedure...</option>
+                                                <option value="" selected disabled>Pilih Prosedur / Perkhidmatan...</option>
                                                 <?php if (!empty($masterProcedures)): ?>
                                                     <?php foreach ($masterProcedures as $p): ?>
                                                         <option value="<?= $p['id'] ?>"
                                                             data-code="<?= esc($p['code']) ?>"
                                                             data-name="<?= esc($p['name']) ?>"
+                                                            data-category="<?= esc($p['category'] ?? '') ?>"
                                                             data-surgeon-fee="<?= $p['surgeon_fee'] ?>"
                                                             data-anaesthetist-fee="<?= $p['anaesthetist_fee'] ?>">
                                                             <?= esc($p['code']) ?> - <?= esc($p['name']) ?> (RM <?= number_format($p['surgeon_fee'], 2) ?>)
@@ -417,10 +509,29 @@ $isEdit = !empty($isEdit) && !empty($application);
                                                 <?php endif; ?>
                                             </select>
                                         </div>
-                                        <div class="col-sm-4 col-12">
-                                            <button type="button" class="btn btn-dark btn-sm w-100 fw-semibold" id="addProcBtn">
-                                                <i class="bi bi-plus-circle me-1"></i> Add to List
-                                            </button>
+                                    </div>
+
+                                    <div class="row g-2 mb-3 bg-light p-2 rounded-2 border">
+                                        <div class="col-sm-5 col-12">
+                                            <label class="form-label small fw-semibold text-secondary mb-1">Kategori Caj (Format Borang):</label>
+                                            <select class="form-select form-select-sm" id="procChargeType">
+                                                <option value="tatacara" selected>Caj Tatacara (Kadar 75%)</option>
+                                                <option value="rundingan">Caj Rundingan (Kadar 75%)</option>
+                                                <option value="pelaporan">Caj Pelaporan Perubatan (Kadar 70%)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-3 col-6">
+                                            <label class="form-label small fw-semibold text-secondary mb-1">Tarikh Bil:</label>
+                                            <input type="date" class="form-control form-control-sm" id="procBillDate" value="<?= date('Y-m-d') ?>">
+                                        </div>
+                                        <div class="col-sm-4 col-6">
+                                            <label class="form-label small fw-semibold text-secondary mb-1">No. Resit:</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control form-control-sm" id="procReceiptNo" placeholder="No. Resit">
+                                                <button type="button" class="btn btn-dark fw-semibold" id="addProcBtn">
+                                                    <i class="bi bi-plus-circle me-1"></i> Tambah
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -428,21 +539,21 @@ $isEdit = !empty($isEdit) && !empty($application);
                                     <div class="d-flex flex-wrap align-items-center justify-content-between p-2 bg-light border rounded-2 mb-3">
                                         <div class="d-flex align-items-center mb-1 mb-sm-0">
                                             <span class="small fw-semibold text-secondary me-2">
-                                                <i class="bi bi-sliders text-primary me-1"></i> Set All Claim %:
+                                                <i class="bi bi-sliders text-primary me-1"></i> Tetapkan % Tuntutan:
                                             </span>
                                         </div>
                                         <div class="d-flex align-items-center gap-1">
                                             <div class="input-group input-group-sm" style="width: 95px;">
-                                                <input type="number" id="bulkClaimPct" class="form-control form-control-sm text-center font-monospace" min="0" max="100" value="100" placeholder="100">
+                                                <input type="number" id="bulkClaimPct" class="form-control form-control-sm text-center font-monospace" min="0" max="100" value="75" placeholder="75">
                                                 <span class="input-group-text px-1 small text-muted">%</span>
                                             </div>
                                             <button type="button" class="btn btn-sm btn-primary px-2" id="btnApplyAllPct" title="Set claim % for all procedures">
-                                                Apply
+                                                Guna
                                             </button>
                                             <div class="btn-group btn-group-sm ms-1">
+                                                <button type="button" class="btn btn-sm btn-outline-primary px-2 fw-semibold" onclick="setAllClaimPct(75)">75% (Piawai PE)</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary px-2" onclick="setAllClaimPct(70)">70% (Laporan)</button>
                                                 <button type="button" class="btn btn-sm btn-outline-secondary px-2" onclick="setAllClaimPct(100)">100%</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary px-2" onclick="setAllClaimPct(80)">80%</button>
-                                                <button type="button" class="btn btn-sm btn-outline-secondary px-2" onclick="setAllClaimPct(50)">50%</button>
                                             </div>
                                         </div>
                                     </div>
@@ -452,12 +563,13 @@ $isEdit = !empty($isEdit) && !empty($application);
                                         <table class="table table-hover table-sm table-bordered mb-0 align-middle small">
                                             <thead class="table-light sticky-top">
                                                 <tr>
-                                                    <th width="14%">Code</th>
-                                                    <th>Procedure Name</th>
-                                                    <th width="18%" class="text-end">Price (RM)</th>
-                                                    <th width="20%" class="text-center">Claim (%)</th>
-                                                    <th width="18%" class="text-end">Claim (RM)</th>
-                                                    <th width="8%" class="text-center">Remove</th>
+                                                    <th width="12%">Kod</th>
+                                                    <th>Nama Prosedur & Kategori</th>
+                                                    <th width="14%" class="text-center">Tarikh/Resit</th>
+                                                    <th width="15%" class="text-end">Harga (RM)</th>
+                                                    <th width="14%" class="text-center">%</th>
+                                                    <th width="16%" class="text-end">Tuntutan (RM)</th>
+                                                    <th width="6%" class="text-center"><i class="bi bi-trash"></i></th>
                                                 </tr>
                                             </thead>
                                             <tbody id="selectedProcTable">
@@ -469,9 +581,9 @@ $isEdit = !empty($isEdit) && !empty($application);
                                             </tbody>
                                             <tfoot id="selectedProcFooter" class="table-light d-none">
                                                 <tr>
-                                                    <th colspan="2" class="text-end">Total:</th>
+                                                    <th colspan="3" class="text-end">Jumlah:</th>
                                                     <th class="text-end font-monospace" id="procTotalPrice">0.00</th>
-                                                    <th class="text-center text-muted small">Total Claim:</th>
+                                                    <th class="text-center text-muted small">Tuntutan:</th>
                                                     <th class="text-end text-success fw-bold font-monospace" id="procTotalClaim">0.00</th>
                                                     <th></th>
                                                 </tr>
@@ -507,18 +619,22 @@ $isEdit = !empty($isEdit) && !empty($application);
             </div>
         </div><!-- /#tab2 -->
 
-        <!-- ─── TAB 3: Claim Details (Perincian & Jumlah Bersih Tuntutan) ─── -->
+        <!-- ─── TAB 3: Bahagian B & C (Butiran Tuntutan & Maklumat Pengesahan) ─── -->
         <div class="tab-pane-custom d-none" id="tab3">
             <div class="tab-pane-title d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <i class="bi bi-receipt text-primary me-2"></i>
-                    <strong>Tab 3 — Claim Details (Perincian & Jumlah Bersih Tuntutan)</strong>
+                    <i class="bi bi-file-earmark-ruled-fill text-primary me-2"></i>
+                    <strong>BAHAGIAN B: BUTIRAN TUNTUTAN & BAHAGIAN C: MAKLUMAT PENGESAHAN</strong>
+                    <span class="badge bg-primary-subtle text-primary font-monospace ms-2">HoSZA-MGT-J3P (PE)-F-003-01</span>
+                </div>
+                <div class="badge bg-dark text-white px-3 py-2 font-monospace">
+                    BULAN: <span id="tab3_badge_month"><?= esc($userData['claim_month'] ?? date('m')) ?></span> / <span id="tab3_badge_year"><?= esc($userData['claim_year'] ?? date('Y')) ?></span>
                 </div>
             </div>
 
             <!-- Context Info Cards: Specialist & Patient Summary -->
             <div class="row g-3 mb-3">
-                <!-- Specialist Info Card -->
+                <!-- Specialist Info Card (Bahagian A Summary) -->
                 <div class="col-md-6">
                     <div class="card shadow-sm border-0 rounded-3 h-100 bg-light">
                         <div class="card-body p-3">
@@ -526,12 +642,13 @@ $isEdit = !empty($isEdit) && !empty($application);
                                 <div class="badge bg-primary p-2 me-2 rounded-circle">
                                     <i class="bi bi-person-badge text-white"></i>
                                 </div>
-                                <span class="fw-bold small text-uppercase text-secondary">Maklumat Pakar</span>
+                                <span class="fw-bold small text-uppercase text-secondary">Bahagian A: Maklumat Pegawai Yang Menuntut</span>
                             </div>
                             <div class="small">
-                                <div><strong>Nama Pakar:</strong> <span id="tab3_spec_name"><?= esc($userData['specialist_name'] ?? '-') ?></span></div>
-                                <div><strong>No. Staf:</strong> <span id="tab3_spec_staffno"><?= esc($userData['staff_number'] ?? '-') ?></span></div>
-                                <div><strong>Jabatan:</strong> <span id="tab3_spec_dept"><?= esc($userData['department'] ?? '-') ?></span></div>
+                                <div><strong>Nama Pegawai:</strong> <span id="tab3_spec_name"><?= esc($userData['specialist_name'] ?? '-') ?></span></div>
+                                <div><strong>No. KP / No. Pekerja:</strong> <span id="tab3_spec_ic"><?= esc($userData['staff_ic'] ?? '-') ?></span> / <span id="tab3_spec_staffno" class="font-monospace"><?= esc($userData['staff_number'] ?? '-') ?></span></div>
+                                <div><strong>Jawatan & Gred:</strong> <span id="tab3_spec_grade"><?= esc($userData['grade'] ?? $userData['position'] ?? '-') ?></span></div>
+                                <div><strong>No. Telefon / Emel:</strong> <span id="tab3_spec_phone"><?= esc($userData['phone'] ?? '-') ?></span> / <span id="tab3_spec_email"><?= esc($userData['email'] ?? '-') ?></span></div>
                             </div>
                         </div>
                     </div>
@@ -545,12 +662,13 @@ $isEdit = !empty($isEdit) && !empty($application);
                                 <div class="badge bg-success p-2 me-2 rounded-circle">
                                     <i class="bi bi-person-wheelchair text-white"></i>
                                 </div>
-                                <span class="fw-bold small text-uppercase text-secondary">Maklumat Pesakit & Lawatan</span>
+                                <span class="fw-bold small text-uppercase text-secondary">Maklumat Pesakit & Lawatan Terpilih</span>
                             </div>
                             <div class="small">
                                 <div><strong>Nama Pesakit:</strong> <span id="tab3_patient_name" class="fw-semibold text-uppercase">-</span></div>
-                                <div><strong>RN:</strong> <span id="tab3_patient_rn" class="font-monospace fw-bold text-primary">-</span> | <strong>No. KP:</strong> <span id="tab3_patient_ic">-</span></div>
-                                <div><strong>Jenis Lawatan:</strong> <span id="tab3_visit_type">-</span> | <strong>No. Invois:</strong> <span id="tab3_invc_no">-</span></div>
+                                <div><strong>Nombor RN:</strong> <span id="tab3_patient_rn" class="font-monospace fw-bold text-primary">-</span> | <strong>No. KP:</strong> <span id="tab3_patient_ic">-</span></div>
+                                <div><strong>Jenis Lawatan:</strong> <span id="tab3_visit_type">-</span> | <strong>ID Lawatan:</strong> <span id="tab3_visit_id">-</span></div>
+                                <div><strong>No. Invois Bil:</strong> <span id="tab3_invc_no">-</span></div>
                             </div>
                         </div>
                     </div>
@@ -587,16 +705,16 @@ $isEdit = !empty($isEdit) && !empty($application);
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <div class="card border-0 shadow-sm rounded-3 bg-secondary bg-opacity-10 text-center p-3">
-                        <div class="text-muted small fw-semibold text-uppercase">Jumlah Harga Kasar (Gross)</div>
+                        <div class="text-muted small fw-semibold text-uppercase">Jumlah Kadar Caj Kasar</div>
                         <div class="fs-4 fw-bold font-monospace text-dark mt-1" id="tab3_kpi_gross">RM 0.00</div>
-                        <div class="small text-muted">Nilai Asal Semua Prosedur</div>
+                        <div class="small text-muted">Kadar Caj Keseluruhan Prosedur</div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card border-0 shadow-sm rounded-3 bg-success bg-opacity-10 text-center p-3 border-start border-success border-4">
-                        <div class="text-success small fw-semibold text-uppercase">Jumlah Bersih Tuntutan (Pakar)</div>
+                        <div class="text-success small fw-semibold text-uppercase">Jumlah Tuntutan Pakar (RM)</div>
                         <div class="fs-4 fw-bold font-monospace text-success mt-1" id="tab3_kpi_claim">RM 0.00</div>
-                        <div class="small text-success">Mengikut Peratusan Tuntutan</div>
+                        <div class="small text-success">Kadar Agihan Bersih Pakar</div>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -608,44 +726,58 @@ $isEdit = !empty($isEdit) && !empty($application);
                 </div>
             </div>
 
-            <!-- Table Detail Claim Selepas Jumlah Bersih (Ikut Percentage) -->
+            <!-- Table Bahagian B: Butiran Tuntutan Format Rasmi HoSZA-MGT-J3P (PE)-F-003-01 -->
             <div class="card shadow-sm border-0 rounded-3 overflow-hidden mb-4">
                 <div class="card-header bg-dark text-white py-2 px-3 d-flex justify-content-between align-items-center">
                     <span class="fw-semibold small">
-                        <i class="bi bi-table me-2 text-warning"></i> Perincian Tuntutan Prosedur Selepas Jumlah Bersih
+                        <i class="bi bi-table me-2 text-warning"></i> BAHAGIAN B: BUTIRAN TUNTUTAN (BORANG HoSZA-MGT-J3P (PE)-F-003-01)
                     </span>
                     <span class="badge bg-primary">
-                        Bil. Prosedur: <span id="tab3_proc_count">0</span>
+                        Bil. Item: <span id="tab3_proc_count">0</span>
                     </span>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover table-bordered mb-0 align-middle small">
                             <thead class="table-light">
-                                <tr class="text-center">
-                                    <th width="5%">#</th>
-                                    <th width="12%">Kod Prosedur</th>
-                                    <th class="text-start">Nama Prosedur</th>
-                                    <th width="16%" class="text-end">Harga Asal (RM)</th>
-                                    <th width="14%">Tuntutan (%)</th>
-                                    <th width="18%" class="text-end text-success fw-bold">Jumlah Bersih Tuntutan (RM)</th>
-                                    <th width="18%" class="text-end text-warning-emphasis">Tabung Kebajikan (Pilihan) (RM)</th>
+                                <tr class="text-center align-middle">
+                                    <th rowspan="2" width="3%">BIL.</th>
+                                    <th rowspan="2" width="14%">NAMA PESAKIT</th>
+                                    <th rowspan="2" width="8%">NO. R/N</th>
+                                    <th rowspan="2">PROSEDUR / PERKHIDMATAN</th>
+                                    <th rowspan="2" width="8%">TARIKH BIL</th>
+                                    <th rowspan="2" width="8%">NO. RESIT</th>
+                                    <th colspan="2" width="15%" class="bg-primary-subtle text-primary fw-bold">CAJ RUNDINGAN</th>
+                                    <th colspan="2" width="15%" class="bg-info-subtle text-dark fw-bold">CAJ TATACARA</th>
+                                    <th colspan="2" width="15%" class="bg-secondary-subtle fw-bold">CAJ PELAPORAN</th>
+                                    <th rowspan="2" width="10%" class="bg-success-subtle text-success fw-bold">JUMLAH TUNTUTAN (RM)</th>
+                                </tr>
+                                <tr class="text-center" style="font-size: 0.72rem;">
+                                    <th class="bg-primary-subtle text-muted">Kadar Caj (RM)</th>
+                                    <th class="bg-primary-subtle text-primary">Agihan (75%)</th>
+                                    <th class="bg-info-subtle text-muted">Kadar Caj (RM)</th>
+                                    <th class="bg-info-subtle text-dark">Agihan (75%)</th>
+                                    <th class="bg-secondary-subtle text-muted">Kadar Caj (RM)</th>
+                                    <th class="bg-secondary-subtle">Agihan (70%)</th>
                                 </tr>
                             </thead>
                             <tbody id="tab3ClaimTableBody">
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted py-4">
+                                    <td colspan="13" class="text-center text-muted py-4">
                                         <i class="bi bi-info-circle me-1"></i> Tiada maklumat prosedur. Sila kembali ke Tab 2 untuk memilih prosedur.
                                     </td>
                                 </tr>
                             </tbody>
                             <tfoot class="table-dark text-center fw-bold" id="tab3ClaimTableFooter">
                                 <tr>
-                                    <td colspan="3" class="text-end text-uppercase">JUMLAH KESELURUHAN:</td>
-                                    <td class="text-end font-monospace" id="tab3_footer_gross">RM 0.00</td>
-                                    <td id="tab3_footer_avg_pct">-</td>
-                                    <td class="text-end text-success font-monospace fs-6" id="tab3_footer_claim">RM 0.00</td>
-                                    <td class="text-end text-warning font-monospace" id="tab3_footer_welfare">RM 0.00</td>
+                                    <td colspan="6" class="text-end text-uppercase">JUMLAH KESELURUHAN:</td>
+                                    <td class="text-end font-monospace" id="tab3_total_rundingan_kadar">0.00</td>
+                                    <td class="text-end font-monospace text-warning" id="tab3_total_rundingan_agihan">0.00</td>
+                                    <td class="text-end font-monospace" id="tab3_total_tatacara_kadar">0.00</td>
+                                    <td class="text-end font-monospace text-warning" id="tab3_total_tatacara_agihan">0.00</td>
+                                    <td class="text-end font-monospace" id="tab3_total_pelaporan_kadar">0.00</td>
+                                    <td class="text-end font-monospace text-warning" id="tab3_total_pelaporan_agihan">0.00</td>
+                                    <td class="text-end text-success font-monospace fs-6" id="tab3_total_keseluruhan_tuntutan">RM 0.00</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -653,21 +785,49 @@ $isEdit = !empty($isEdit) && !empty($application);
                 </div>
             </div>
 
-            <!-- Specialist Declaration & Remarks -->
-            <div class="card shadow-sm border-0 rounded-3 mb-4 bg-light">
+            <!-- BAHAGIAN C: Maklumat Pengesahan (Pegawai Yang Menuntut) -->
+            <div class="card shadow-sm border border-primary-subtle rounded-3 mb-4 bg-light">
+                <div class="card-header bg-primary bg-opacity-10 py-2 px-3 d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-primary small text-uppercase">
+                        <i class="bi bi-shield-check me-1"></i> BAHAGIAN C: MAKLUMAT PENGESAHAN (PEGAWAI YANG MENUNTUT)
+                    </span>
+                    <span class="badge bg-primary text-white font-monospace">Pengesahan Wajib</span>
+                </div>
                 <div class="card-body p-3">
-                    <div class="mb-3">
+                    <div class="p-3 bg-white border border-primary border-opacity-25 rounded-2 shadow-sm mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input ms-0 me-2" type="checkbox" id="declarationCheck" <?= $isEdit ? 'checked' : '' ?> onchange="checkDeclarationState()">
+                            <label class="form-check-label fw-bold text-dark fs-6" for="declarationCheck">
+                                "Dengan ini saya mengesahkan bahawa Tuntutan Bayaran Pakar di bawah Perkhidmatan Eksekutif seperti maklumat yang disediakan adalah betul dan dilaksanakan oleh saya."
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row g-2 small text-muted">
+                        <div class="col-md-6">
+                            <strong>Pegawai Yang Mengesahkan:</strong> <span class="text-dark fw-semibold" id="tab3_decl_name"><?= esc($userData['specialist_name']) ?></span>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <strong>Tarikh Pengesahan:</strong> <span class="text-dark fw-semibold"><?= date('d/m/Y') ?></span>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2 border-top">
                         <label class="form-label fw-semibold small text-secondary">
-                            <i class="bi bi-chat-left-text me-1"></i> Catatan Tambahan (Pilihan):
+                            <i class="bi bi-chat-left-text me-1"></i> Catatan Tambahan Pemohon (Pilihan):
                         </label>
                         <textarea class="form-control form-control-sm" id="claim_remarks" rows="2" placeholder="Masukkan sebarang nota atau rujukan tambahan jika perlu..."><?= $isEdit ? esc($application['remarks'] ?? '') : '' ?></textarea>
                     </div>
-                    <div class="form-check p-3 bg-white border rounded-2 shadow-sm">
-                        <input class="form-check-input ms-0 me-2" type="checkbox" id="declarationCheck" <?= $isEdit ? 'checked' : '' ?>>
-                        <label class="form-check-label fw-semibold text-dark small" for="declarationCheck">
-                            Saya mengesahkan bahawa segala butiran tuntutan prosedur perkhidmatan ini adalah tepat, benar, dan menepati peraturan yang ditetapkan oleh pihak Hospital Pengajar UniSZA.
-                        </label>
-                    </div>
+                </div>
+            </div>
+
+            <!-- Workflow Preview Notice (Aliran 5-Peringkat) -->
+            <div class="alert alert-info border-0 shadow-sm py-2 px-3 d-flex align-items-center mb-4 rounded-3 small">
+                <i class="bi bi-info-circle-fill me-2 fs-5 text-primary"></i>
+                <div>
+                    <strong>Aliran Kelulusan Selepas Dihantar:</strong> Permohonan ini akan disalurkan mengikut giliran: 
+                    <span class="badge bg-white text-dark border ms-1">1. Pegawai Penyemak PE</span> &rarr;
+                    <span class="badge bg-white text-dark border ms-1">2. Pegawai Perkhidmatan PE</span> &rarr;
+                    <span class="badge bg-white text-dark border ms-1">3. Ketua J3P</span> &rarr;
+                    <span class="badge bg-white text-dark border ms-1">4. Pengarah Hospital</span>.
                 </div>
             </div>
 
@@ -1253,10 +1413,16 @@ $('#addProcBtn').on('click', function () {
         return;
     }
 
-    // Get current bulk % or default 100
-    let defaultPct = parseFloat($('#bulkClaimPct').val());
-    if (isNaN(defaultPct)) defaultPct = 100;
-    defaultPct = Math.min(100, Math.max(0, defaultPct));
+    const chargeType = $('#procChargeType').val() || 'tatacara';
+    const billDate = $('#procBillDate').val() || '';
+    const receiptNo = $('#procReceiptNo').val().trim() || '';
+
+    // Standard rate based on official form: Pelaporan is 70%, Tatacara & Rundingan is 75%
+    let defaultPct = chargeType === 'pelaporan' ? 70 : 75;
+    const currentBulk = parseFloat($('#bulkClaimPct').val());
+    if (!isNaN(currentBulk) && currentBulk !== 75 && currentBulk !== 70) {
+        defaultPct = Math.min(100, Math.max(0, currentBulk));
+    }
 
     selectedProcedures.push({
         id: procId + '_' + Date.now(),
@@ -1266,11 +1432,15 @@ $('#addProcBtn').on('click', function () {
         price: price,
         surgeon_fee: surgeonFee,
         anaesthetist_fee: anaesthetistFee,
+        charge_type: chargeType,
+        bill_date: billDate,
+        receipt_no: receiptNo,
         claimPct: defaultPct
     });
 
     renderSelectedProcedures();
     sel.selectedIndex = 0;
+    $('#procReceiptNo').val('');
 });
 
 function removeProcedure(id) {
@@ -1281,7 +1451,7 @@ function removeProcedure(id) {
 // Set claim percentage for all procedures at once
 function setAllClaimPct(pct) {
     let num = parseFloat(pct);
-    if (isNaN(num)) num = 100;
+    if (isNaN(num)) num = 75;
     num = Math.min(100, Math.max(0, num));
     $('#bulkClaimPct').val(num);
 
@@ -1327,7 +1497,9 @@ function recalculateProcedureTotals() {
 
     selectedProcedures.forEach(p => {
         const fee = parseFloat(p.price) || 0;
-        const pct = (typeof p.claimPct !== 'undefined' && p.claimPct !== null) ? parseFloat(p.claimPct) : 100;
+        const cType = p.charge_type || 'tatacara';
+        const defaultPct = cType === 'pelaporan' ? 70 : 75;
+        const pct = (typeof p.claimPct !== 'undefined' && p.claimPct !== null) ? parseFloat(p.claimPct) : defaultPct;
         totalPrice += fee;
         totalClaim += fee * (pct / 100);
     });
@@ -1346,7 +1518,7 @@ function renderSelectedProcedures() {
     if (!tbody) return;
 
     if (!selectedProcedures || selectedProcedures.length === 0) {
-        tbody.innerHTML = `<tr id="emptyProcRow"><td colspan="6" class="text-center text-muted py-3"><i class="bi bi-info-circle me-1"></i> No procedures added.</td></tr>`;
+        tbody.innerHTML = `<tr id="emptyProcRow"><td colspan="7" class="text-center text-muted py-3"><i class="bi bi-info-circle me-1"></i> Tiada prosedur ditambah. Sila pilih prosedur di atas.</td></tr>`;
         if (totalCountEl) totalCountEl.textContent = '0';
         if (tfoot) tfoot.classList.add('d-none');
         updateProceduresHiddenInput();
@@ -1359,16 +1531,35 @@ function renderSelectedProcedures() {
 
     selectedProcedures.forEach((p) => {
         const fee = parseFloat(p.price) || 0;
-        const pct = (typeof p.claimPct !== 'undefined' && p.claimPct !== null) ? parseFloat(p.claimPct) : 100;
+        const cType = p.charge_type || 'tatacara';
+        const defaultPct = cType === 'pelaporan' ? 70 : 75;
+        const pct = (typeof p.claimPct !== 'undefined' && p.claimPct !== null) ? parseFloat(p.claimPct) : defaultPct;
         p.claimPct = pct;
         const claimAmt = fee * (pct / 100);
 
+        let typeBadge = '<span class="badge bg-info text-dark font-monospace" style="font-size: 0.68rem;">TATACARA (75%)</span>';
+        if (cType === 'rundingan') {
+            typeBadge = '<span class="badge bg-primary text-white font-monospace" style="font-size: 0.68rem;">RUNDINGAN (75%)</span>';
+        } else if (cType === 'pelaporan') {
+            typeBadge = '<span class="badge bg-secondary text-white font-monospace" style="font-size: 0.68rem;">PELAPORAN (70%)</span>';
+        }
+
+        const dateStr = p.bill_date ? escapeHtml(p.bill_date) : '-';
+        const resitStr = p.receipt_no ? escapeHtml(p.receipt_no) : '-';
+
         rows += `
             <tr id="proc_row_${p.id}">
-                <td class="font-monospace fw-semibold text-primary">${escapeHtml(p.code)}</td>
-                <td><span class="fw-semibold">${escapeHtml(p.name)}</span></td>
-                <td class="text-end font-monospace">${fee.toFixed(2)}</td>
-                <td class="text-center">
+                <td class="font-monospace fw-semibold text-primary align-middle">${escapeHtml(p.code)}</td>
+                <td class="align-middle">
+                    <div class="fw-semibold text-dark">${escapeHtml(p.name)}</div>
+                    <div class="mt-1">${typeBadge}</div>
+                </td>
+                <td class="text-center small text-muted align-middle">
+                    <div class="text-nowrap"><i class="bi bi-calendar-event me-1"></i>${dateStr}</div>
+                    <div class="font-monospace text-dark fw-semibold"><i class="bi bi-receipt me-1"></i>${resitStr}</div>
+                </td>
+                <td class="text-end font-monospace align-middle">${fee.toFixed(2)}</td>
+                <td class="text-center align-middle">
                     <div class="input-group input-group-sm justify-content-center mx-auto" style="max-width: 88px;">
                         <input type="number" class="form-control form-control-sm text-center px-1 font-monospace"
                                min="0" max="100" step="1"
@@ -1378,11 +1569,11 @@ function renderSelectedProcedures() {
                         <span class="input-group-text px-1 small text-muted">%</span>
                     </div>
                 </td>
-                <td class="text-end font-monospace fw-bold text-success" id="proc_claim_amt_${p.id}">
+                <td class="text-end font-monospace fw-bold text-success align-middle" id="proc_claim_amt_${p.id}">
                     ${claimAmt.toFixed(2)}
                 </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" onclick="removeProcedure('${p.id}')" title="Remove">
+                <td class="text-center align-middle">
+                    <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2" onclick="removeProcedure('${p.id}')" title="Hapus">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
@@ -1448,6 +1639,7 @@ function checkTab2NextButtonState() {
 $(document).ready(function () {
     renderSelectedProcedures();
     checkTab2NextButtonState();
+    checkDeclarationState();
 
     if (isEditMode && editAppData) {
         // Automatically restore patient & visits
@@ -1539,7 +1731,7 @@ $('#btnNextTab2').on('click', function () {
 });
 
 // ──────────────────────────────────────────────────────────────────
-// Tab 3 — Claim Details Calculations & Submission
+// Tab 3 — Claim Details Calculations & Submission (Bahagian B & C)
 // ──────────────────────────────────────────────────────────────────
 let tab3Totals = { gross: 0, claim: 0, welfare: 0 };
 
@@ -1556,15 +1748,16 @@ function renderTab3ClaimDetails() {
     $('#tab3_patient_ic').text(pIc);
     $('#tab3_visit_type').text(vType);
     $('#tab3_invc_no').text(invcNo);
+    $('#tab3_decl_name').text($('#specialist_name').val() || '<?= esc($userData['specialist_name'] ?? '') ?>');
 
-    // 2. Procedures Detail Table
+    // 2. Procedures Detail Table (Bahagian B: 13 Columns matching official form)
     const tbody   = document.getElementById('tab3ClaimTableBody');
     const countEl = document.getElementById('tab3_proc_count');
 
     if (!tbody) return;
 
     if (!selectedProcedures || selectedProcedures.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-info-circle me-1"></i> Tiada maklumat prosedur dipilih. Sila kembali ke Tab 2 untuk memilih prosedur.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="13" class="text-center text-muted py-4"><i class="bi bi-info-circle me-1"></i> Tiada maklumat prosedur dipilih. Sila kembali ke Tab 2 untuk memilih prosedur.</td></tr>`;
         if (countEl) countEl.textContent = '0';
         updateTab3KPIs(0, 0, 0);
         return;
@@ -1572,38 +1765,66 @@ function renderTab3ClaimDetails() {
 
     if (countEl) countEl.textContent = selectedProcedures.length;
 
+    let totRundKadar = 0, totRundAgihan = 0;
+    let totTataKadar = 0, totTataAgihan = 0;
+    let totPelaKadar = 0, totPelaAgihan = 0;
     let grossTotal   = 0;
     let claimTotal   = 0;
-    let welfareTotal = 0;
     let rows         = '';
-    const isWelfareEnabled = $('#toggleWelfareFund').is(':checked');
 
     selectedProcedures.forEach((p, idx) => {
         const fee        = parseFloat(p.price) || 0;
-        const pct        = (typeof p.claimPct !== 'undefined' && p.claimPct !== null) ? parseFloat(p.claimPct) : 100;
+        const cType      = p.charge_type || 'tatacara';
+        const defaultPct = cType === 'pelaporan' ? 70 : 75;
+        const pct        = (typeof p.claimPct !== 'undefined' && p.claimPct !== null) ? parseFloat(p.claimPct) : defaultPct;
         const claimAmt   = fee * (pct / 100);
-        const welfareAmt = isWelfareEnabled ? (fee - claimAmt) : 0;
 
-        grossTotal   += fee;
-        claimTotal   += claimAmt;
-        welfareTotal += welfareAmt;
+        grossTotal += fee;
+        claimTotal += claimAmt;
+
+        let rundKadarStr = '-', rundAgihanStr = '-';
+        let tataKadarStr = '-', tataAgihanStr = '-';
+        let pelaKadarStr = '-', pelaAgihanStr = '-';
+
+        if (cType === 'rundingan') {
+            totRundKadar += fee;
+            totRundAgihan += claimAmt;
+            rundKadarStr = fee.toFixed(2);
+            rundAgihanStr = claimAmt.toFixed(2);
+        } else if (cType === 'pelaporan') {
+            totPelaKadar += fee;
+            totPelaAgihan += claimAmt;
+            pelaKadarStr = fee.toFixed(2);
+            pelaAgihanStr = claimAmt.toFixed(2);
+        } else {
+            // Default: Tatacara
+            totTataKadar += fee;
+            totTataAgihan += claimAmt;
+            tataKadarStr = fee.toFixed(2);
+            tataAgihanStr = claimAmt.toFixed(2);
+        }
+
+        const dateStr = p.bill_date ? escapeHtml(p.bill_date) : '-';
+        const resitStr = p.receipt_no ? escapeHtml(p.receipt_no) : '-';
 
         rows += `
-            <tr>
+            <tr class="align-middle">
                 <td class="text-center text-muted">${idx + 1}</td>
-                <td class="text-center font-monospace fw-semibold text-primary">${escapeHtml(p.code)}</td>
+                <td class="fw-semibold text-dark">${escapeHtml(pName)}</td>
+                <td class="text-center font-monospace">${escapeHtml(pRn)}</td>
                 <td>
-                    <div class="fw-semibold text-dark">${escapeHtml(p.name)}</div>
+                    <span class="font-monospace text-primary fw-semibold">${escapeHtml(p.code)}</span> - ${escapeHtml(p.name)}
                 </td>
-                <td class="text-end font-monospace">${fee.toFixed(2)}</td>
-                <td class="text-center">
-                    <span class="badge ${pct === 100 ? 'bg-success' : 'bg-primary'} px-2 py-1 font-monospace">${pct}%</span>
-                </td>
-                <td class="text-end font-monospace fw-bold text-success">
-                    RM ${claimAmt.toFixed(2)}
-                </td>
-                <td class="text-end font-monospace ${isWelfareEnabled ? 'text-warning-emphasis fw-semibold' : 'text-muted'}">
-                    ${isWelfareEnabled ? 'RM ' + welfareAmt.toFixed(2) : '<span class="fst-italic text-muted">—</span>'}
+                <td class="text-center small">${dateStr}</td>
+                <td class="text-center font-monospace small">${resitStr}</td>
+                <td class="text-end font-monospace ${cType === 'rundingan' ? 'bg-primary bg-opacity-10 fw-semibold' : 'text-muted'}">${rundKadarStr}</td>
+                <td class="text-end font-monospace text-primary fw-bold ${cType === 'rundingan' ? 'bg-primary bg-opacity-10' : 'text-muted'}">${rundAgihanStr}</td>
+                <td class="text-end font-monospace ${cType === 'tatacara' ? 'bg-info bg-opacity-10 fw-semibold' : 'text-muted'}">${tataKadarStr}</td>
+                <td class="text-end font-monospace text-dark fw-bold ${cType === 'tatacara' ? 'bg-info bg-opacity-10' : 'text-muted'}">${tataAgihanStr}</td>
+                <td class="text-end font-monospace ${cType === 'pelaporan' ? 'bg-secondary bg-opacity-10 fw-semibold' : 'text-muted'}">${pelaKadarStr}</td>
+                <td class="text-end font-monospace text-dark fw-bold ${cType === 'pelaporan' ? 'bg-secondary bg-opacity-10' : 'text-muted'}">${pelaAgihanStr}</td>
+                <td class="text-end font-monospace fw-bold text-success bg-success bg-opacity-10 fs-6">
+                    ${claimAmt.toFixed(2)}
                 </td>
             </tr>
         `;
@@ -1611,15 +1832,21 @@ function renderTab3ClaimDetails() {
 
     tbody.innerHTML = rows;
 
+    const isWelfareEnabled = $('#toggleWelfareFund').is(':checked');
+    const welfareTotal = isWelfareEnabled ? (grossTotal - claimTotal) : 0;
     tab3Totals = { gross: grossTotal, claim: claimTotal, welfare: welfareTotal };
     updateTab3KPIs(grossTotal, claimTotal, welfareTotal);
 
-    // Update Footer
-    $('#tab3_footer_gross').text('RM ' + grossTotal.toFixed(2));
-    $('#tab3_footer_claim').text('RM ' + claimTotal.toFixed(2));
-    $('#tab3_footer_welfare').text('RM ' + welfareTotal.toFixed(2));
-    const avgPct = grossTotal > 0 ? ((claimTotal / grossTotal) * 100).toFixed(0) + '%' : '-';
-    $('#tab3_footer_avg_pct').text(avgPct);
+    // Update Footer Totals (Bahagian B Table)
+    $('#tab3_total_rundingan_kadar').text(totRundKadar.toFixed(2));
+    $('#tab3_total_rundingan_agihan').text(totRundAgihan.toFixed(2));
+    $('#tab3_total_tatacara_kadar').text(totTataKadar.toFixed(2));
+    $('#tab3_total_tatacara_agihan').text(totTataAgihan.toFixed(2));
+    $('#tab3_total_pelaporan_kadar').text(totPelaKadar.toFixed(2));
+    $('#tab3_total_pelaporan_agihan').text(totPelaAgihan.toFixed(2));
+    $('#tab3_total_keseluruhan_tuntutan').text('RM ' + claimTotal.toFixed(2));
+
+    checkDeclarationState();
 }
 
 // Toggle listener for Welfare Fund switch
@@ -1679,9 +1906,10 @@ function toggleAISuggestion() {
             showConfirmButton: false
         });
     } else {
-        // Reset procedures to 100% claim
+        // Reset procedures to standard form rates: Pelaporan 70%, Tatacara/Rundingan 75%
         selectedProcedures.forEach(p => {
-            p.claimPct = 100;
+            const cType = p.charge_type || 'tatacara';
+            p.claimPct = cType === 'pelaporan' ? 70 : 75;
         });
         $('#toggleWelfareFund').prop('checked', false);
 
@@ -1698,7 +1926,7 @@ function toggleAISuggestion() {
         Swal.fire({
             icon: 'info',
             title: 'Ditetapkan Semula (Reset)',
-            text: 'Semua prosedur ditetapkan semula kepada 100% tuntutan pakar (Tiada sumbangan kebajikan).',
+            text: 'Semua prosedur ditetapkan semula mengikut kadar borang PE (75% / 70%).',
             timer: 2000,
             showConfirmButton: false
         });
@@ -1713,8 +1941,13 @@ function runAISuggestions() {
 }
 
 // Declaration Checkbox Handler
+function checkDeclarationState() {
+    const isChecked = $('#declarationCheck').is(':checked');
+    $('#btnSubmitClaimApp').prop('disabled', !isChecked);
+}
+
 $('#declarationCheck').on('change', function () {
-    $('#btnSubmitClaimApp').prop('disabled', !this.checked);
+    checkDeclarationState();
 });
 
 // Final Claim Submission / Update Handler
@@ -1725,7 +1958,7 @@ $('#btnSubmitClaimApp').on('click', function () {
     }
 
     if (!$('#declarationCheck').is(':checked')) {
-        Swal.fire({ icon: 'warning', title: 'Pengesahan Diperlukan', text: 'Sila tandakan pengesahan deklarasi pakar terlebih dahulu.' });
+        Swal.fire({ icon: 'warning', title: 'Pengesahan Diperlukan', text: 'Sila tandakan pengesahan deklarasi pakar (Bahagian C) terlebih dahulu.' });
         return;
     }
 
@@ -1766,17 +1999,23 @@ function submitFinalClaim() {
     const payload = {
         '<?= csrf_token() ?>': $('[name="<?= csrf_token() ?>"]').val() || '<?= csrf_hash() ?>',
         specialist_name: $('#specialist_name').val(),
+        staff_ic: $('#staff_ic').val(),
         staff_number: $('#staff_number').val(),
+        grade: $('#grade').val(),
+        phone: $('#phone').val(),
         email: $('#email').val(),
         department: $('#department').val(),
         position: $('#position').val(),
+        claim_month: $('#claim_month').val(),
+        claim_year: $('#claim_year').val(),
         patient_rn: selectedVisit?.rn || currentPatient.rn || $('#selected_patient_rn').val(),
         patient_name: selectedVisit?.patient_name || currentPatient.name || $('#selected_patient_name').val(),
         patient_ic: selectedVisit?.nric || currentPatient.nric || $('#selected_patient_ic').val(),
         visit_id: selectedVisit?.visit?.visit_id || $('#selected_visit_id').val(),
         procedures: JSON.stringify(selectedProcedures),
         remarks: $('#claim_remarks').val().trim(),
-        include_welfare: isWelfare ? 1 : 0
+        include_welfare: isWelfare ? 1 : 0,
+        user_declaration: $('#declarationCheck').is(':checked') ? 1 : 0
     };
 
     const targetUrl = isEditMode 

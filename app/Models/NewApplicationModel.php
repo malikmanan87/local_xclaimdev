@@ -15,15 +15,36 @@ class NewApplicationModel extends Model
     protected $allowedFields = [
         'application_no',
         'specialist_name',
+        'staff_ic',
         'staff_number',
         'email',
+        'phone',
         'department',
         'position',
+        'grade',
+        'claim_month',
+        'claim_year',
         'patient_rn',
         'patient_name',
         'patient_ic',
         'visit_id',
         'status',
+        'penyemak_status',
+        'penyemak_verified_by',
+        'penyemak_verified_at',
+        'penyemak_remarks',
+        'perkhidmatan_status',
+        'perkhidmatan_verified_by',
+        'perkhidmatan_verified_at',
+        'perkhidmatan_remarks',
+        'j3p_status',
+        'j3p_verified_by',
+        'j3p_verified_at',
+        'j3p_remarks',
+        'pengarah_status',
+        'pengarah_verified_by',
+        'pengarah_verified_at',
+        'pengarah_remarks',
         'jppp_status',
         'jppp_verified_by',
         'jppp_verified_at',
@@ -38,6 +59,8 @@ class NewApplicationModel extends Model
         'total_welfare',
         'procedures_data',
         'remarks',
+        'user_declaration',
+        'user_declared_at',
         'submitted_by',
         'submitted_at',
     ];
@@ -46,8 +69,6 @@ class NewApplicationModel extends Model
         'specialist_name' => 'required|min_length[3]|max_length[150]',
         'staff_number'    => 'required|max_length[50]',
         'email'           => 'required|valid_email|max_length[150]',
-        'department'      => 'required|max_length[100]',
-        'position'        => 'required|max_length[100]',
     ];
 
     // ---------------------------------------------------------------
@@ -57,9 +78,17 @@ class NewApplicationModel extends Model
     {
         return $this->select('new_applications.*, 
                               u_sub.fullname AS creator_name,
+                              u_penyemak.fullname AS penyemak_reviewer_name,
+                              u_perkhidmatan.fullname AS perkhidmatan_reviewer_name,
+                              u_j3p.fullname AS j3p_reviewer_name,
+                              u_pengarah.fullname AS pengarah_reviewer_name,
                               u_jppp.fullname AS jppp_reviewer_name,
                               u_fin.fullname AS finance_reviewer_name')
                     ->join('users u_sub', 'u_sub.id = new_applications.submitted_by', 'left')
+                    ->join('users u_penyemak', 'u_penyemak.id = new_applications.penyemak_verified_by', 'left')
+                    ->join('users u_perkhidmatan', 'u_perkhidmatan.id = new_applications.perkhidmatan_verified_by', 'left')
+                    ->join('users u_j3p', 'u_j3p.id = new_applications.j3p_verified_by', 'left')
+                    ->join('users u_pengarah', 'u_pengarah.id = new_applications.pengarah_verified_by', 'left')
                     ->join('users u_jppp', 'u_jppp.id = new_applications.jppp_verified_by', 'left')
                     ->join('users u_fin', 'u_fin.id = new_applications.finance_verified_by', 'left')
                     ->orderBy('new_applications.created_at', 'DESC')
@@ -73,9 +102,17 @@ class NewApplicationModel extends Model
     {
         return $this->select('new_applications.*, 
                               u_sub.fullname AS creator_name,
+                              u_penyemak.fullname AS penyemak_reviewer_name,
+                              u_perkhidmatan.fullname AS perkhidmatan_reviewer_name,
+                              u_j3p.fullname AS j3p_reviewer_name,
+                              u_pengarah.fullname AS pengarah_reviewer_name,
                               u_jppp.fullname AS jppp_reviewer_name,
                               u_fin.fullname AS finance_reviewer_name')
                     ->join('users u_sub', 'u_sub.id = new_applications.submitted_by', 'left')
+                    ->join('users u_penyemak', 'u_penyemak.id = new_applications.penyemak_verified_by', 'left')
+                    ->join('users u_perkhidmatan', 'u_perkhidmatan.id = new_applications.perkhidmatan_verified_by', 'left')
+                    ->join('users u_j3p', 'u_j3p.id = new_applications.j3p_verified_by', 'left')
+                    ->join('users u_pengarah', 'u_pengarah.id = new_applications.pengarah_verified_by', 'left')
                     ->join('users u_jppp', 'u_jppp.id = new_applications.jppp_verified_by', 'left')
                     ->join('users u_fin', 'u_fin.id = new_applications.finance_verified_by', 'left')
                     ->where('new_applications.id', $id)
@@ -83,22 +120,33 @@ class NewApplicationModel extends Model
     }
 
     // ---------------------------------------------------------------
-    // Pending counts for notifications & badges
+    // Pending counts for 4-tier workflow notifications & badges
     // ---------------------------------------------------------------
-    public function getPendingJpppCount(): int
+    public function getPendingPenyemakCount(): int
     {
         return $this->where('status', 'submitted')
-                    ->groupStart()
-                        ->where('jppp_status', 'pending')
-                        ->orWhere('jppp_status IS NULL', null, false)
-                    ->groupEnd()
+                    ->where('penyemak_status', 'pending')
                     ->countAllResults();
     }
 
-    public function getPendingFinanceCount(): int
+    public function getPendingPerkhidmatanCount(): int
     {
-        return $this->where('jppp_status', 'approved')
-                    ->where('finance_status', 'pending')
+        return $this->where('penyemak_status', 'verified')
+                    ->where('perkhidmatan_status', 'pending')
+                    ->countAllResults();
+    }
+
+    public function getPendingJ3pCount(): int
+    {
+        return $this->where('perkhidmatan_status', 'verified')
+                    ->where('j3p_status', 'pending')
+                    ->countAllResults();
+    }
+
+    public function getPendingPengarahCount(): int
+    {
+        return $this->where('j3p_status', 'verified')
+                    ->where('pengarah_status', 'pending')
                     ->countAllResults();
     }
 
