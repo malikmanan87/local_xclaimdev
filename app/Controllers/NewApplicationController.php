@@ -41,15 +41,28 @@ class NewApplicationController extends BaseController
         $userModel = new \App\Models\UserModel();
         $currentUser = $userId ? $userModel->getUserWithRole($userId) : null;
 
+        // Semak data pakar secara dinamik daripada API Inpersonel UniSZA (HMAC-SHA1)
+        $identifier = session('email') ?? (session('staffno') ?? ($currentUser['email'] ?? ($currentUser['username'] ?? '')));
+        $pakarApi   = \App\Libraries\InpersonelService::findSpecialist((string)$identifier);
+
+        $pos = trim($pakarApi['jawatan'] ?? (session('position') ?? ''));
+        $grd = trim($pakarApi['gred'] ?? (session('grade') ?? ''));
+
+        if (!empty($pos) && !empty($grd)) {
+            $posGradeDisplay = (stripos($pos, $grd) !== false) ? $pos : trim($pos . ' ' . $grd);
+        } else {
+            $posGradeDisplay = $pakarApi['jawatan_gred'] ?? (session('position_grade') ?? ($pos ?: $grd));
+        }
+
         $userData = [
-            'specialist_name' => session('name') ?? ($currentUser['fullname'] ?? ''),
-            'staff_ic'        => session('ic_no') ?? '',
-            'staff_number'    => session('staffno') ?? ($currentUser['username'] ?? ''),
-            'grade'           => session('grade') ?? '',
-            'phone'           => session('phone') ?? ($currentUser['phone'] ?? ''),
-            'email'           => session('email') ?? ($currentUser['email'] ?? ''),
-            'department'      => session('department') ?? '',
-            'position'        => session('position') ?? '',
+            'specialist_name' => $pakarApi['nama'] ?? (session('name') ?? ($currentUser['fullname'] ?? '')),
+            'staff_ic'        => $pakarApi['nopengenalan'] ?? (session('icno') ?? (session('ic_no') ?? (session('ic') ?? ''))),
+            'staff_number'    => $pakarApi['nostaf'] ?? (session('staffno') ?? ($currentUser['username'] ?? '')),
+            'grade'           => $posGradeDisplay,
+            'phone'           => $pakarApi['telpejabat'] ?? (session('phone') ?? ($currentUser['phone'] ?? '')),
+            'email'           => $pakarApi['emel'] ?? (session('email') ?? ($currentUser['email'] ?? '')),
+            'department'      => $pakarApi['lokasi'] ?? (session('department') ?? ''),
+            'position'        => $pos,
             'claim_month'     => date('m'),
             'claim_year'      => date('Y'),
         ];
@@ -83,7 +96,7 @@ class NewApplicationController extends BaseController
             'specialist_name' => 'required|min_length[2]|max_length[150]',
             'staff_ic'        => 'permit_empty|max_length[25]',
             'staff_number'    => 'required|min_length[2]|max_length[50]',
-            'grade'           => 'permit_empty|max_length[50]',
+            'grade'           => 'permit_empty|max_length[150]',
             'phone'           => 'permit_empty|max_length[30]',
             'email'           => 'required|valid_email|max_length[150]',
             'department'      => 'permit_empty|max_length[150]',

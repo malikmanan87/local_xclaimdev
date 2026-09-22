@@ -238,7 +238,20 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
                         <strong>NO. PEKERJA :</strong> <?= esc($application['staff_number']) ?>
                     </td>
                     <td>
-                        <strong>JAWATAN & GRED :</strong> <?= esc($application['position']) ?> <?= !empty($application['grade']) ? '(' . esc($application['grade']) . ')' : '' ?>
+                        <strong>JAWATAN & GRED :</strong> 
+                        <?php
+                        $appGrade = trim($application['grade'] ?? '');
+                        $appPos   = trim($application['position'] ?? '');
+                        if (!empty($appGrade)) {
+                            if (!empty($appPos) && stripos($appGrade, $appPos) === false && stripos($appPos, $appGrade) === false) {
+                                echo esc($appPos . ' ' . $appGrade);
+                            } else {
+                                echo esc($appGrade);
+                            }
+                        } else {
+                            echo esc($appPos ?: '-');
+                        }
+                        ?>
                     </td>
                 </tr>
                 <tr>

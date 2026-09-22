@@ -208,6 +208,7 @@ class AuthController extends BaseController
             $staffno = $apiData['nostaff'] ?? null;
             $nokp    = $apiData['nokp'] ?? ($apiData['nopengenalan'] ?? null);
             $jawatan = $apiData['jawatan'] ?? null;
+            $gred    = $apiData['gred'] ?? ($apiData['gredjawatan'] ?? ($apiData['grade'] ?? ($apiData['kodgred'] ?? null)));
             $lokasi  = $apiData['lokasi'] ?? null;
             $phone   = $apiData['telpejabat'] ?? null;
 
@@ -272,25 +273,43 @@ class AuthController extends BaseController
                 'phone'      => $phone ?: $user['phone'],
             ]);
 
-            // Ambil maklumat peranan pengguna yang ditetapkan dalam dbtable
-            $userWithRole = $this->userModel->getUserWithRole($user['id']);
+            // Semak rekod rasmi daripada API Senarai Pakar Inpersonel untuk melengkapkan gred
+            $pakar = \App\Libraries\InpersonelService::findSpecialist($emel ?: ($staffno ?: $apiUsername));
+            if ($pakar) {
+                $nokp    = $nokp ?: ($pakar['nopengenalan'] ?? null);
+                $jawatan = $jawatan ?: ($pakar['jawatan'] ?? null);
+                $gred    = $gred ?: ($pakar['gred'] ?? null);
+                $lokasi  = $lokasi ?: ($pakar['lokasi'] ?? null);
+                $phone   = $phone ?: ($pakar['telpejabat'] ?? null);
+            }
+
+            // Bentuk paparan Jawatan & Gred (Jawatan + Gred)
+            if (!empty($jawatan) && !empty($gred)) {
+                $jawatanGred = (stripos($jawatan, $gred) !== false) ? $jawatan : trim($jawatan . ' ' . $gred);
+            } else {
+                $jawatanGred = $pakar['jawatan_gred'] ?? ($jawatan ?: ($gred ?: null));
+            }
 
             // Tetapkan sesi log masuk
             session()->set([
-                'logged_in'  => true,
-                'user_id'    => $user['id'],
-                'username'   => $user['username'] ?? $apiUsername,
-                'fullname'   => $nama,
-                'name'       => $nama,
-                'icno'       => $nokp,
-                'staffno'    => $staffno ?: $user['username'],
-                'position'   => $jawatan,
-                'department' => $lokasi,
-                'email'      => $emel,
-                'extno'      => $phone,
-                'role'       => $userWithRole['role_name'] ?? 'user',
-                'role_id'    => $userWithRole['role_id'] ?? $defaultRoleId,
-                'avatar'     => $user['avatar'] ?? null,
+                'logged_in'      => true,
+                'user_id'        => $user['id'],
+                'username'       => $user['username'] ?? $apiUsername,
+                'fullname'       => $nama,
+                'name'           => $nama,
+                'icno'           => $nokp,
+                'ic_no'          => $nokp,
+                'staffno'        => $staffno ?: $user['username'],
+                'position'       => $jawatan,
+                'grade'          => $gred,
+                'position_grade' => $jawatanGred,
+                'department'     => $lokasi,
+                'email'          => $emel,
+                'extno'          => $phone,
+                'phone'          => $phone,
+                'role'           => $userWithRole['role_name'] ?? 'user',
+                'role_id'        => $userWithRole['role_id'] ?? $defaultRoleId,
+                'avatar'         => $user['avatar'] ?? null,
             ]);
 
             $this->logActivity('Log Masuk', 'Pengguna log masuk melalui API UniSZA: ' . $emel . ' [Peranan: ' . ($userWithRole['role_name'] ?? 'user') . ']');
@@ -319,19 +338,26 @@ class AuthController extends BaseController
 
             $userWithRole = $this->userModel->getUserWithRole($localUser['id']);
 
+            // Semak maklumat pakar jika ada padanan dalam Inpersonel
+            $pakar = \App\Libraries\InpersonelService::findSpecialist($localUser['email'] ?? $localUser['username']);
+
             session()->set([
-                'logged_in'  => true,
-                'user_id'    => $localUser['id'],
-                'name'       => $localUser['fullname'],
-                'icno'       => null,
-                'staffno'    => $localUser['username'],
-                'position'   => null,
-                'department' => null,
-                'email'      => $localUser['email'],
-                'extno'      => $localUser['phone'] ?? null,
-                'role'       => $userWithRole['role_name'] ?? 'user',
-                'role_id'    => $userWithRole['role_id'],
-                'avatar'     => $localUser['avatar'] ?? null,
+                'logged_in'      => true,
+                'user_id'        => $localUser['id'],
+                'name'           => $pakar['nama'] ?? $localUser['fullname'],
+                'icno'           => $pakar['nopengenalan'] ?? null,
+                'ic_no'          => $pakar['nopengenalan'] ?? null,
+                'staffno'        => $pakar['nostaf'] ?? $localUser['username'],
+                'position'       => $pakar['jawatan'] ?? null,
+                'grade'          => $pakar['gred'] ?? null,
+                'position_grade' => $pakar['jawatan_gred'] ?? null,
+                'department'     => $pakar['lokasi'] ?? null,
+                'email'          => $localUser['email'],
+                'extno'          => $pakar['telpejabat'] ?? ($localUser['phone'] ?? null),
+                'phone'          => $pakar['telpejabat'] ?? ($localUser['phone'] ?? null),
+                'role'           => $userWithRole['role_name'] ?? 'user',
+                'role_id'        => $userWithRole['role_id'],
+                'avatar'         => $localUser['avatar'] ?? null,
             ]);
 
             $this->resetLoginLock($localUser['id']);

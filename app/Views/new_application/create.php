@@ -187,13 +187,26 @@ $isEdit = !empty($isEdit) && !empty($application);
                             <span class="input-group-text bg-light border-end-0">
                                 <i class="bi bi-award-fill text-muted"></i>
                             </span>
+                            <?php
+                            $displayedGrade = $userData['grade'] ?? '';
+                            if (empty($displayedGrade)) {
+                                $pos = trim($userData['position'] ?? session('position') ?? '');
+                                $grd = trim(session('grade') ?? '');
+                                if (!empty($pos) && !empty($grd)) {
+                                    $displayedGrade = (stripos($pos, $grd) !== false) ? $pos : trim($pos . ' ' . $grd);
+                                } else {
+                                    $displayedGrade = $pos ?: $grd;
+                                }
+                            }
+                            ?>
                             <input type="text"
-                                   class="form-control border-start-0"
+                                   class="form-control border-start-0 bg-light"
                                    id="grade"
                                    name="grade"
-                                   value="<?= esc($userData['grade'] ?? '') ?>"
+                                   value="<?= esc($displayedGrade) ?>"
                                    placeholder="Contoh: Pakar Perubatan UD54 / JUSA C"
-                                   maxlength="50">
+                                   maxlength="150"
+                                   readonly>
                         </div>
                         <div class="invalid-feedback-custom" id="err_grade"></div>
                     </div>
