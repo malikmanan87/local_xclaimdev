@@ -124,28 +124,52 @@ class NewApplicationModel extends Model
     // ---------------------------------------------------------------
     public function getPendingPenyemakCount(): int
     {
-        return $this->where('status', 'submitted')
+        return $this->whereIn('status', ['submitted', 'under_review'])
                     ->where('penyemak_status', 'pending')
                     ->countAllResults();
     }
 
     public function getPendingPerkhidmatanCount(): int
     {
-        return $this->where('penyemak_status', 'verified')
+        return $this->whereIn('penyemak_status', ['verified', 'approved'])
                     ->where('perkhidmatan_status', 'pending')
                     ->countAllResults();
     }
 
     public function getPendingJ3pCount(): int
     {
-        return $this->where('perkhidmatan_status', 'verified')
-                    ->where('j3p_status', 'pending')
+        return $this->whereIn('perkhidmatan_status', ['verified', 'approved'])
+                    ->groupStart()
+                        ->where('j3p_status', 'pending')
+                        ->orWhere('j3p_status IS NULL', null, false)
+                    ->groupEnd()
                     ->countAllResults();
     }
 
     public function getPendingPengarahCount(): int
     {
-        return $this->where('j3p_status', 'verified')
+        return $this->whereIn('j3p_status', ['verified', 'approved'])
+                    ->where('pengarah_status', 'pending')
+                    ->countAllResults();
+    }
+
+    public function getPendingJpppCount(?string $role = null): int
+    {
+        if ($role === 'pegawai_penyemak_pe') {
+            return $this->getPendingPenyemakCount();
+        }
+        if ($role === 'pegawai_perkhidmatan_pe') {
+            return $this->getPendingPerkhidmatanCount();
+        }
+        if ($role === 'ketua_j3p' || $role === 'jppp') {
+            return $this->getPendingJ3pCount();
+        }
+        if ($role === 'pengarah') {
+            return $this->getPendingPengarahCount();
+        }
+
+        // Admin atau am: jumlah semua yang menunggu semakan
+        return $this->whereIn('status', ['submitted', 'under_review'])
                     ->where('pengarah_status', 'pending')
                     ->countAllResults();
     }

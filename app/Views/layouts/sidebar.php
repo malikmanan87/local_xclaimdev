@@ -39,14 +39,14 @@ $segment1 = $uri->getSegment(1);
 
             <?php
             $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
-            $canReviewJppp     = in_array($userRole, ['admin', 'manager', 'jppp', 'pegawai_penyemak_pe', 'ketua_j3p', 'pengarah']);
+            $canReviewJppp     = in_array($userRole, ['admin', 'manager', 'jppp', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah']);
             $canViewProcedures = in_array($userRole, ['admin', 'manager', 'jppp', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah']);
 
             $pendingJpppBadge = 0;
             if ($canReviewJppp) {
                 try {
                     $sidebarAppModel = new \App\Models\NewApplicationModel();
-                    $pendingJpppBadge = $sidebarAppModel->getPendingJpppCount();
+                    $pendingJpppBadge = $sidebarAppModel->getPendingJpppCount($userRole);
                 } catch (\Throwable $e) {}
             }
             ?>
