@@ -50,15 +50,12 @@ class UsersController extends BaseController
     }
 
     // ----------------------------------------------------------------
-    // GET /users/create (Display Add Form)
+    // GET /users/create (Dialihkan ke Access Requests kerana pendaftaran guna API)
     // ----------------------------------------------------------------
     public function create()
     {
-        return view('users/form', [
-            'pageTitle'  => 'Add New User',
-            'breadcrumb' => [['label' => 'Users', 'url' => base_url('users')], 'Add'],
-            'roles'      => $this->roleModel->findAll(),
-        ]);
+        return redirect()->to('access-requests')
+            ->with('info', 'Pendaftaran staf dilakukan secara automatik semasa staf log masuk kali pertama melalui API UniSZA. Sila semak dan tetapkan peranan di menu Permohonan Akses.');
     }
 
     // ----------------------------------------------------------------
@@ -147,13 +144,10 @@ class UsersController extends BaseController
 
         $isActive = $this->request->getPost('is_active') ? 1 : 0;
 
-        // Prevent self-lockout
+        // Prevent self-deactivation
         if ((int)session('user_id') === $id) {
             if ($isActive === 0) {
                 return redirect()->back()->withInput()->with('error', 'You cannot deactivate your own account.');
-            }
-            if ((int)$this->request->getPost('role_id') !== (int)$user['role_id']) {
-                return redirect()->back()->withInput()->with('error', 'You cannot change your own role.');
             }
         }
 
@@ -186,9 +180,17 @@ class UsersController extends BaseController
 
         $this->userModel->update($id, $data);
 
+        // Jika mengedit akaun sendiri, kemaskini sesi serta-merta termasuk peranan baru
         if ((int)session('user_id') === $id) {
+            $updatedUserWithRole = $this->userModel->getUserWithRole($id);
+            $newRoleName = $updatedUserWithRole['role_name'] ?? 'user';
+
             session()->set([
-                'fullname' => $data['fullname'],
+                'name'      => $data['fullname'],
+                'fullname'  => $data['fullname'],
+                'role_id'   => $data['role_id'],
+                'role'      => $newRoleName,
+                'role_name' => $newRoleName,
                 'is_active' => $isActive
             ]);
         }

@@ -65,11 +65,11 @@ class SettingsController extends BaseController
         $db->transComplete();
 
         if ($db->transStatus() === false) {
-            return redirect()->to('settings')->with('error', 'Failed to update system settings due to a database error.');
+            return redirect()->to('settings')->with('error', 'Gagal mengemaskini tetapan sistem disebabkan ralat pangkalan data.');
         }
 
-        $this->logActivity('Update Settings', 'System configurations updated by administrator.');
+        $this->logActivity('Kemaskini Tetapan', 'Pentadbir mengemaskini konfigurasi dan parameter tetapan sistem.');
 
-        return redirect()->to('settings')->with('success', 'System settings saved successfully.');
+        return redirect()->to('settings')->with('success', 'Tetapan sistem telah berjaya disimpan.');
     }
 }

@@ -15,7 +15,7 @@ $isCompleted = in_array($stage, ['approved', 'rejected']);
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold text-dark mb-1">
-            <i class="bi bi-clipboard2-pulse-fill text-primary me-2"></i>Semakan Permohonan JPPP
+            <i class="bi bi-clipboard2-pulse-fill text-primary me-2"></i>Semakan Permohonan
         </h4>
         <div class="text-muted small">
             No. Rujukan: <strong class="font-monospace text-primary"><?= esc($application['application_no']) ?></strong>
@@ -25,7 +25,7 @@ $isCompleted = in_array($stage, ['approved', 'rejected']);
     </div>
     <div class="d-flex align-items-center gap-2">
         <a href="<?= base_url('review-jppp') ?>" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i> Kembali ke Senarai JPPP
+            <i class="bi bi-arrow-left me-1"></i> Kembali ke Senarai Permohonan
         </a>
         <a href="<?= base_url('new-application/show/' . $application['id'] . '?print=1') ?>" class="btn btn-outline-primary btn-sm" target="_blank">
             <i class="bi bi-printer me-1"></i> Cetak Permohonan

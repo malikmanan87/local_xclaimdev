@@ -23,9 +23,9 @@ class RolesController extends BaseController
     public function index()
     {
         return view('roles/index', [
-            'pageTitle'  => 'Roles & Permissions',
-            'breadcrumb' => ['Roles & Permissions'],
-            'roles'      => $this->roleModel->findAll(),
+            'pageTitle'  => 'Roles Management',
+            'breadcrumb' => ['Roles Management'],
+            'roles'      => $this->roleModel->getRolesWithUserCount(),
         ]);
     }
 

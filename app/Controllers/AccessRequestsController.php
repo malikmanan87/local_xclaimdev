@@ -26,16 +26,23 @@ class AccessRequestsController extends BaseController
     {
         $requests = $this->userModel->getAccessRequests();
 
+        $pendingRequests  = array_values(array_filter($requests, fn($r) => $r['access_status'] === 'pending'));
+        $approvedRequests = array_values(array_filter($requests, fn($r) => $r['access_status'] === 'approved'));
+        $rejectedRequests = array_values(array_filter($requests, fn($r) => $r['access_status'] === 'rejected'));
+
         $data = [
-            'pageTitle'  => 'Access Requests',
-            'breadcrumb' => ['Access Requests'],
-            'requests'   => $requests,
-            'counts'     => [
-                'pending'  => count(array_filter($requests, fn($r) => $r['access_status'] === 'pending')),
-                'approved' => count(array_filter($requests, fn($r) => $r['access_status'] === 'approved')),
-                'rejected' => count(array_filter($requests, fn($r) => $r['access_status'] === 'rejected')),
+            'pageTitle'        => 'Access Requests',
+            'breadcrumb'       => ['Access Requests'],
+            'requests'         => $requests,
+            'pendingRequests'  => $pendingRequests,
+            'approvedRequests' => $approvedRequests,
+            'rejectedRequests' => $rejectedRequests,
+            'counts'           => [
+                'pending'  => count($pendingRequests),
+                'approved' => count($approvedRequests),
+                'rejected' => count($rejectedRequests),
             ],
-            'roles'      => $this->roleModel->findAll(),
+            'roles'            => $this->roleModel->findAll(),
         ];
 
         return view('access_requests/index', $data);
@@ -98,6 +105,33 @@ class AccessRequestsController extends BaseController
         return $this->response->setJSON([
             'status'  => 'success',
             'message' => 'Access request rejected.',
+        ]);
+    }
+
+    // ----------------------------------------------------------------
+    // POST /access-requests/reset/:id — Set semula status ke Pending
+    // ----------------------------------------------------------------
+    public function reset(int $id): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $user = $this->userModel->find($id);
+
+        if (! $user) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'User not found.']);
+        }
+
+        $this->userModel->update($id, [
+            'access_status'      => 'pending',
+            'access_note'        => null,
+            'access_reviewed_by' => null,
+            'access_reviewed_at' => null,
+            'is_active'          => 0,
+        ]);
+
+        $this->logActivity('Reset Access Request', 'Reset access request to pending for: ' . $user['email']);
+
+        return $this->response->setJSON([
+            'status'  => 'success',
+            'message' => 'Permohonan akses telah disetkan semula ke status Pending.',
         ]);
     }
 }

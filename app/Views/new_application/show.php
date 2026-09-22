@@ -192,30 +192,29 @@ $monthText = $monthNames[(string)$claimMonth] ?? (string)$claimMonth;
     <!-- HELAIAN 1 (LANDSKAP): Maklumat Pegawai & Butiran Tuntutan      -->
     <!-- ───────────────────────────────────────────────────────────── -->
     <div class="sheet-page sheet-page-1">
-        <!-- Form Top Bar: Logo, Institution, Document Code -->
-        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-            <div class="d-flex align-items-center gap-3">
-                <img src="<?= base_url('assets/img/unisza_logo.png') ?>" alt="Logo UniSZA" style="height: 55px; max-width: 180px; object-fit: contain;">
-                <div>
-                    <div class="fw-bold text-dark fs-5 text-uppercase" style="letter-spacing: 0.5px; line-height: 1.2;">Hospital Sultan Zainal Abidin</div>
-                    <div class="text-secondary small">Universiti Sultan Zainal Abidin (UniSZA)</div>
-                    <div class="text-muted small mt-0.5 font-monospace">No. Rujukan: <strong><?= esc($application['application_no']) ?></strong></div>
-                </div>
+        <!-- Form Top Bar: Logo, Hospital, Document Code (Mengikut Format Lampiran Gambar) -->
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <div class="text-muted small font-monospace">
+                No. Rujukan: <strong><?= esc($application['application_no']) ?></strong>
             </div>
-            <div class="text-end">
-                <div class="border border-dark px-2 py-1 fw-bold text-dark font-monospace small bg-light d-inline-block">
+            <div class="text-end d-flex flex-column align-items-end">
+                <img src="<?= base_url('assets/img/unisza_logo.png') ?>" alt="Logo UniSZA" style="height: 58px; max-width: 230px; object-fit: contain;" class="mb-1">
+                <div class="fw-semibold text-dark" style="font-size: 0.84rem; line-height: 1.25;">
+                    Hospital Sultan Zainal Abidin <span class="fw-normal" style="color: #555;">| Sultan Zainal Abidin Hospital</span>
+                </div>
+                <div class="mt-1" style="border: 1px solid #000; padding: 2px 10px; font-weight: bold; font-family: monospace; font-size: 0.78rem; background: #fff; display: inline-block;">
                     HoSZA-MGT-J3P (PE)-F-003-01
                 </div>
             </div>
         </div>
 
-        <!-- Official Title -->
-        <div class="text-center my-2">
-            <h5 class="fw-bold text-dark text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 1.05rem;">
-                BORANG TUNTUTAN BAYARAN PAKAR DI BAWAH PERKHIDMATAN EKSEKUTIF (PE)
+        <!-- Official Title (Mengikut Susunan Dua Baris Lampiran) -->
+        <div class="text-center my-3">
+            <h5 class="fw-bold text-dark text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 1.05rem; line-height: 1.3;">
+                BORANG TUNTUTAN BAYARAN PAKAR DI BAWAH PERKHIDMATAN EKSEKUTIF
             </h5>
-            <div class="fw-bold text-dark text-uppercase small">
-                BAGI BULAN <span class="border-bottom border-dark px-3 fw-bold"><?= esc($monthText) ?></span> 
+            <div class="fw-bold text-dark text-uppercase" style="font-size: 0.95rem;">
+                (PE) BAGI BULAN <span class="border-bottom border-dark px-3 fw-bold"><?= esc($monthText) ?></span> 
                 TAHUN <span class="border-bottom border-dark px-3 fw-bold"><?= esc($claimYear) ?></span>
             </div>
         </div>

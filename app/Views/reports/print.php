@@ -109,9 +109,10 @@
 
         <!-- Kepala Surat Rasmi (Header) -->
         <div class="report-header text-center">
-            <h5 class="fw-bold mb-0 text-uppercase letter-spacing-1">HOSPITAL PENGAJAR UNIVERSITI SULTAN ZAINAL ABIDIN (HPUniSZA)</h5>
+            <img src="<?= base_url('assets/img/unisza_logo.png') ?>" alt="Logo UniSZA" style="height: 52px; max-width: 210px; object-fit: contain;" class="mb-1">
+            <h5 class="fw-bold mb-0 text-uppercase letter-spacing-1">HOSPITAL SULTAN ZAINAL ABIDIN (HoSZA)</h5>
             <div class="text-secondary small">Universiti Sultan Zainal Abidin, Kampus Gong Badak, 21300 Kuala Nerus, Terengganu</div>
-            <h6 class="fw-bold mt-2 text-primary text-uppercase">PENYATA LAPORAN TUNTUTAN PERKHIDMATAN PAKAR PERUBATAN (XCLAIM)</h6>
+            <h6 class="fw-bold mt-2 text-primary text-uppercase">PENYATA LAPORAN TUNTUTAN PERKHIDMATAN PAKAR (PE)</h6>
         </div>
 
         <!-- Maklumat Parameter & Tarikh Jana -->
@@ -129,7 +130,7 @@
                 </div>
                 <div>
                     <strong>Jabatan:</strong> <?= !empty($filters['department']) ? esc($filters['department']) : 'Semua Jabatan' ?> 
-                    &bull; <strong>Status:</strong> <?= !empty($filters['status']) ? strtoupper($filters['status']) : 'Semua Status' ?>
+                    &bull; <strong>Peringkat:</strong> <?= !empty($filters['stage']) ? strtoupper($filters['stage']) : 'Semua Peringkat' ?>
                 </div>
             </div>
         </div>
@@ -162,21 +163,21 @@
                 <thead>
                     <tr class="text-center">
                         <th width="30">#</th>
-                        <th width="120">No. Permohonan</th>
+                        <th width="130">No. Permohonan</th>
                         <th width="80">Tarikh</th>
                         <th>Nama Pakar & Jabatan</th>
                         <th>Pesakit (RN)</th>
                         <th width="85" class="text-end">Kasar (RM)</th>
                         <th width="75" class="text-end">Tabung (RM)</th>
                         <th width="85" class="text-end">Bersih (RM)</th>
-                        <th width="75" class="text-center">JPPP</th>
-                        <th width="75" class="text-center">Kewangan</th>
-                        <th width="90">No. Baucar</th>
+                        <th width="150" class="text-center">Peringkat Semasa (Hirarki)</th>
+                        <th width="90" class="text-center">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (!empty($reportData) && is_array($reportData)): ?>
                         <?php foreach ($reportData as $idx => $row): ?>
+                            <?php $stInfo = $row['stageInfo'] ?? \App\Controllers\ReviewJpppController::getApplicationStage($row); ?>
                             <tr>
                                 <td class="text-center text-muted"><?= $idx + 1 ?></td>
                                 <td class="font-monospace fw-bold text-dark"><?= esc($row['application_no']) ?></td>
@@ -192,13 +193,19 @@
                                 <td class="text-end font-monospace"><?= number_format((float)($row['total_gross'] ?? 0), 2) ?></td>
                                 <td class="text-end font-monospace"><?= number_format((float)($row['total_welfare'] ?? 0), 2) ?></td>
                                 <td class="text-end font-monospace fw-bold"><?= number_format((float)($row['total_claim'] ?? 0), 2) ?></td>
-                                <td class="text-center small">
-                                    <?= strtoupper($row['jppp_status'] ?? 'PENDING') ?>
+                                <td class="text-center small font-monospace">
+                                    <?= esc($stInfo['label'] ?? '-') ?>
                                 </td>
-                                <td class="text-center small">
-                                    <?= strtoupper($row['finance_status'] ?? 'PENDING') ?>
+                                <td class="text-center small fw-semibold">
+                                    <?php
+                                    $st = $row['status'] ?? 'draft';
+                                    if ($st === 'approved') echo 'DILULUSKAN';
+                                    elseif ($st === 'under_review') echo 'DALAM SEMAKAN';
+                                    elseif ($st === 'submitted') echo 'DIHANTAR';
+                                    elseif ($st === 'rejected') echo 'DITOLAK';
+                                    else echo strtoupper($st);
+                                    ?>
                                 </td>
-                                <td class="font-monospace small text-center"><?= esc($row['finance_voucher_no'] ?: '-') ?></td>
                             </tr>
                         <?php endforeach; ?>
                         <!-- Baris Jumlah Keseluruhan -->
@@ -207,42 +214,42 @@
                             <td class="text-end font-monospace"><?= number_format($summary['total_gross'] ?? 0, 2) ?></td>
                             <td class="text-end font-monospace"><?= number_format($summary['total_welfare'] ?? 0, 2) ?></td>
                             <td class="text-end font-monospace"><?= number_format($summary['total_claim'] ?? 0, 2) ?></td>
-                            <td colspan="3"></td>
+                            <td colspan="2"></td>
                         </tr>
                     <?php else: ?>
                         <tr>
-                            <td colspan="11" class="text-center py-4 text-muted">Tiada rekod tuntutan sepadan dijumpai.</td>
+                            <td colspan="10" class="text-center py-4 text-muted">Tiada rekod tuntutan sepadan dijumpai.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
 
-        <!-- Ruangan Tandatangan Perakuan & Kelulusan (3 Pihak) -->
+        <!-- Ruangan Tandatangan Perakuan & Kelulusan (3 Pihak Mengikut Hirarki) -->
         <div class="signature-box">
             <div class="row text-center">
                 <div class="col-4">
                     <div class="signature-line mx-auto"></div>
                     <div class="fw-bold small text-dark">Disediakan Oleh</div>
-                    <div class="text-muted small" style="font-size: 8pt;">Pegawai Penyedia Rekod HPUniSZA</div>
+                    <div class="text-muted small" style="font-size: 8pt;">Pegawai Penyedia Rekod / Pemohon</div>
                 </div>
                 <div class="col-4">
                     <div class="signature-line mx-auto"></div>
-                    <div class="fw-bold small text-dark">Disemak & Disokong Oleh</div>
-                    <div class="text-muted small" style="font-size: 8pt;">Jawatankuasa Penilaian Perkhidmatan Pakar (JPPP)</div>
+                    <div class="fw-bold small text-dark">Disemak & Disahkan Oleh</div>
+                    <div class="text-muted small" style="font-size: 8pt;">Pegawai Perkhidmatan PE / Ketua J3P</div>
                 </div>
                 <div class="col-4">
                     <div class="signature-line mx-auto"></div>
-                    <div class="fw-bold small text-dark">Diluluskan Untuk Pembayaran</div>
-                    <div class="text-muted small" style="font-size: 8pt;">Bahagian Kewangan HPUniSZA</div>
+                    <div class="fw-bold small text-dark">Diluluskan Oleh</div>
+                    <div class="text-muted small" style="font-size: 8pt;">Pengarah Hospital Sultan Zainal Abidin</div>
                 </div>
             </div>
         </div>
 
         <!-- Nota Kaki Dokumen -->
         <div class="mt-4 pt-2 border-top text-muted small d-flex justify-content-between" style="font-size: 7.5pt;">
-            <span>Sistem Tuntutan Perkhidmatan Pakar (XClaim) &bull; HPUniSZA</span>
-            <span>Dokumen ini dijana secara berkomputer dan sah tanpa tandatangan fizikal sekiranya disahkan melalui portal.</span>
+            <span>Sistem Tuntutan Perkhidmatan Pakar (XClaim) &bull; HoSZA</span>
+            <span>Dokumen ini dijana secara berkomputer dan sah mengikut perakuan sistem portal.</span>
         </div>
 
     </div>

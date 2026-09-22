@@ -72,11 +72,11 @@ class NewApplicationModel extends Model
     ];
 
     // ---------------------------------------------------------------
-    // Get all with creator and reviewer info
+    // Get all with creator and reviewer info (boleh tapis mengikut userId)
     // ---------------------------------------------------------------
-    public function getAll(): array
+    public function getAll(?int $userId = null): array
     {
-        return $this->select('new_applications.*, 
+        $builder = $this->select('new_applications.*, 
                               u_sub.fullname AS creator_name,
                               u_penyemak.fullname AS penyemak_reviewer_name,
                               u_perkhidmatan.fullname AS perkhidmatan_reviewer_name,
@@ -90,9 +90,13 @@ class NewApplicationModel extends Model
                     ->join('users u_j3p', 'u_j3p.id = new_applications.j3p_verified_by', 'left')
                     ->join('users u_pengarah', 'u_pengarah.id = new_applications.pengarah_verified_by', 'left')
                     ->join('users u_jppp', 'u_jppp.id = new_applications.jppp_verified_by', 'left')
-                    ->join('users u_fin', 'u_fin.id = new_applications.finance_verified_by', 'left')
-                    ->orderBy('new_applications.created_at', 'DESC')
-                    ->findAll();
+                    ->join('users u_fin', 'u_fin.id = new_applications.finance_verified_by', 'left');
+
+        if ($userId !== null) {
+            $builder->where('new_applications.submitted_by', $userId);
+        }
+
+        return $builder->orderBy('new_applications.created_at', 'DESC')->findAll();
     }
 
     // ---------------------------------------------------------------
@@ -222,11 +226,15 @@ class NewApplicationModel extends Model
     {
         $builder = $this->select('new_applications.*, 
                                   u_sub.fullname AS creator_name,
-                                  u_jppp.fullname AS jppp_reviewer_name,
-                                  u_fin.fullname AS finance_reviewer_name')
+                                  u_penyemak.fullname AS penyemak_reviewer_name,
+                                  u_perkhidmatan.fullname AS perkhidmatan_reviewer_name,
+                                  u_j3p.fullname AS j3p_reviewer_name,
+                                  u_pengarah.fullname AS pengarah_reviewer_name')
                         ->join('users u_sub', 'u_sub.id = new_applications.submitted_by', 'left')
-                        ->join('users u_jppp', 'u_jppp.id = new_applications.jppp_verified_by', 'left')
-                        ->join('users u_fin', 'u_fin.id = new_applications.finance_verified_by', 'left');
+                        ->join('users u_penyemak', 'u_penyemak.id = new_applications.penyemak_verified_by', 'left')
+                        ->join('users u_perkhidmatan', 'u_perkhidmatan.id = new_applications.perkhidmatan_verified_by', 'left')
+                        ->join('users u_j3p', 'u_j3p.id = new_applications.j3p_verified_by', 'left')
+                        ->join('users u_pengarah', 'u_pengarah.id = new_applications.pengarah_verified_by', 'left');
 
         if ($userId !== null) {
             $builder->where('new_applications.submitted_by', $userId);
@@ -248,14 +256,6 @@ class NewApplicationModel extends Model
             $builder->where('new_applications.status', $filters['status']);
         }
 
-        if (!empty($filters['jppp_status'])) {
-            $builder->where('new_applications.jppp_status', $filters['jppp_status']);
-        }
-
-        if (!empty($filters['finance_status'])) {
-            $builder->where('new_applications.finance_status', $filters['finance_status']);
-        }
-
         if (!empty($filters['search'])) {
             $search = trim($filters['search']);
             $builder->groupStart()
@@ -264,14 +264,14 @@ class NewApplicationModel extends Model
                 ->orLike('new_applications.staff_number', $search)
                 ->orLike('new_applications.patient_rn', $search)
                 ->orLike('new_applications.patient_name', $search)
-                ->orLike('new_applications.finance_voucher_no', $search)
             ->groupEnd();
         }
 
-        $records = $builder->orderBy('new_applications.created_at', 'DESC')->findAll();
+        $allRecords = $builder->orderBy('new_applications.created_at', 'DESC')->findAll();
 
+        $records = [];
         $summary = [
-            'total_records'      => count($records),
+            'total_records'      => 0,
             'total_gross'        => 0.0,
             'total_welfare'      => 0.0,
             'total_claim'        => 0.0,
@@ -282,7 +282,20 @@ class NewApplicationModel extends Model
             'count_draft'        => 0,
         ];
 
-        foreach ($records as $r) {
+        $targetStage = !empty($filters['stage']) ? strtolower(trim($filters['stage'])) : '';
+
+        foreach ($allRecords as $r) {
+            $stageInfo = \App\Controllers\ReviewJpppController::getApplicationStage($r);
+            $r['stageInfo'] = $stageInfo;
+
+            // Jika penapis peringkat hirarki dipilih, tapis rekod
+            if (!empty($targetStage) && ($stageInfo['stage'] ?? '') !== $targetStage) {
+                continue;
+            }
+
+            $records[] = $r;
+
+            $summary['total_records']++;
             $summary['total_gross']   += (float)($r['total_gross'] ?? 0);
             $summary['total_welfare'] += (float)($r['total_welfare'] ?? 0);
             $summary['total_claim']   += (float)($r['total_claim'] ?? 0);
@@ -292,9 +305,9 @@ class NewApplicationModel extends Model
                 $summary['count_submitted']++;
             } elseif ($st === 'under_review') {
                 $summary['count_under_review']++;
-            } elseif ($st === 'approved') {
+            } elseif ($st === 'approved' || ($stageInfo['stage'] ?? '') === 'approved') {
                 $summary['count_approved']++;
-            } elseif ($st === 'rejected') {
+            } elseif ($st === 'rejected' || ($stageInfo['stage'] ?? '') === 'rejected') {
                 $summary['count_rejected']++;
             } else {
                 $summary['count_draft']++;

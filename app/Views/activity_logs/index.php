@@ -2,44 +2,29 @@
 <?= $this->section('content') ?>
 
 <div class="card-panel">
-    <div class="card-panel-header">
-        <h5 class="card-panel-title">System Activity Audit Logs</h5>
+    <div class="card-panel-header py-3 d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom">
+        <h5 class="card-panel-title mb-0">
+            <i class="bi bi-journal-text me-2 text-primary"></i>Log Aktiviti Sistem (Audit Trail)
+        </h5>
+        <span class="badge bg-light text-dark border px-3 py-1.5 shadow-sm rounded-pill small">
+            <i class="bi bi-clock-history text-primary me-1"></i> <span id="totalLogCount"><?= number_format($totalLogs ?? 0) ?></span> Rekod Log
+        </span>
     </div>
-    <div class="card-panel-body">
+    <div class="card-panel-body p-3">
         <div class="table-responsive">
             <table id="logsTable" class="table table-hover table-align-middle w-100">
                 <thead class="table-light text-secondary">
                     <tr>
                         <th width="50" class="text-center">#</th>
-                        <th width="160">Date & Time</th>
-                        <th width="120">User</th>
-                        <th width="150">Action</th>
-                        <th>Details / Description</th>
-                        <th width="130">IP Address</th>
+                        <th width="150">Tarikh & Masa</th>
+                        <th width="180">Pengguna</th>
+                        <th width="150" class="text-center">Tindakan</th>
+                        <th>Butiran / Keterangan</th>
+                        <th width="140" class="text-center">IP & Peranti</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($logs as $i => $log): ?>
-                        <tr>
-                            <td class="text-center text-muted fw-medium"><?= $i + 1 ?></td>
-                            <td class="text-secondary small"><?= date('d/m/Y h:i:A', strtotime($log['created_at'])) ?></td>
-                            <td>
-                                <span class="fw-semibold text-dark">@<?= esc($log['username']) ?></span>
-                            </td>
-                            <td>
-                                <?php
-                                $badgeClass = 'bg-secondary';
-                                if (str_contains($log['action'], 'Masuk') || str_contains($log['action'], 'Login')) $badgeClass = 'bg-success';
-                                if (str_contains($log['action'], 'Padam') || str_contains($log['action'], 'Delete')) $badgeClass = 'bg-danger';
-                                if (str_contains($log['action'], 'Kemaskini') || str_contains($log['action'], 'Update')) $badgeClass = 'bg-warning text-dark';
-                                if (str_contains($log['action'], 'Tambah') || str_contains($log['action'], 'Create') || str_contains($log['action'], 'Add')) $badgeClass = 'bg-info text-dark';
-                                ?>
-                                <span class="badge <?= $badgeClass ?> small px-2 py-1"><?= esc($log['action']) ?></span>
-                            </td>
-                            <td class="text-secondary small"><?= esc($log['description']) ?></td>
-                            <td class="text-mono small text-muted"><i class="bi bi-laptop me-1"></i><?= esc($log['ip_address']) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
+                    <!-- Baris dimuatkan secara dinamik melalui AJAX Server-Side Processing -->
                 </tbody>
             </table>
         </div>
@@ -50,27 +35,43 @@
 
 <?= $this->section('scripts') ?>
 <script>
-    $(document).ready(function() {
-        $('#logsTable').DataTable({
-            language: {
-                url: 'https://cdn.datatables.net/plug-ins/1.13.8/i18n/en-GB.json',
-                search: 'Search:',
-                lengthMenu: 'Show _MENU_ entries',
-                info: 'Showing _START_ to _END_ of _TOTAL_ entries',
-                paginate: {
-                    previous: 'Previous',
-                    next: 'Next'
-                }
+$(document).ready(function() {
+    $('#logsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '<?= base_url('activity-logs/data') ?>',
+            type: 'GET'
+        },
+        language: {
+            processing: '<div class="d-flex justify-content-center align-items-center py-2"><div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div><span class="text-muted small">Memuatkan data log...</span></div>',
+            search: "Cari:",
+            searchPlaceholder: "Cari sebarang log...",
+            lengthMenu: "Papar _MENU_ rekod",
+            info: "Memaparkan _START_ hingga _END_ daripada _TOTAL_ rekod",
+            infoEmpty: "Tiada rekod log",
+            infoFiltered: "(ditapis daripada _MAX_ jumlah rekod)",
+            paginate: {
+                previous: "Sebelumnya",
+                next: "Seterusnya"
             },
-            order: [
-                [1, 'desc']
-            ],
-            pageLength: 10,
-            columnDefs: [{
-                orderable: false,
-                targets: [0]
-            }]
-        });
+            emptyTable: "Tiada log aktiviti direkodkan dalam sistem."
+        },
+        order: [[1, 'desc']],
+        pageLength: 15,
+        lengthMenu: [10, 15, 25, 50, 100],
+        columnDefs: [
+            { orderable: false, targets: [0, 4, 5] },
+            { className: "text-center text-muted fw-medium", targets: [0] },
+            { className: "text-secondary small", targets: [1, 4] },
+            { className: "text-center", targets: [3, 5] }
+        ],
+        drawCallback: function(settings) {
+            if (settings.json && settings.json.recordsTotal !== undefined) {
+                $('#totalLogCount').text(Number(settings.json.recordsTotal).toLocaleString());
+            }
+        }
     });
+});
 </script>
 <?= $this->endSection() ?>

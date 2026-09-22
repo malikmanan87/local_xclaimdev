@@ -14,19 +14,28 @@ class DashboardController extends BaseController
         $appModel = new NewApplicationModel();
         $mmaModel = new MmaProcedureModel();
 
-        $userId   = session('user_id');
-        $userRole = session('role_name') ?? session('role') ?? 'user';
-        $isAdmin  = in_array(strtolower($userRole), ['admin', 'manager', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah']);
+        $userId   = (int)session('user_id');
+        $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
+        // 'user' (pakar) hanya melihat rekod sendiri; semua role lain boleh melihat semua rekod
+        $isOnlySelf = ($userRole === 'user');
+
+        // Helper untuk tapis permohonan milik pemohon jika role adalah 'user'
+        $applyFilter = function($builder) use ($isOnlySelf, $userId) {
+            if ($isOnlySelf) {
+                $builder->where('submitted_by', $userId);
+            }
+            return $builder;
+        };
 
         // 1. KPI Metrik Utama Sistem Tuntutan
-        $totalClaims        = (int) $db->table('new_applications')->countAllResults();
-        $pendingClaims      = (int) $db->table('new_applications')->whereIn('status', ['submitted', 'under_review'])->countAllResults();
-        $approvedClaims     = (int) $db->table('new_applications')->where('status', 'approved')->countAllResults();
-        $rejectedClaims     = (int) $db->table('new_applications')->where('status', 'rejected')->countAllResults();
-        $draftClaims        = (int) $db->table('new_applications')->where('status', 'draft')->countAllResults();
+        $totalClaims        = (int) $applyFilter($db->table('new_applications'))->countAllResults();
+        $pendingClaims      = (int) $applyFilter($db->table('new_applications'))->whereIn('status', ['submitted', 'under_review'])->countAllResults();
+        $approvedClaims     = (int) $applyFilter($db->table('new_applications'))->where('status', 'approved')->countAllResults();
+        $rejectedClaims     = (int) $applyFilter($db->table('new_applications'))->where('status', 'rejected')->countAllResults();
+        $draftClaims        = (int) $applyFilter($db->table('new_applications'))->where('status', 'draft')->countAllResults();
 
         // Jumlah Kewangan Tuntutan
-        $financialTotals = $db->table('new_applications')
+        $financialTotals = $applyFilter($db->table('new_applications'))
             ->selectSum('total_gross', 'gross')
             ->selectSum('total_claim', 'claim')
             ->selectSum('total_welfare', 'welfare')
@@ -37,12 +46,9 @@ class DashboardController extends BaseController
         $totalClaimAmount   = (float) ($financialTotals['claim'] ?? 0);
         $totalWelfareAmount = (float) ($financialTotals['welfare'] ?? 0);
 
-        // Bilangan Prosedur MMA dalam Master
-        $totalProcedures = (int) $db->table('mma_procedures')->countAllResults();
-
         // 2. Trend Bulanan Tahun Semasa (Statistik Tuntutan Bulanan)
         $currentYear = date('Y');
-        $monthlyQuery = $db->table('new_applications')
+        $monthlyQuery = $applyFilter($db->table('new_applications'))
             ->select('MONTH(created_at) as bulan, COUNT(id) as total_count, SUM(total_claim) as total_amt')
             ->where('YEAR(created_at)', $currentYear)
             ->groupBy('MONTH(created_at)')
@@ -65,34 +71,31 @@ class DashboardController extends BaseController
         // 3. Taburan Status Permohonan (Pie / Donut)
         $statusCounts = [
             'draft'        => $draftClaims,
-            'submitted'    => (int) $db->table('new_applications')->where('status', 'submitted')->countAllResults(),
-            'under_review' => (int) $db->table('new_applications')->where('status', 'under_review')->countAllResults(),
+            'submitted'    => (int) $applyFilter($db->table('new_applications'))->where('status', 'submitted')->countAllResults(),
+            'under_review' => (int) $applyFilter($db->table('new_applications'))->where('status', 'under_review')->countAllResults(),
             'approved'     => $approvedClaims,
             'rejected'     => $rejectedClaims,
         ];
 
         // 4. Permohonan Tuntutan Terkini (Recent Claims)
-        $recentApplications = $db->table('new_applications na')
+        $recentAppBuilder = $db->table('new_applications na')
             ->select('na.*, u.fullname as creator_name')
-            ->join('users u', 'u.id = na.submitted_by', 'left')
-            ->orderBy('na.created_at', 'DESC')
-            ->limit(6)
-            ->get()
-            ->getResultArray();
+            ->join('users u', 'u.id = na.submitted_by', 'left');
 
-        // 5. Log Aktiviti Terkini
-        $recentLogs = $db->table('activity_logs al')
-            ->select('al.*, u.username')
-            ->join('users u', 'u.id = al.user_id', 'left')
-            ->orderBy('al.created_at', 'DESC')
-            ->limit(5)
+        if ($isOnlySelf) {
+            $recentAppBuilder->where('na.submitted_by', $userId);
+        }
+
+        $recentApplications = $recentAppBuilder->orderBy('na.created_at', 'DESC')
+            ->limit(6)
             ->get()
             ->getResultArray();
 
         return view('dashboard', [
             'pageTitle'          => 'Dashboard Tuntutan Pakar',
             'userRole'           => $userRole,
-            'isAdmin'            => $isAdmin,
+            'isOnlySelf'         => $isOnlySelf,
+            'isAdmin'            => !$isOnlySelf,
             'totalClaims'        => $totalClaims,
             'pendingClaims'      => $pendingClaims,
             'approvedClaims'     => $approvedClaims,
@@ -101,13 +104,11 @@ class DashboardController extends BaseController
             'totalGrossAmount'   => $totalGrossAmount,
             'totalClaimAmount'   => $totalClaimAmount,
             'totalWelfareAmount' => $totalWelfareAmount,
-            'totalProcedures'    => $totalProcedures,
             'monthlyLabels'      => $monthlyLabels,
             'monthlyCounts'      => $monthlyCounts,
             'monthlyAmounts'     => $monthlyAmounts,
             'statusCounts'       => $statusCounts,
             'recentApplications' => $recentApplications,
-            'recentLogs'         => $recentLogs,
         ]);
     }
 }

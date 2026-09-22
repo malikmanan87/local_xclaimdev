@@ -32,9 +32,16 @@ class ActivityLogModel extends Model
         $db = \Config\Database::connect();
         $request = \Config\Services::request();
 
+        $userId = session()->get('user_id') ?: null;
+        $username = session()->get('fullname') 
+            ?: (session()->get('name') 
+            ?: (session()->get('username') 
+            ?: (session()->get('staffno') 
+            ?: (session()->get('email') ?: 'Sistem / Tetamu'))));
+
         $db->table('activity_logs')->insert([
-            'user_id'     => session()->get('user_id') ?: null,
-            'username'    => session()->get('username') ?: 'Guest',
+            'user_id'     => $userId,
+            'username'    => $username,
             'action'      => $action,
             'description' => $description,
             'ip_address'  => $request->getIPAddress(),

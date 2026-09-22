@@ -4,7 +4,7 @@
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div>
         <h4 class="fw-bold text-dark mb-1">
-            <i class="bi bi-clipboard2-pulse-fill text-primary me-2"></i>Semakan Permohonan JPPP
+            <i class="bi bi-clipboard2-pulse-fill text-primary me-2"></i>Senarai Permohonan
         </h4>
         <p class="text-muted small mb-0">
             Modul pengesahan dan semakan berperingkat mengikut hirarki rasmi: 

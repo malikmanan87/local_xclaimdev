@@ -14,28 +14,38 @@ class ReportsController extends BaseController
         helper(['form', 'url']);
     }
 
+    /**
+     * Semak hak akses peranan - terhad kepada semua peranan KECUALI user (pakar)
+     */
+    protected function checkAccess()
+    {
+        $role = strtolower(session('role_name') ?? session('role') ?? 'user');
+        if ($role === 'user') {
+            return redirect()->to('dashboard')->with('error', 'Akses tidak dibenarkan. Modul Laporan terhad kepada pihak pengurusan dan pegawai sahaja.');
+        }
+        return null;
+    }
+
     // ----------------------------------------------------------------
     // GET/POST /reports (Paparan Laporan Tuntutan & Statistik)
     // ----------------------------------------------------------------
     public function index()
     {
+        if ($redirect = $this->checkAccess()) return $redirect;
+
         $filters = [
-            'start_date'     => $this->request->getVar('start_date') ?: '',
-            'end_date'       => $this->request->getVar('end_date') ?: '',
-            'department'     => $this->request->getVar('department') ?: '',
-            'status'         => $this->request->getVar('status') ?: '',
-            'jppp_status'    => $this->request->getVar('jppp_status') ?: '',
-            'finance_status' => $this->request->getVar('finance_status') ?: '',
-            'search'         => $this->request->getVar('search') ?: '',
+            'start_date' => $this->request->getVar('start_date') ?: '',
+            'end_date'   => $this->request->getVar('end_date') ?: '',
+            'department' => $this->request->getVar('department') ?: '',
+            'status'     => $this->request->getVar('status') ?: '',
+            'stage'      => $this->request->getVar('stage') ?: '',
+            'search'     => $this->request->getVar('search') ?: '',
         ];
 
-        // Kawalan akses: Jika peranan adalah 'user' biasa, hadkan kepada tuntutan miliknya
-        $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
-        $isPrivileged = in_array($userRole, ['admin', 'manager', 'jppp', 'kewangan', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah']);
-        $userId = $isPrivileged ? null : (int)session('user_id');
-
-        $reportResult = $this->appModel->getReportData($filters, $userId);
+        $reportResult = $this->appModel->getReportData($filters, null);
         $departments  = $this->appModel->getUniqueDepartments();
+        $userRole     = strtolower(session('role_name') ?? session('role') ?? 'user');
+        $isPrivileged = ($userRole !== 'user');
 
         return view('reports/index', [
             'pageTitle'    => 'Laporan Tuntutan Perkhidmatan Pakar',
@@ -61,21 +71,18 @@ class ReportsController extends BaseController
     // ----------------------------------------------------------------
     public function export()
     {
+        if ($redirect = $this->checkAccess()) return $redirect;
+
         $filters = [
-            'start_date'     => $this->request->getGet('start_date') ?: '',
-            'end_date'       => $this->request->getGet('end_date') ?: '',
-            'department'     => $this->request->getGet('department') ?: '',
-            'status'         => $this->request->getGet('status') ?: '',
-            'jppp_status'    => $this->request->getGet('jppp_status') ?: '',
-            'finance_status' => $this->request->getGet('finance_status') ?: '',
-            'search'         => $this->request->getGet('search') ?: '',
+            'start_date' => $this->request->getGet('start_date') ?: '',
+            'end_date'   => $this->request->getGet('end_date') ?: '',
+            'department' => $this->request->getGet('department') ?: '',
+            'status'     => $this->request->getGet('status') ?: '',
+            'stage'      => $this->request->getGet('stage') ?: '',
+            'search'     => $this->request->getGet('search') ?: '',
         ];
 
-        $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
-        $isPrivileged = in_array($userRole, ['admin', 'manager', 'jppp', 'kewangan', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah']);
-        $userId = $isPrivileged ? null : (int)session('user_id');
-
-        $reportResult = $this->appModel->getReportData($filters, $userId);
+        $reportResult = $this->appModel->getReportData($filters, null);
         $records      = $reportResult['records'];
 
         $filename = 'Laporan_Tuntutan_XClaim_' . date('Ymd_His') . '.csv';
@@ -91,7 +98,7 @@ class ReportsController extends BaseController
         // Output UTF-8 BOM for Microsoft Excel compatibility
         fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-        // Header Columns
+        // Header Columns mengikut aliran rasmi 5-peringkat
         fputcsv($output, [
             'Bil',
             'No. Permohonan',
@@ -107,20 +114,26 @@ class ReportsController extends BaseController
             'Jumlah Kasar (RM)',
             'Tabung Kebajikan (RM)',
             'Jumlah Bersih Dituntut (RM)',
-            'Status Permohonan',
-            'Status Semakan JPPP',
-            'Disemak Oleh JPPP',
-            'Tarikh Semakan JPPP',
-            'Status Semakan Kewangan',
-            'Disemak Oleh Kewangan',
-            'Tarikh Semakan Kewangan',
-            'No. Baucar Bayaran',
-            'Catatan JPPP',
-            'Catatan Kewangan'
+            'Status Keseluruhan',
+            'Peringkat Semasa (Hirarki)',
+            'Pegawai Menyemak PE',
+            'Status Semakan PE',
+            'Tarikh Semakan PE',
+            'Pegawai Perkhidmatan PE',
+            'Status Perkhidmatan PE',
+            'Tarikh Perkhidmatan PE',
+            'Ketua J3P',
+            'Status Perakuan J3P',
+            'Tarikh Perakuan J3P',
+            'Pengarah Hospital / KPTj',
+            'Status Kelulusan Pengarah',
+            'Tarikh Kelulusan Pengarah'
         ]);
 
         // Data Rows
         foreach ($records as $index => $row) {
+            $stageInfo = $row['stageInfo'] ?? \App\Controllers\ReviewJpppController::getApplicationStage($row);
+
             fputcsv($output, [
                 $index + 1,
                 $row['application_no'] ?? '-',
@@ -137,15 +150,19 @@ class ReportsController extends BaseController
                 number_format((float)($row['total_welfare'] ?? 0), 2, '.', ''),
                 number_format((float)($row['total_claim'] ?? 0), 2, '.', ''),
                 strtoupper($row['status'] ?? '-'),
-                strtoupper($row['jppp_status'] ?? 'PENDING'),
-                $row['jppp_reviewer_name'] ?? '-',
-                !empty($row['jppp_verified_at']) ? date('d/m/Y H:i', strtotime($row['jppp_verified_at'])) : '-',
-                strtoupper($row['finance_status'] ?? 'PENDING'),
-                $row['finance_reviewer_name'] ?? '-',
-                !empty($row['finance_verified_at']) ? date('d/m/Y H:i', strtotime($row['finance_verified_at'])) : '-',
-                $row['finance_voucher_no'] ?? '-',
-                $row['jppp_remarks'] ?? '-',
-                $row['finance_remarks'] ?? '-'
+                $stageInfo['label'] ?? '-',
+                $row['penyemak_reviewer_name'] ?? '-',
+                strtoupper($row['penyemak_status'] ?? 'PENDING'),
+                !empty($row['penyemak_verified_at']) ? date('d/m/Y H:i', strtotime($row['penyemak_verified_at'])) : '-',
+                $row['perkhidmatan_reviewer_name'] ?? '-',
+                strtoupper($row['perkhidmatan_status'] ?? 'PENDING'),
+                !empty($row['perkhidmatan_verified_at']) ? date('d/m/Y H:i', strtotime($row['perkhidmatan_verified_at'])) : '-',
+                $row['j3p_reviewer_name'] ?? '-',
+                strtoupper($row['j3p_status'] ?? 'PENDING'),
+                !empty($row['j3p_verified_at']) ? date('d/m/Y H:i', strtotime($row['j3p_verified_at'])) : '-',
+                $row['pengarah_reviewer_name'] ?? '-',
+                strtoupper($row['pengarah_status'] ?? 'PENDING'),
+                !empty($row['pengarah_verified_at']) ? date('d/m/Y H:i', strtotime($row['pengarah_verified_at'])) : '-',
             ]);
         }
 
@@ -158,21 +175,18 @@ class ReportsController extends BaseController
     // ----------------------------------------------------------------
     public function print()
     {
+        if ($redirect = $this->checkAccess()) return $redirect;
+
         $filters = [
-            'start_date'     => $this->request->getGet('start_date') ?: '',
-            'end_date'       => $this->request->getGet('end_date') ?: '',
-            'department'     => $this->request->getGet('department') ?: '',
-            'status'         => $this->request->getGet('status') ?: '',
-            'jppp_status'    => $this->request->getGet('jppp_status') ?: '',
-            'finance_status' => $this->request->getGet('finance_status') ?: '',
-            'search'         => $this->request->getGet('search') ?: '',
+            'start_date' => $this->request->getGet('start_date') ?: '',
+            'end_date'   => $this->request->getGet('end_date') ?: '',
+            'department' => $this->request->getGet('department') ?: '',
+            'status'     => $this->request->getGet('status') ?: '',
+            'stage'      => $this->request->getGet('stage') ?: '',
+            'search'     => $this->request->getGet('search') ?: '',
         ];
 
-        $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
-        $isPrivileged = in_array($userRole, ['admin', 'manager', 'jppp', 'kewangan', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah']);
-        $userId = $isPrivileged ? null : (int)session('user_id');
-
-        $reportResult = $this->appModel->getReportData($filters, $userId);
+        $reportResult = $this->appModel->getReportData($filters, null);
 
         return view('reports/print', [
             'pageTitle'  => 'Cetak Laporan Tuntutan Perkhidmatan Pakar',

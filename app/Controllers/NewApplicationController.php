@@ -18,10 +18,15 @@ class NewApplicationController extends BaseController
     // ---------------------------------------------------------------
     public function index(): string
     {
+        $userRole     = strtolower(session('role_name') ?? session('role') ?? 'user');
+        $isPrivileged = ($userRole !== 'user');
+        $userId       = $isPrivileged ? null : (int)session('user_id');
+
         $data = [
             'pageTitle'    => 'New Application',
             'breadcrumb'   => ['New Application', 'List'],
-            'applications' => $this->model->getAll(),
+            'applications' => $this->model->getAll($userId),
+            'isPrivileged' => $isPrivileged,
         ];
 
         return view('new_application/index', $data);
@@ -373,12 +378,22 @@ class NewApplicationController extends BaseController
     // ---------------------------------------------------------------
     // Show application detail
     // ---------------------------------------------------------------
-    public function show(int $id): string
+    public function show(int $id)
     {
         $application = $this->model->getWithReviewers($id);
 
         if (! $application) {
             session()->setFlashdata('error', 'Permohonan tidak dijumpai.');
+            return redirect()->to(base_url('new-application'));
+        }
+
+        // Kawalan Akses: Pakar (role: user) hanya dibenarkan melihat permohonannya sendiri
+        $userRole     = strtolower(session('role_name') ?? session('role') ?? 'user');
+        $isPrivileged = ($userRole !== 'user');
+        $currentUserId = (int)session('user_id');
+
+        if (!$isPrivileged && (int)$application['submitted_by'] !== $currentUserId) {
+            session()->setFlashdata('error', 'Akses tidak dibenarkan. Anda hanya boleh melihat permohonan tuntutan anda sendiri.');
             return redirect()->to(base_url('new-application'));
         }
 
@@ -500,10 +515,10 @@ class NewApplicationController extends BaseController
             ]);
         }
 
-        // Semak kebenaran
+        // Semak kebenaran: role 'user' hanya boleh kemaskini rekod sendiri
         $userId   = session('user_id');
-        $userRole = session('role_name') ?? session('role') ?? '';
-        if ($application['submitted_by'] != $userId && !in_array($userRole, ['admin', 'manager', 'pegawai_penyemak_pe', 'pegawai_perkhidmatan_pe', 'ketua_j3p', 'pengarah'])) {
+        $userRole = strtolower(session('role_name') ?? session('role') ?? 'user');
+        if ($application['submitted_by'] != $userId && $userRole === 'user') {
             return $this->response->setJSON([
                 'status'  => 'error',
                 'message' => 'Anda tidak mempunyai kebenaran untuk mengemaskini permohonan ini.',

@@ -15,7 +15,7 @@ $printUrl    = base_url('reports/print'  . ($queryParams ? '?' . $queryParams : 
             <i class="bi bi-file-earmark-bar-graph-fill text-primary me-2"></i>Laporan Tuntutan Perkhidmatan Pakar
         </h4>
         <div class="text-muted small">
-            Penyata analisis dan rekod kewangan tuntutan prosedur perubatan Hospital Pengajar UniSZA (HPUniSZA).
+            Penyata analisis dan rekod tuntutan perkhidmatan pakar Hospital Sultan Zainal Abidin (HoSZA).
         </div>
     </div>
     <div class="d-flex align-items-center gap-2">
@@ -43,7 +43,7 @@ $printUrl    = base_url('reports/print'  . ($queryParams ? '?' . $queryParams : 
             <div class="row g-2.5">
 
                 <!-- Tarikh Mula -->
-                <div class="col-md-3 col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     <label for="start_date" class="form-label text-muted small fw-semibold mb-1">Tarikh Mula</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-white text-muted"><i class="bi bi-calendar-event"></i></span>
@@ -53,7 +53,7 @@ $printUrl    = base_url('reports/print'  . ($queryParams ? '?' . $queryParams : 
                 </div>
 
                 <!-- Tarikh Akhir -->
-                <div class="col-md-3 col-sm-6">
+                <div class="col-md-2 col-sm-6">
                     <label for="end_date" class="form-label text-muted small fw-semibold mb-1">Tarikh Akhir</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-white text-muted"><i class="bi bi-calendar-check"></i></span>
@@ -77,59 +77,51 @@ $printUrl    = base_url('reports/print'  . ($queryParams ? '?' . $queryParams : 
                     </select>
                 </div>
 
-                <!-- Status Permohonan -->
+                <!-- Peringkat Semasa (Hirarki 5-Peringkat) -->
                 <div class="col-md-3 col-sm-6">
+                    <label for="stage" class="form-label text-muted small fw-semibold mb-1">Peringkat Hirarki Semasa</label>
+                    <select class="form-select form-select-sm" id="stage" name="stage">
+                        <option value="">-- Semua Peringkat --</option>
+                        <option value="penyemak" <?= (isset($filters['stage']) && $filters['stage'] === 'penyemak') ? 'selected' : '' ?>>2. Pegawai Menyemak PE</option>
+                        <option value="perkhidmatan" <?= (isset($filters['stage']) && $filters['stage'] === 'perkhidmatan') ? 'selected' : '' ?>>3. Pegawai Perkhidmatan PE</option>
+                        <option value="j3p" <?= (isset($filters['stage']) && $filters['stage'] === 'j3p') ? 'selected' : '' ?>>4. Ketua J3P</option>
+                        <option value="pengarah" <?= (isset($filters['stage']) && $filters['stage'] === 'pengarah') ? 'selected' : '' ?>>5. Pengarah Hospital / KPTj</option>
+                        <option value="approved" <?= (isset($filters['stage']) && $filters['stage'] === 'approved') ? 'selected' : '' ?>>Lulus Penuh (Pengarah)</option>
+                        <option value="rejected" <?= (isset($filters['stage']) && $filters['stage'] === 'rejected') ? 'selected' : '' ?>>Ditolak</option>
+                    </select>
+                </div>
+
+                <!-- Status Permohonan -->
+                <div class="col-md-2 col-sm-6">
                     <label for="status" class="form-label text-muted small fw-semibold mb-1">Status Permohonan</label>
                     <select class="form-select form-select-sm" id="status" name="status">
                         <option value="">-- Semua Status --</option>
-                        <option value="submitted" <?= (isset($filters['status']) && $filters['status'] === 'submitted') ? 'selected' : '' ?>>Menunggu Semakan</option>
-                        <option value="under_review" <?= (isset($filters['status']) && $filters['status'] === 'under_review') ? 'selected' : '' ?>>Dalam Semakan (JPPP Sokong)</option>
-                        <option value="approved" <?= (isset($filters['status']) && $filters['status'] === 'approved') ? 'selected' : '' ?>>Diluluskan (Sedia Bayar)</option>
+                        <option value="submitted" <?= (isset($filters['status']) && $filters['status'] === 'submitted') ? 'selected' : '' ?>>Dihantar</option>
+                        <option value="under_review" <?= (isset($filters['status']) && $filters['status'] === 'under_review') ? 'selected' : '' ?>>Dalam Semakan</option>
+                        <option value="approved" <?= (isset($filters['status']) && $filters['status'] === 'approved') ? 'selected' : '' ?>>Diluluskan</option>
                         <option value="rejected" <?= (isset($filters['status']) && $filters['status'] === 'rejected') ? 'selected' : '' ?>>Ditolak</option>
                         <option value="draft" <?= (isset($filters['status']) && $filters['status'] === 'draft') ? 'selected' : '' ?>>Draf</option>
                     </select>
                 </div>
 
-                <!-- Status Semakan JPPP -->
-                <div class="col-md-3 col-sm-6">
-                    <label for="jppp_status" class="form-label text-muted small fw-semibold mb-1">Semakan JPPP</label>
-                    <select class="form-select form-select-sm" id="jppp_status" name="jppp_status">
-                        <option value="">-- Semua Status JPPP --</option>
-                        <option value="pending" <?= (isset($filters['jppp_status']) && $filters['jppp_status'] === 'pending') ? 'selected' : '' ?>>Menunggu Perakuan</option>
-                        <option value="approved" <?= (isset($filters['jppp_status']) && $filters['jppp_status'] === 'approved') ? 'selected' : '' ?>>Disokong</option>
-                        <option value="rejected" <?= (isset($filters['jppp_status']) && $filters['jppp_status'] === 'rejected') ? 'selected' : '' ?>>Ditolak</option>
-                    </select>
-                </div>
-
-                <!-- Status Semakan Kewangan -->
-                <div class="col-md-3 col-sm-6">
-                    <label for="finance_status" class="form-label text-muted small fw-semibold mb-1">Kelulusan Kewangan</label>
-                    <select class="form-select form-select-sm" id="finance_status" name="finance_status">
-                        <option value="">-- Semua Status Kewangan --</option>
-                        <option value="pending" <?= (isset($filters['finance_status']) && $filters['finance_status'] === 'pending') ? 'selected' : '' ?>>Menunggu Kelulusan</option>
-                        <option value="approved" <?= (isset($filters['finance_status']) && $filters['finance_status'] === 'approved') ? 'selected' : '' ?>>Diluluskan (Ada Baucar)</option>
-                        <option value="rejected" <?= (isset($filters['finance_status']) && $filters['finance_status'] === 'rejected') ? 'selected' : '' ?>>Ditolak</option>
-                    </select>
-                </div>
-
                 <!-- Carian Kata Kunci / No. Rujukan / Pakar / RN -->
-                <div class="col-md-4 col-sm-8">
+                <div class="col-md-9 col-sm-8">
                     <label for="search" class="form-label text-muted small fw-semibold mb-1">Carian Terperinci</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-white text-muted"><i class="bi bi-search"></i></span>
                         <input type="text" class="form-control" id="search" name="search" 
                                value="<?= esc($filters['search'] ?? '') ?>" 
-                               placeholder="No. Permohonan, Pakar, No. Staf, RN...">
+                               placeholder="No. Permohonan, Pakar, No. Staf, RN Pesakit, Nama Pesakit...">
                     </div>
                 </div>
 
                 <!-- Butang Tindakan -->
-                <div class="col-md-2 col-sm-4 d-flex align-items-end gap-1">
+                <div class="col-md-3 col-sm-4 d-flex align-items-end gap-1">
                     <button type="submit" class="btn btn-primary btn-sm flex-grow-1 shadow-sm">
-                        <i class="bi bi-funnel me-1"></i> Tapis
+                        <i class="bi bi-funnel me-1"></i> Tapis Rekod
                     </button>
                     <a href="<?= base_url('reports') ?>" class="btn btn-outline-secondary btn-sm" title="Set Semula Penapis">
-                        <i class="bi bi-arrow-counterclockwise"></i>
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
                     </a>
                 </div>
 
@@ -203,17 +195,19 @@ $printUrl    = base_url('reports/print'  . ($queryParams ? '?' . $queryParams : 
         <span class="text-muted small fw-semibold">Pecahan Status:</span>
         <div class="d-flex flex-wrap align-items-center gap-2 small">
             <span class="badge bg-warning bg-opacity-10 text-dark border border-warning border-opacity-50 px-2.5 py-1.5">
-                <i class="bi bi-hourglass-split me-1 text-warning"></i> Menunggu JPPP: <strong><?= $summary['count_submitted'] ?? 0 ?></strong>
-            </span>
-            <span class="badge bg-info bg-opacity-10 text-info-emphasis border border-info border-opacity-50 px-2.5 py-1.5">
-                <i class="bi bi-shield-check me-1 text-info"></i> Dalam Semakan Kewangan: <strong><?= $summary['count_under_review'] ?? 0 ?></strong>
+                <i class="bi bi-hourglass-split me-1 text-warning"></i> Dalam Aliran Semakan: <strong><?= ($summary['count_submitted'] ?? 0) + ($summary['count_under_review'] ?? 0) ?></strong>
             </span>
             <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-50 px-2.5 py-1.5">
-                <i class="bi bi-check2-circle me-1 text-success"></i> Diluluskan Bayaran: <strong><?= $summary['count_approved'] ?? 0 ?></strong>
+                <i class="bi bi-check2-circle me-1 text-success"></i> Diluluskan Penuh (Pengarah): <strong><?= $summary['count_approved'] ?? 0 ?></strong>
             </span>
             <?php if (!empty($summary['count_rejected'])): ?>
                 <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-50 px-2.5 py-1.5">
                     <i class="bi bi-x-circle me-1 text-danger"></i> Ditolak: <strong><?= $summary['count_rejected'] ?></strong>
+                </span>
+            <?php endif; ?>
+            <?php if (!empty($summary['count_draft'])): ?>
+                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-50 px-2.5 py-1.5">
+                    <i class="bi bi-pencil me-1"></i> Draf: <strong><?= $summary['count_draft'] ?></strong>
                 </span>
             <?php endif; ?>
         </div>
@@ -243,8 +237,8 @@ $printUrl    = base_url('reports/print'  . ($queryParams ? '?' . $queryParams : 
                         <th width="110" class="text-end">Kasar (RM)</th>
                         <th width="100" class="text-end">Tabung (RM)</th>
                         <th width="110" class="text-end">Bersih (RM)</th>
-                        <th width="110" class="text-center">Semakan</th>
-                        <th width="120" class="text-center">Status</th>
+                        <th width="170" class="text-center">Peringkat Semasa</th>
+                        <th width="110" class="text-center">Status</th>
                         <th width="60" class="text-center">Tindakan</th>
                     </tr>
                 </thead>
@@ -259,11 +253,6 @@ $printUrl    = base_url('reports/print'  . ($queryParams ? '?' . $queryParams : 
                                        title="Lihat Perincian Permohonan">
                                         <?= esc($row['application_no']) ?>
                                     </a>
-                                    <?php if (!empty($row['finance_voucher_no'])): ?>
-                                        <div class="text-success small font-monospace mt-0.5" style="font-size: 0.72rem;">
-                                            <i class="bi bi-receipt me-0.5"></i><?= esc($row['finance_voucher_no']) ?>
-                                        </div>
-                                    <?php endif; ?>
                                 </td>
                                 <td class="text-muted">
                                     <?= !empty($row['created_at']) ? date('d/m/Y', strtotime($row['created_at'])) : '-' ?>
@@ -293,25 +282,10 @@ $printUrl    = base_url('reports/print'  . ($queryParams ? '?' . $queryParams : 
                                     <?= number_format((float)($row['total_claim'] ?? 0), 2) ?>
                                 </td>
                                 <td class="text-center">
-                                    <!-- JPPP Badge -->
-                                    <?php if (($row['jppp_status'] ?? '') === 'approved'): ?>
-                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25" style="font-size: 0.65rem;" title="Disokong JPPP">JPPP: OK</span>
-                                    <?php elseif (($row['jppp_status'] ?? '') === 'rejected'): ?>
-                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25" style="font-size: 0.65rem;" title="Ditolak JPPP">JPPP: Tolak</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25" style="font-size: 0.65rem;" title="Menunggu JPPP">JPPP: Menunggu</span>
-                                    <?php endif; ?>
-
-                                    <!-- Kewangan Badge -->
-                                    <div class="mt-0.5">
-                                        <?php if (($row['finance_status'] ?? '') === 'approved'): ?>
-                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25" style="font-size: 0.65rem;" title="Diluluskan Kewangan">KEW: Lulus</span>
-                                        <?php elseif (($row['finance_status'] ?? '') === 'rejected'): ?>
-                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25" style="font-size: 0.65rem;" title="Ditolak Kewangan">KEW: Tolak</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25" style="font-size: 0.65rem;" title="Menunggu Kewangan">KEW: Menunggu</span>
-                                        <?php endif; ?>
-                                    </div>
+                                    <?php $stInfo = $row['stageInfo'] ?? \App\Controllers\ReviewJpppController::getApplicationStage($row); ?>
+                                    <span class="badge <?= $stInfo['badgeClass'] ?? 'bg-secondary' ?> py-1 px-2 font-monospace" style="font-size: 0.72rem;">
+                                        <?= esc($stInfo['label'] ?? '-') ?>
+                                    </span>
                                 </td>
                                 <td class="text-center">
                                     <?php

@@ -79,11 +79,11 @@ class StarterSeeder extends Seeder
 
         // ---- 4. Default System Settings ----
         $settings = [
-            ['key' => 'app_name',         'value' => 'My System', 'created_at' => $now],
-            ['key' => 'app_tagline',      'value' => 'An efficient, secure, and user-friendly management system.', 'created_at' => $now],
-            ['key' => 'company_name',     'value' => 'Your Organization', 'created_at' => $now],
+            ['key' => 'app_name',         'value' => 'X-Claim HoSZA', 'created_at' => $now],
+            ['key' => 'app_tagline',      'value' => 'Sistem Pengurusan Tuntutan Pakar Perkhidmatan Eksekutif HoSZA', 'created_at' => $now],
+            ['key' => 'company_name',     'value' => 'Hospital Sultan Zainal Abidin (HoSZA)', 'created_at' => $now],
             ['key' => 'timezone',         'value' => 'Asia/Kuala_Lumpur', 'created_at' => $now],
-            ['key' => 'system_email',     'value' => 'noreply@domain.com', 'created_at' => $now],
+            ['key' => 'system_email',     'value' => 'noreply.hosza@unisza.edu.my', 'created_at' => $now],
             ['key' => 'email_protocol',   'value' => 'mail', 'created_at' => $now],
             ['key' => 'smtp_host',        'value' => 'smtp.mailtrap.io', 'created_at' => $now],
             ['key' => 'smtp_port',        'value' => '587', 'created_at' => $now],

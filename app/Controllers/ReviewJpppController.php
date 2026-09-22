@@ -189,10 +189,10 @@ class ReviewJpppController extends BaseController
         ];
 
         return view('review_jppp/index', [
-            'pageTitle'     => 'Semakan Permohonan JPPP',
+            'pageTitle'     => 'Senarai Permohonan',
             'breadcrumb'    => [
                 ['label' => 'Semakan & Kelulusan', 'url' => '#'],
-                'Semakan JPPP',
+                'Senarai Permohonan',
             ],
             'pendingList'   => $pendingList,
             'processedList' => $processedList,
@@ -224,7 +224,7 @@ class ReviewJpppController extends BaseController
         return view('review_jppp/show', [
             'pageTitle'       => 'Semakan Permohonan: ' . $application['application_no'],
             'breadcrumb'      => [
-                ['label' => 'Semakan JPPP', 'url' => base_url('review-jppp')],
+                ['label' => 'Senarai Permohonan', 'url' => base_url('review-jppp')],
                 $application['application_no'],
             ],
             'application'     => $application,

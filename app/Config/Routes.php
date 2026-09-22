@@ -141,7 +141,8 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 
     // Jejak Audit Log Sistem (Activity Logs)
     $routes->group('activity-logs', ['filter' => 'auth:admin'], function ($routes) {
-        $routes->get('/', 'ActivityLogsController::index');
+        $routes->get('/',     'ActivityLogsController::index');
+        $routes->get('data', 'ActivityLogsController::data');
     });
 
     // Pengurusan Permohonan Akses (Access Requests)
@@ -149,6 +150,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
         $routes->get('/',                    'AccessRequestsController::index');
         $routes->post('approve/(:num)',      'AccessRequestsController::approve/$1');
         $routes->post('reject/(:num)',       'AccessRequestsController::reject/$1');
+        $routes->post('reset/(:num)',        'AccessRequestsController::reset/$1');
     });
 
     // Konfigurasi Tetapan Sistem (Mod Penyelenggaraan, Throttling, dll)

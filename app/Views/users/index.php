@@ -3,12 +3,9 @@
 
 <div class="card-panel">
     <div class="card-panel-header py-3">
-        <h5 class="card-panel-title">
+        <h5 class="card-panel-title mb-0">
             <i class="bi bi-people-fill me-2 text-primary"></i>User Management
         </h5>
-        <a href="<?= base_url('users/create') ?>" class="btn btn-primary btn-sm shadow-sm">
-            <i class="bi bi-person-plus me-1"></i> Add New User
-        </a>
     </div>
     <div class="card-panel-body">
         <div class="table-responsive">

@@ -26,22 +26,13 @@ $userRoleName    = esc(ucfirst(session('role_name') ?? session('role') ?? 'Pakar
             </span>
         </div>
         <p class="text-muted small mb-0">
-            Selamat kembali, <strong><?= $userDisplayName ?></strong>. Berikut adalah ringkasan status & statistik tuntutan perkhidmatan pakar Hospital Pengajar UniSZA (HPUniSZA).
+            Selamat kembali, <strong><?= $userDisplayName ?></strong>. Berikut adalah ringkasan status & statistik tuntutan perkhidmatan pakar Hospital Sultan Zainal Abidin (HoSZA)<?= !empty($isOnlySelf) ? ' bagi rekod peribadi anda.' : ' (Keseluruhan Hospital).' ?>
         </p>
     </div>
 
-    <!-- Quick Action Buttons -->
-    <div class="d-flex align-items-center gap-2">
-        <a href="<?= base_url('new-application/create') ?>" class="btn btn-primary btn-sm shadow-sm px-3 fw-semibold">
-            <i class="bi bi-plus-circle me-1"></i> Borang Tuntutan Baharu
-        </a>
-        <a href="<?= base_url('new-application') ?>" class="btn btn-outline-primary btn-sm px-3">
-            <i class="bi bi-list-check me-1"></i> Senarai Permohonan
-        </a>
-        <a href="<?= base_url('mma-procedures') ?>" class="btn btn-outline-secondary btn-sm px-3 d-none d-md-inline-block">
-            <i class="bi bi-journal-medical me-1"></i> Prosedur MMA
-        </a>
-        <span class="badge bg-white text-dark border px-3 py-2 shadow-sm rounded-pill small d-none d-xl-inline-block">
+    <!-- Date Info -->
+    <div class="d-flex align-items-center">
+        <span class="badge bg-white text-dark border px-3 py-2 shadow-sm rounded-pill small">
             <i class="bi bi-calendar3 text-primary me-1"></i> <?= date('d M Y') ?>
         </span>
     </div>
@@ -91,7 +82,7 @@ $userRoleName    = esc(ucfirst(session('role_name') ?? session('role') ?? 'Pakar
                 <span class="stat-label">Menunggu Kelulusan</span>
                 <span class="stat-value text-warning-emphasis"><?= number_format($pendingClaims) ?></span>
                 <span class="stat-change text-warning-emphasis">
-                    <i class="bi bi-hourglass-split me-1"></i>Semakan KJ & Bahagian Kewangan
+                    <i class="bi bi-hourglass-split me-1"></i>Dalam Aliran Semakan Pegawai
                 </span>
             </div>
             <div class="stat-icon">
@@ -195,14 +186,14 @@ $userRoleName    = esc(ucfirst(session('role_name') ?? session('role') ?? 'Pakar
 <div class="row g-4">
 
     <!-- Recent Claims Table -->
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm rounded-3 h-100">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-3">
             <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
                 <div>
                     <h6 class="fw-bold text-dark mb-0">
                         <i class="bi bi-clock-history text-primary me-2"></i>Permohonan Tuntutan Terkini
                     </h6>
-                    <small class="text-muted">Senarai permohonan terkini yang telah dihantar oleh pakar</small>
+                    <small class="text-muted"><?= !empty($isOnlySelf) ? 'Senarai permohonan terkini yang telah anda hantar' : 'Senarai permohonan terkini yang telah dihantar oleh pakar' ?></small>
                 </div>
                 <a href="<?= base_url('new-application') ?>" class="btn btn-outline-primary btn-sm px-3">
                     Lihat Semua <i class="bi bi-arrow-right ms-1"></i>
@@ -287,78 +278,6 @@ $userRoleName    = esc(ucfirst(session('role_name') ?? session('role') ?? 'Pakar
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- System Highlights & Activity Logs -->
-    <div class="col-lg-4">
-        
-        <!-- System Policy / Information Card -->
-        <div class="card border-0 shadow-sm rounded-3 mb-4 bg-gradient" style="background: linear-gradient(145deg, #ffffff 0%, #f4f7fb 100%);">
-            <div class="card-body p-3">
-                <h6 class="fw-bold text-dark mb-2">
-                    <i class="bi bi-shield-check text-success me-2"></i>Panduan Sistem X-Claim
-                </h6>
-                <div class="small text-secondary mb-3">
-                    Sistem Tuntutan Perkhidmatan Pakar Hospital Pengajar Universiti Sultan Zainal Abidin (HPUniSZA).
-                </div>
-                <ul class="list-unstyled mb-0 small text-muted">
-                    <li class="mb-2 d-flex align-items-center">
-                        <i class="bi bi-check-circle-fill text-primary me-2"></i>
-                        <span>Prosedur MMA Tersedia: <strong class="text-dark"><?= $totalProcedures ?> prosedur</strong></span>
-                    </li>
-                    <li class="mb-2 d-flex align-items-center">
-                        <i class="bi bi-check-circle-fill text-primary me-2"></i>
-                        <span>Integrasi API Pesakit: <span class="badge bg-success-subtle text-success border border-success-subtle ms-1">Aktif</span></span>
-                    </li>
-                    <li class="mb-2 d-flex align-items-center">
-                        <i class="bi bi-check-circle-fill text-primary me-2"></i>
-                        <span>Peratusan Tuntutan: <strong class="text-dark">Boleh Diselaraskan (0%-100%)</strong></span>
-                    </li>
-                    <li class="d-flex align-items-center">
-                        <i class="bi bi-check-circle-fill text-primary me-2"></i>
-                        <span>Tabung Kebajikan Hospital: <strong class="text-dark">Pilihan (Sukarela)</strong></span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Recent Activity Logs Card -->
-        <div class="card border-0 shadow-sm rounded-3">
-            <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom">
-                <h6 class="fw-bold text-dark mb-0">
-                    <i class="bi bi-journal-text text-secondary me-2"></i>Log Aktiviti Terkini
-                </h6>
-                <?php if ($isAdmin): ?>
-                    <a href="<?= base_url('activity-logs') ?>" class="btn btn-light btn-sm border px-2">Lihat Semua</a>
-                <?php endif; ?>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush small">
-                    <?php if (!empty($recentLogs)): ?>
-                        <?php foreach ($recentLogs as $log): ?>
-                            <div class="list-group-item px-3 py-2.5">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="fw-semibold text-dark">
-                                        <i class="bi bi-dot text-primary fs-5 align-middle"></i><?= esc($log['action']) ?>
-                                    </span>
-                                    <span class="text-muted" style="font-size: 0.72rem; white-space: nowrap;">
-                                        <?= date('d/m h:i A', strtotime($log['created_at'])) ?>
-                                    </span>
-                                </div>
-                                <div class="text-secondary text-truncate" style="max-width: 280px;" title="<?= esc($log['description']) ?>">
-                                    <?= esc($log['description']) ?>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <div class="p-3 text-center text-muted fst-italic">
-                            Tiada log aktiviti direkodkan.
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-
     </div>
 
 </div>

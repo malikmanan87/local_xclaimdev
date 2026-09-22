@@ -7,7 +7,7 @@
             </button>
             <div class="d-none d-sm-block">
                 <span class="fw-semibold text-secondary small text-uppercase tracking-wider">
-                    <?= APP_NAME ?? 'Sistem Urus' ?>
+                    <?= esc($dynamicAppName ?? ($sysSettings['app_name'] ?? (defined('APP_NAME') ? APP_NAME : 'X-Claim HoSZA'))) ?>
                 </span>
             </div>
         </div>
@@ -15,14 +15,11 @@
         <div class="d-flex align-items-center gap-3">
             
             <?php 
-                $db = \Config\Database::connect();
-                $maintenanceQuery = $db->table('settings')->where('key', 'maintenance_mode')->get()->getRow();
-                $isMaintenance = $maintenanceQuery ? (int)$maintenanceQuery->value : 0;
-                
+                $isMaintenance = isset($sysSettings['maintenance_mode']) ? (int)$sysSettings['maintenance_mode'] : 0;
                 if ($isMaintenance === 1 && session()->get('role') === 'admin'): 
             ?>
-                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small">
-                    <i class="bi bi-wrench-adjustable me-1"></i> Maintenance Mode Active
+                <span class="badge bg-danger text-white border px-2 py-1 small shadow-sm">
+                    <i class="bi bi-wrench-adjustable me-1"></i> Mod Penyelenggaraan Aktif
                 </span>
             <?php endif; ?>
 

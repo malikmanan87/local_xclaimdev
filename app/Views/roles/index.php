@@ -4,7 +4,7 @@
 <div class="card-panel">
     <div class="card-panel-header py-3">
         <h5 class="card-panel-title">
-            <i class="bi bi-shield-lock-fill me-2 text-primary"></i>Roles & Permissions
+            <i class="bi bi-shield-lock-fill me-2 text-primary"></i>Roles Management
         </h5>
         <a href="<?= base_url('roles/create') ?>" class="btn btn-primary btn-sm shadow-sm">
             <i class="bi bi-plus-lg me-1"></i> Add Role
@@ -19,7 +19,8 @@
                         <th>Role Code (System Name)</th>
                         <th>Display Name</th>
                         <th>Description</th>
-                        <th width="120" class="text-center">Action</th>
+                        <th width="120" class="text-center">Users (Staf)</th>
+                        <th width="100" class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,6 +47,17 @@
                             </td>
                             <td><span class="fw-medium text-dark"><?= esc($role['display_name']) ?></span></td>
                             <td><span class="text-secondary small"><?= esc($role['description'] ?? '-') ?></span></td>
+                            <td class="text-center">
+                                <?php if ((int)($role['user_count'] ?? 0) > 0): ?>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 rounded-pill small fw-semibold">
+                                        <i class="bi bi-people-fill me-1"></i><?= number_format($role['user_count']) ?> Staf
+                                    </span>
+                                <?php else: ?>
+                                    <span class="badge bg-light text-muted border px-2.5 py-1 rounded-pill small">
+                                        0 Staf
+                                    </span>
+                                <?php endif; ?>
+                            </td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-1">
                                     <a href="<?= base_url('roles/edit/' . $role['id']) ?>" class="btn-action btn-action-edit" title="Edit">
@@ -91,7 +103,7 @@ $(document).ready(function() {
         },
         order: [[1, 'asc']],
         pageLength: 10,
-        columnDefs: [{ orderable: false, targets: [0, 3, 4] }]
+        columnDefs: [{ orderable: false, targets: [0, 3, 4, 5] }]
     });
 });
 </script>
