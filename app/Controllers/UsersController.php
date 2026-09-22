@@ -225,27 +225,31 @@ class UsersController extends BaseController
     }
 
     // ----------------------------------------------------------------
-    // GET /users/reset-throttle/:id (Reset Throttle + LOG)
+    // GET /users/reset-throttle/:id (Nyahsekat Akaun / Unlock + LOG)
     // ----------------------------------------------------------------
     public function resetThrottle(int $id)
     {
         $user = $this->userModel->find($id);
         if (!$user) {
-            return redirect()->to('users')->with('error', 'User not found.');
+            return redirect()->to('users')->with('error', 'Pengguna tidak dijumpai.');
         }
 
-        $cache = service('cache');
-        $cache->clean();
+        try {
+            $cache = service('cache');
+            $cache->clean();
+        } catch (\Throwable $e) {}
 
-        if ((int)$user['is_active'] === 0) {
-            $this->userModel->update($id, ['is_active' => 1]);
-        }
+        // Lepaskan sekatan akaun dan tetapkan semula kaunter kegagalan
+        $this->userModel->update($id, [
+            'failed_attempts' => 0,
+            'locked_until'    => null,
+        ]);
 
         $this->logActivity(
-            'Reset Login Throttle',
-            'Reset login throttle restriction for account: ' . $user['fullname']
+            'Nyahsekat Akaun',
+            'Pentadbir telah menyahsekat akaun pengguna: ' . $user['fullname'] . ' (' . ($user['email'] ?? $user['username']) . ')'
         );
 
-        return redirect()->to('users')->with('success', 'Login restriction for user has been cleared.');
+        return redirect()->to('users')->with('success', 'Sekatan akaun untuk pengguna "' . $user['fullname'] . '" telah berjaya dinyahsekat (Unlocked).');
     }
 }

@@ -78,9 +78,17 @@ class AuthController extends BaseController
         // Cari user dalam DB tempatan
         $user = $this->userModel->findByEmailOrUsername($email);
 
+        // Semak sekatan akaun (Lockout Policy)
+        if ($user) {
+            $lockMsg = $this->checkAccountLock($user);
+            if ($lockMsg) {
+                return redirect()->back()->withInput()->with('error', $lockMsg);
+            }
+        }
+
         if (!$user || !password_verify($password, $user['password'])) {
-            return redirect()->back()->withInput()
-                ->with('error', 'Invalid email or password.');
+            $failMsg = $this->handleFailedLogin($user, $email);
+            return redirect()->back()->withInput()->with('error', $failMsg);
         }
 
         // Hanya role 'admin' dibenarkan
@@ -108,7 +116,7 @@ class AuthController extends BaseController
             'avatar'     => $user['avatar'] ?? null,
         ]);
 
-        $this->userModel->update($user['id'], ['last_login' => date('Y-m-d H:i:s')]);
+        $this->resetLoginLock($user['id']);
         $this->logActivity('Admin Login', 'Admin logged in via local credentials: ' . $email);
 
         return redirect()->to('dashboard')
@@ -133,6 +141,19 @@ class AuthController extends BaseController
         // Jika user memasukkan emel penuh (cth: malikmanan@unisza.edu.my),
         // ambil ID sebelum '@' kerana LDAP Bind UniSZA API memerlukan username sahaja.
         $apiUsername = strpos($loginInput, '@') !== false ? explode('@', $loginInput)[0] : $loginInput;
+
+        // Semak sekatan akaun pengguna dalam rekod tempatan (Lockout Policy)
+        $existingTargetUser = $this->userModel->findByEmailOrUsername($loginInput);
+        if (!$existingTargetUser && !empty($apiUsername)) {
+            $existingTargetUser = $this->userModel->findByEmailOrUsername($apiUsername);
+        }
+
+        if ($existingTargetUser) {
+            $lockMsg = $this->checkAccountLock($existingTargetUser);
+            if ($lockMsg) {
+                return redirect()->back()->withInput()->with('error', $lockMsg);
+            }
+        }
 
         $client = \Config\Services::curlrequest();
         $apiSuccess = false;
@@ -244,11 +265,11 @@ class AuthController extends BaseController
                     ->with('error', 'Akaun anda telah dinyahaktifkan. Sila hubungi Pentadbir Sistem.');
             }
 
-            // Kemaskini maklumat terkini pengguna dari API (tanpa sentuh kata laluan)
+            // Kemaskini maklumat terkini pengguna dari API dan tetapkan semula sekatan
+            $this->resetLoginLock($user['id']);
             $this->userModel->update($user['id'], [
                 'fullname'   => $nama,
                 'phone'      => $phone ?: $user['phone'],
-                'last_login' => date('Y-m-d H:i:s'),
             ]);
 
             // Ambil maklumat peranan pengguna yang ditetapkan dalam dbtable
@@ -313,16 +334,18 @@ class AuthController extends BaseController
                 'avatar'     => $localUser['avatar'] ?? null,
             ]);
 
-            $this->userModel->update($localUser['id'], ['last_login' => date('Y-m-d H:i:s')]);
+            $this->resetLoginLock($localUser['id']);
             $this->logActivity('Log Masuk Tempatan', 'Log masuk akaun tempatan: ' . $localUser['email']);
 
             return redirect()->to('dashboard')
                 ->with('success', 'Selamat kembali, ' . $localUser['fullname'] . '!');
         }
 
-        // Respons API gagal atau rekod tidak sah
-        return redirect()->back()->withInput()
-            ->with('error', 'Maklumat log masuk tidak sah. Sila pastikan Emel/ID Staf dan kata laluan UniSZA anda adalah betul.');
+        // Respons API gagal atau rekod tidak sah (Kendalikan kegagalan log masuk & sekatan)
+        $failUser = $existingTargetUser ?? ($localUser ?? null);
+        $failMsg  = $this->handleFailedLogin($failUser, $loginInput);
+
+        return redirect()->back()->withInput()->with('error', $failMsg);
     }
 
     // ----------------------------------------------------------------
@@ -399,5 +422,99 @@ class AuthController extends BaseController
         }
         session()->destroy();
         return redirect()->to('login');
+    }
+
+    // ----------------------------------------------------------------
+    // KAEDAH KESELAMATAN SEKATAN AKAUN (ACCOUNT LOCKOUT & AUTO-RELEASE)
+    // ----------------------------------------------------------------
+
+    /**
+     * Semak sama ada akaun pengguna sedang disekat atau auto-release jika tempoh telah tamat.
+     */
+    protected function checkAccountLock(?array $user): ?string
+    {
+        if (!$user || empty($user['locked_until'])) {
+            return null;
+        }
+
+        $now = time();
+        $lockedTime = strtotime($user['locked_until']);
+
+        if ($lockedTime > $now) {
+            $diff = $lockedTime - $now;
+            $minutes = ceil($diff / 60);
+            $timeText = ($minutes > 1) ? "{$minutes} minit" : "{$diff} saat";
+            return "Akaun anda telah disekat sementara kerana melebihi had kegagalan log masuk. Sila cuba lagi dalam masa {$timeText} (atau hubungi Pentadbir Sistem untuk bantuan segera).";
+        }
+
+        // Auto-Release: Tempoh sekatan 5 minit telah luput
+        $this->userModel->update($user['id'], [
+            'failed_attempts' => 0,
+            'locked_until'    => null,
+        ]);
+
+        return null;
+    }
+
+    /**
+     * Kendalikan cubaan log masuk yang gagal dan laksanakan sekatan 5 minit jika capai had.
+     */
+    protected function handleFailedLogin(?array $user, string $identifier): string
+    {
+        if (!$user) {
+            return 'Maklumat log masuk tidak sah. Sila pastikan Emel/ID Staf dan kata laluan anda adalah betul.';
+        }
+
+        $db = \Config\Database::connect();
+        $maxAttempts = 5;
+        $lockoutSeconds = 300; // Lalai: 5 minit (300 saat)
+
+        try {
+            $maxRow = $db->table('settings')->where('key', 'login_attempts')->get()->getRow();
+            if ($maxRow && is_numeric($maxRow->value)) {
+                $maxAttempts = (int)$maxRow->value;
+            }
+            $lockRow = $db->table('settings')->where('key', 'lockout_time')->get()->getRow();
+            if ($lockRow && is_numeric($lockRow->value)) {
+                $lockoutSeconds = (int)$lockRow->value;
+            }
+        } catch (\Throwable $e) {}
+
+        $newAttempts = (int)($user['failed_attempts'] ?? 0) + 1;
+
+        if ($newAttempts >= $maxAttempts) {
+            $lockedUntil = date('Y-m-d H:i:s', time() + $lockoutSeconds);
+            $this->userModel->update($user['id'], [
+                'failed_attempts' => $newAttempts,
+                'locked_until'    => $lockedUntil,
+            ]);
+
+            $lockMinutes = ceil($lockoutSeconds / 60);
+            $this->logActivity(
+                'Akaun Disekat',
+                'Akaun "' . ($user['email'] ?? $identifier) . '" disekat selama ' . $lockMinutes . ' minit kerana gagal log masuk sebanyak ' . $newAttempts . ' kali berturut-turut.'
+            );
+
+            return "Akaun anda telah disekat sementara selama {$lockMinutes} minit kerana gagal log masuk sebanyak {$maxAttempts} kali berturut-turut. Sila tunggu tempoh ini luput atau hubungi Pentadbir Sistem.";
+        }
+
+        $this->userModel->update($user['id'], [
+            'failed_attempts' => $newAttempts,
+        ]);
+
+        $remaining = $maxAttempts - $newAttempts;
+        return "Kata laluan tidak sah. Baki percubaan sebelum akaun disekat: {$remaining} kali.";
+    }
+
+    /**
+     * Tetapkan semula kaunter kegagalan dan sekatan apabila log masuk berjaya.
+     */
+    protected function resetLoginLock(int $userId): void
+    {
+        $this->userModel->update($userId, [
+            'failed_attempts' => 0,
+            'locked_until'    => null,
+            'last_login'      => date('Y-m-d H:i:s'),
+        ]);
     }
 }

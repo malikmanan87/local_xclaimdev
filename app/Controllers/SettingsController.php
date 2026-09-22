@@ -44,7 +44,7 @@ class SettingsController extends BaseController
         $allowedKeys = [
             'app_name', 'app_tagline', 'company_name', 'timezone',
             'system_email', 'email_protocol', 'smtp_host', 'smtp_port',
-            'login_attempts', 'session_timeout'
+            'login_attempts', 'lockout_time', 'session_timeout'
         ];
 
         $db->transStart();

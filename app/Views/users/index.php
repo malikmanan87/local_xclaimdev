@@ -76,8 +76,21 @@
                             </td>
                             
                             <td>
-                                <?php if ((int)$user['is_active'] === 1): ?>
+                                <?php
+                                $isLocked = !empty($user['locked_until']) && strtotime($user['locked_until']) > time();
+                                ?>
+                                <?php if ($isLocked): ?>
+                                    <?php $remMinutes = ceil((strtotime($user['locked_until']) - time()) / 60); ?>
+                                    <span class="badge bg-danger text-white py-1 px-2 shadow-sm rounded-pill" title="Akaun disekat sehingga <?= date('d/m/Y h:i:s A', strtotime($user['locked_until'])) ?>">
+                                        <i class="bi bi-lock-fill me-1"></i>Disekat (<?= $remMinutes ?>m)
+                                    </span>
+                                <?php elseif ((int)$user['is_active'] === 1): ?>
                                     <span class="badge-status badge-status-success py-1">Active</span>
+                                    <?php if (!empty($user['failed_attempts']) && (int)$user['failed_attempts'] > 0): ?>
+                                        <span class="badge bg-warning text-dark py-0.5 px-1.5 ms-1 rounded-pill" style="font-size: 0.7rem;" title="<?= $user['failed_attempts'] ?> percubaan gagal">
+                                            <i class="bi bi-exclamation-circle-fill me-0.5"></i><?= $user['failed_attempts'] ?>
+                                        </span>
+                                    <?php endif; ?>
                                 <?php else: ?>
                                     <span class="badge-status badge-status-danger py-1">Inactive</span>
                                 <?php endif; ?>
@@ -89,9 +102,21 @@
                             
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-1">
-                                    <a href="<?= base_url('users/reset-throttle/' . $user['id']) ?>" class="btn-action btn-action-view" title="Reset Login Restriction">
-                                        <i class="bi bi-unlock"></i>
-                                    </a>
+                                    <?php if ($isLocked || (!empty($user['failed_attempts']) && (int)$user['failed_attempts'] > 0)): ?>
+                                        <a href="<?= base_url('users/reset-throttle/' . $user['id']) ?>" 
+                                           class="btn-action bg-danger text-white border-danger shadow-sm" 
+                                           title="Akaun disekat: Klik untuk Nyahsekat (Unlock)" 
+                                           onclick="return confirm('Adakah anda pasti ingin menyahsekat akaun <?= esc(addslashes($user['fullname'])) ?>?')">
+                                            <i class="bi bi-unlock-fill"></i>
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="<?= base_url('users/reset-throttle/' . $user['id']) ?>" 
+                                           class="btn-action btn-action-view" 
+                                           title="Reset Sekatan Log Masuk" 
+                                           onclick="return confirm('Reset sebarang rekod sekatan log masuk untuk akaun <?= esc(addslashes($user['fullname'])) ?>?')">
+                                            <i class="bi bi-unlock"></i>
+                                        </a>
+                                    <?php endif; ?>
                                     
                                     <a href="<?= base_url('users/edit/' . $user['id']) ?>" class="btn-action btn-action-edit" title="Edit Profile">
                                         <i class="bi bi-pencil"></i>

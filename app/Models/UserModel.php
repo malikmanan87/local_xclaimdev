@@ -24,6 +24,8 @@ class UserModel extends Model
         'password',
         'role_id',
         'is_active',
+        'failed_attempts',
+        'locked_until',
         'access_status',
         'access_note',
         'access_reviewed_by',

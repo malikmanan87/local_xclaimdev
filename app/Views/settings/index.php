@@ -172,25 +172,37 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <label class="form-label fw-medium text-secondary">Had Percubaan Log Masuk (Login Attempt Limit)</label>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium text-secondary">Had Percubaan Log Masuk</label>
                                     <?php $attempts = old('login_attempts', $settings['login_attempts'] ?? ($sysSettings['login_attempts'] ?? '5')); ?>
                                     <select name="login_attempts" class="form-select">
                                         <option value="3" <?= $attempts === '3' ? 'selected' : '' ?>>3 Percubaan (Ketat / Strict)</option>
                                         <option value="5" <?= $attempts === '5' ? 'selected' : '' ?>>5 Percubaan (Standard Piawai)</option>
                                         <option value="10" <?= $attempts === '10' ? 'selected' : '' ?>>10 Percubaan (Longgar)</option>
                                     </select>
-                                    <div class="form-text small text-muted">Akaun akan disekat seketika jika melebihi had kegagalan kata laluan.</div>
+                                    <div class="form-text small text-muted">Maksimum percubaan gagal sebelum disekat.</div>
                                 </div>
 
-                                <div class="col-md-6">
-                                    <label class="form-label fw-medium text-secondary">Tempoh Tamat Sesi Pengguna (Session Timeout)</label>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium text-secondary">Tempoh Sekatan Akaun (Lockout)</label>
+                                    <?php $lockout = old('lockout_time', $settings['lockout_time'] ?? ($sysSettings['lockout_time'] ?? '300')); ?>
+                                    <select name="lockout_time" class="form-select">
+                                        <option value="300" <?= $lockout === '300' ? 'selected' : '' ?>>5 Minit (Standard Auto-Release)</option>
+                                        <option value="600" <?= $lockout === '600' ? 'selected' : '' ?>>10 Minit</option>
+                                        <option value="900" <?= $lockout === '900' ? 'selected' : '' ?>>15 Minit</option>
+                                        <option value="1800" <?= $lockout === '1800' ? 'selected' : '' ?>>30 Minit</option>
+                                    </select>
+                                    <div class="form-text small text-muted">Akaun dilepaskan secara automatik selepas tempoh ini.</div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-medium text-secondary">Tempoh Tamat Sesi (Timeout)</label>
                                     <div class="input-group">
                                         <input type="number" name="session_timeout" class="form-control" 
                                                value="<?= old('session_timeout', $settings['session_timeout'] ?? ($sysSettings['session_timeout'] ?? '7200')) ?>" min="300">
                                         <span class="input-group-text bg-light small">Saat</span>
                                     </div>
-                                    <div class="form-text small text-muted">Nilai 7200 saat bersamaan dengan 2 jam sesi aktif sebelum log keluar automatik.</div>
+                                    <div class="form-text small text-muted">7200 saat bersamaan 2 jam aktif.</div>
                                 </div>
                             </div>
                         </div>
